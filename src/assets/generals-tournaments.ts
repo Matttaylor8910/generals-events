@@ -1,4 +1,16 @@
 /**
+ * /tournaments
+ *   /tournament-id
+ *     /games
+ *     /players
+ *     /records
+ *
+ * Leaderboard is tournament players sorted by rank ascending
+ * Players join the queue array on the tournament
+ * A cloud function watches the tournament collection and creates games when
+ * tournaments get enough players to start a game in the queue
+ * A player should be subscribed to the current games that they are a part of
+ *
  * The plan is to create a website to run real-time lichess-style tournaments
  * The time constraint could be 60 to 90 minutes perhaps, the player with the
  * most point when the clock runs out wins the tournament

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
+import {TournamentService} from 'src/app/services/tournament.service';
 
 @Component({
   selector: 'app-home',
@@ -6,7 +7,15 @@ import { Component } from '@angular/core';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+  constructor(
+      private readonly tournamentService: TournamentService,
+  ) {}
 
-  constructor() {}
-
+  createTournament() {
+    // TODO: make modal
+    this.tournamentService.createTournament({
+      durationMinutes: 60,
+      playersPerGame: 8,
+    });
+  }
 }
