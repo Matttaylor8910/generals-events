@@ -24,3 +24,20 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+* {
+  font-family: 'Quicksand', sans-serif;
+}
+
+ion-title {
+  font-weight: bold;
+  font-size: 40px;
+  margin-top: 0;
+  margin-bottom: 5px;
+  text-align: center;
+  text-shadow: 2px 2px teal;
+  transition: all .2s ease-in-out;
+  color: #fff;
+}

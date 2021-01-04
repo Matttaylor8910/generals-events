@@ -7,6 +7,16 @@ const routes: Routes = [
     loadChildren: () =>
         import('./pages/home/home.module').then(m => m.HomePageModule),
   },
+  {
+    path: 'past',
+    loadChildren: () =>
+        import('./pages/past/past.module').then(m => m.PastPageModule),
+  },
+  {
+    path: ':id',
+    loadChildren: () => import('./pages/tournament/tournament.module')
+                            .then(m => m.TournamentPageModule),
+  },
 ];
 
 @NgModule({
