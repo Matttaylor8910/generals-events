@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {IGame} from '../../../../types';
-import {getReplay} from '../../util/simulator';
+import * as simulator from '../../util/simulator';
 
 try {
   admin.initializeApp();
@@ -23,7 +23,7 @@ async function checkReplay(before: DocumentSnapshot, after: DocumentSnapshot) {
 
   // get the replay info when a replay is added to the game
   if (beforeId !== afterId && afterId !== undefined) {
-    const replay = await getReplay(afterId);
+    const replay = await simulator.getReplay(afterId);
     await after.ref.update({replay});
   }
 }
