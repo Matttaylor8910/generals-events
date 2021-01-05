@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {Tournament} from 'types';
+import {ITournament} from 'types';
 
 @Injectable({providedIn: 'root'})
 export class TournamentService {
@@ -10,7 +10,7 @@ export class TournamentService {
       private readonly afs: AngularFirestore,
   ) {}
 
-  createTournament(tournament: Partial<Tournament>) {
+  createTournament(tournament: Partial<ITournament>) {
     return this.afs.collection('tournaments').add({
       queue: [],
       startTime: null,
@@ -19,9 +19,9 @@ export class TournamentService {
     });
   }
 
-  getTournaments(finished: boolean): Observable<Tournament[]> {
+  getTournaments(finished: boolean): Observable<ITournament[]> {
     return this.afs
-        .collection<Tournament>(
+        .collection<ITournament>(
             'tournaments',
             ref => {
               let query = ref.orderBy('asc');

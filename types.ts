@@ -1,7 +1,7 @@
 // the tournament object
 // let's design for the ability to have multiple tournaments happening
 // simultaneously located at /tournaments/:id
-export interface Tournament {
+export interface ITournament {
   startTime: number;        // unix timestamp of start of tournament
   endTime: number;          // unix timestamp of end of tournament
   durationMinutes: number;  // # of minutes the tournament should go
@@ -13,35 +13,34 @@ export interface Tournament {
 
 // the items to be shown in the leaderboard list
 // located at /tournaments/:id/players
-export interface LeaderboardPlayer {
+export interface ILeaderboardPlayer {
   name: string;           // generals.io username
   rank: number;           // the person with the most points, show ties
   points: number;         // start at 0
   currentStreak: number;  // start at 0, potentially used to determine bonus for
                           // being on a streak
-  record: GamePlayerRecord[];  // a list of the point values earned in each game
-                               // played in the tournament and some metadata
+  record:
+      IGamePlayerRecord[];  // a list of the point values earned in each game
+                            // played in the tournament and some metadata
 }
-
-
 
 // a game that was played during a tournament
 // located at /tournaments/:id/games
-export interface Game {
-  type: string;           // game type from generals api response
-  id: string;             // game id from generals api response
-  started: number;        // unix timestamp of start of the game
-  players: GamePlayer[];  // a list of the players in a game, ordered by points
+export interface IGame {
+  type: string;            // game type from generals api response
+  replayId: string;        // replay id from generals api response
+  started: number;         // unix timestamp of start of the game
+  players: IGamePlayer[];  // a list of the players in a game, ordered by points
 }
 
-export interface GamePlayer {
+export interface IGamePlayer {
   name: string;
   kills: number;
   rank: number;
   points: number;
 }
 
-export interface GamePlayerRecord {
+export interface IGamePlayerRecord {
   points: number;
   onStreak: number;
   win: boolean;
@@ -50,7 +49,7 @@ export interface GamePlayerRecord {
 // a record of a player's stats for this tournament at a given point in time
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
-export interface PlayerHistoryRecord {
+export interface IPlayerHistoryRecord {
   name: string;           // generals.io username
   tournamentId: string;   // id of the tournament
   currentStreak: number;  // current streak
@@ -61,10 +60,10 @@ export interface PlayerHistoryRecord {
 }
 
 // the game object from the generals.io api
-export interface GeneralsGame {
-  type: '1v1'|'2v2'|'ffa'|'custom';
+export interface IGeneralsGame {
+  type: '1v1'|'2v2'|'classic'|'custom';
   id: string;
   started: number;
   turns: number;
-  ranking: {name: string; stars: number;}[];
+  ranking: {name: string, stars: number}[];
 }
