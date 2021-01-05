@@ -12,6 +12,7 @@ export class TournamentService {
 
   createTournament(tournament: Partial<ITournament>) {
     return this.afs.collection('tournaments').add({
+      name: 'New Tournament',
       queue: [],
       startTime: null,
       endTime: null,

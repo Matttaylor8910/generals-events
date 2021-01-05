@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Create Tournament</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="create-tournament">
+    <p>
+      {{ getDate() }}
+    </p>
+    <p>
+      {{ invalid }}
+    </p>
+    <label>Type</label>
+    <select [(ngModel)]="type" name="type">
+      <option [value]="option" *ngFor="let option of types">{{option}}</option>
+    </select>
+    <label>Name</label>
+    <input
+      [(ngModel)]="name"
+      type="text"
+      placeholder="{{type}} {{date}}"
+    >
+    <label>Date</label>
+    <input
+      [ngModel]="date"
+      (ngModelChange)="date = $event"
+      class="date-input"
+      type="date"
+      placeholder="yyyy-mm-dd"
+    >
+    <label>Time</label>
+    <input
+      [(ngModel)]="time"
+      type="time"
+      placeholder="hh:mm"
+    >
+    <label>Duration</label>
+    <input
+      [(ngModel)]="duration"
+      type="tel"
+      placeholder="# minutes"
+    >
+    <ion-button (click)="create()" [disabled]="invalid">
+      {{ saving ? 'Creating...' : 'Create Tournament' }}
+    </ion-button>
+  </div>
+</ion-content>
