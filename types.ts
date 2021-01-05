@@ -1,7 +1,14 @@
+export enum TournamentType {
+  FFA = 'FFA',
+  ONE_VS_ONE = '1v1',
+}
+
 // the tournament object
 // let's design for the ability to have multiple tournaments happening
 // simultaneously located at /tournaments/:id
 export interface ITournament {
+  name: string;
+  type: TournamentType;
   startTime: number;        // unix timestamp of start of tournament
   endTime: number;          // unix timestamp of end of tournament
   durationMinutes: number;  // # of minutes the tournament should go
