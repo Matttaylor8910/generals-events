@@ -10,9 +10,6 @@ import {CreateTournamentPage} from './create-tournament.page';
     FormsModule,
     IonicModule,
   ],
-  declarations: [
-    CreateTournamentPage,
-  ]
 })
 export class CreateTournamentPageModule {
 }

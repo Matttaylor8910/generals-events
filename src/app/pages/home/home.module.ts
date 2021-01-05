@@ -2,8 +2,8 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {IonicModule} from '@ionic/angular';
+import {CreateTournamentPage} from './create-tournament/create-tournament.page';
 
-import {CreateTournamentPageModule} from './create-tournament/create-tournament.module';
 import {HomePageRoutingModule} from './home-routing.module';
 import {HomePage} from './home.page';
 
@@ -15,7 +15,10 @@ import {HomePage} from './home.page';
     IonicModule,
     HomePageRoutingModule,
   ],
-  declarations: [HomePage]
+  declarations: [
+    HomePage,
+    CreateTournamentPage,
+  ]
 })
 export class HomePageModule {
 }

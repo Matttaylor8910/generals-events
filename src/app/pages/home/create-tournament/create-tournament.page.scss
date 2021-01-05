@@ -1,0 +1,25 @@
+.create-tournament {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  input,
+  select {
+    border: 1px solid #c4c4c4;
+    border-radius: 5px;
+    background-color: #fff;
+    padding: 5px 8px;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+    color: #000;
+    margin-bottom: 10px;
+  }
+
+  input,
+  select,
+  label,
+  ion-button {
+    width: 100%;
+    max-width: 250px;
+  }
+}
