@@ -18,8 +18,8 @@ export const onWriteGame =
         });
 
 async function checkReplay(before: DocumentSnapshot, after: DocumentSnapshot) {
-  const {replayId: beforeId} = before.data() as IGame;
-  const {replayId: afterId} = after.data() as IGame;
+  const {replayId: beforeId} = before.data() || {} as IGame;
+  const {replayId: afterId} = after.data() || {} as IGame;
 
   // get the replay info when a replay is added to the game
   if (beforeId !== afterId && afterId !== undefined) {
