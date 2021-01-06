@@ -41,4 +41,13 @@ export class TournamentService {
               });
         }));
   }
+
+  getTournament(tournamentId: string): Observable<ITournament> {
+    return this.afs.collection('tournaments')
+        .doc<ITournament>(tournamentId)
+        .snapshotChanges()
+        .pipe(map(tournament => {
+          return {...tournament.payload.data(), id: tournament.payload.id};
+        }));
+  }
 }

@@ -1,0 +1,51 @@
+.page-container {
+  display: flex;
+  height: 100%;
+  margin: auto;
+  overflow: hidden;
+
+  .left-panel,
+  .right-panel,
+  .main-panel {
+    padding: 10px;
+    overflow: auto;
+  }
+
+  .left-panel,
+  .right-panel {
+    flex: 1;
+  }
+
+  .main-panel {
+    width: 60%;
+    max-width: 1000px;
+  }
+
+  .left-panel {
+    text-align: right;
+  }
+
+  .right-panel {
+  }
+}
+
+@media(max-width: 1000px) {
+  .page-container {
+    flex-direction: column;
+    height: initial;
+    overflow: initial;
+
+    .left-panel,
+    .right-panel,
+    .main-panel {
+      flex: 1;
+      width: 100%;
+      overflow: initial;
+    }
+
+    .left-panel {
+      text-align: left;
+      order: 2;
+    }
+  }
+}

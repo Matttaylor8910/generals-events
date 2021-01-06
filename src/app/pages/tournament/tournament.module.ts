@@ -1,20 +1,23 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {IonicModule} from '@ionic/angular';
+import {ComponentsModule} from 'src/app/components/components.module';
 
-import { IonicModule } from '@ionic/angular';
-
-import { TournamentPageRoutingModule } from './tournament-routing.module';
-
-import { TournamentPage } from './tournament.page';
+import {TournamentPageRoutingModule} from './tournament-routing.module';
+import {TournamentPage} from './tournament.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    TournamentPageRoutingModule
+    TournamentPageRoutingModule,
+    ComponentsModule,
   ],
-  declarations: [TournamentPage]
+  declarations: [
+    TournamentPage,
+  ]
 })
-export class TournamentPageModule {}
+export class TournamentPageModule {
+}

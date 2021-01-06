@@ -31,6 +31,12 @@
   font-family: 'Quicksand', sans-serif;
 }
 
+ion-header {
+  ion-toolbar {
+    height: 65px;
+  }
+}
+
 ion-title {
   font-weight: bold;
   font-size: 40px;
@@ -46,6 +52,7 @@ ion-title {
 ion-modal {
   ion-header ion-toolbar {
     --background: teal;
+    height: initial;
 
     ion-title {
       text-shadow: 2px 2px #000;

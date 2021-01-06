@@ -1,9 +1,26 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Tournament Detail</ion-title>
+    <ion-title>{{ tournament?.name }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <div class="page-container">
+    <div class="left-panel">
 
+    </div>
+
+    <div class="main-panel">
+      <app-tournament-queue *ngIf="!finished"></app-tournament-queue>
+      <app-tournament-trophies *ngIf="finished"></app-tournament-trophies>
+      <app-tournament-leaderboard></app-tournament-leaderboard>
+      <app-rules></app-rules>
+    </div>
+
+    <div class="right-panel">
+      <app-tournament-player-summary
+        *ngIf="selectedPlayer">
+      </app-tournament-player-summary>
+    </div>
+  </div>
 </ion-content>
