@@ -23,7 +23,7 @@ const tournamentTypes = {
   types = Object.keys(tournamentTypes);
   type = this.types[0];
 
-  date = new DatePipe('en-US').transform(new Date(), 'yyyy-dd-MM');
+  date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
   time = '12:00:00';
 
   duration: number;

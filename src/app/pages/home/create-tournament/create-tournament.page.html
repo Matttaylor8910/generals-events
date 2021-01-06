@@ -1,17 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Create Tournament</ion-title>
+    <ion-title>New Tournament</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="create-tournament">
-    <p>
-      {{ getDate() }}
-    </p>
-    <p>
-      {{ invalid }}
-    </p>
     <label>Type</label>
     <select [(ngModel)]="type" name="type">
       <option [value]="option" *ngFor="let option of types">{{option}}</option>
@@ -42,8 +36,13 @@
       type="tel"
       placeholder="# minutes"
     >
-    <ion-button (click)="create()" [disabled]="invalid">
-      {{ saving ? 'Creating...' : 'Create Tournament' }}
-    </ion-button>
   </div>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button class="generals-button color-secondary" (click)="create()" [disabled]="invalid">
+      {{ saving ? 'Creating...' : 'Create Tournament' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

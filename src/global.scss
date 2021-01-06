@@ -42,3 +42,54 @@ ion-title {
   transition: all .2s ease-in-out;
   color: #fff;
 }
+
+ion-modal {
+  ion-header ion-toolbar {
+    --background: teal;
+
+    ion-title {
+      text-shadow: 2px 2px #000;
+      font-size: 30px;
+    }
+  }
+
+  ion-footer ion-toolbar {
+    --background: #1f2125;
+    text-align: center;
+  }
+}
+
+ion-button.generals-button {
+  --background: #fff;
+  --ion-toolbar-background: teal;
+  --color: teal;
+  box-shadow: 2px 2px teal;
+  margin: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: initial;
+  border: 0;
+  border-width: 0 !important;
+  outline: none !important;
+  transition: all .2s ease-in-out;
+  white-space: nowrap;
+  --border-radius: 1px;
+
+  &.color-secondary {
+    --background: teal;
+    --ion-toolbar-background: #fff;
+    --color: #fff;
+    box-shadow: 2px 2px #000;
+
+    &:hover {
+      cursor: pointer;
+      box-shadow: 3px 3px #000;
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+    background-color: #bbb;
+    box-shadow: 3px 3px teal;
+  }
+}
