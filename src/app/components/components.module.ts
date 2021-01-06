@@ -7,7 +7,6 @@ import {ActionsPopoverComponent} from './actions-popover/actions-popover.compone
 import {GameListItemComponent} from './game-list-item/game-list-item.component';
 import {RulesComponent} from './rules/rules.component';
 import {TimerComponent} from './timer/timer.component';
-import {TournamentLeaderboardPlayerComponent} from './tournament-leaderboard-player/tournament-leaderboard-player.component';
 import {TournamentLeaderboardComponent} from './tournament-leaderboard/tournament-leaderboard.component';
 import {TournamentListItemComponent} from './tournament-list-item/tournament-list-item.component';
 import {TournamentOverviewComponent} from './tournament-overview/tournament-overview.component';
@@ -24,7 +23,6 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
     RulesComponent,
     TimerComponent,
     TournamentLeaderboardComponent,
-    TournamentLeaderboardPlayerComponent,
     TournamentListItemComponent,
     TournamentOverviewComponent,
     TournamentPlayerSummaryComponent,
@@ -44,7 +42,6 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
     RulesComponent,
     TimerComponent,
     TournamentLeaderboardComponent,
-    TournamentLeaderboardPlayerComponent,
     TournamentListItemComponent,
     TournamentOverviewComponent,
     TournamentPlayerSummaryComponent,
