@@ -28,9 +28,9 @@ ion-content {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+    width: 80%;
+    max-width: 800px;
+    margin: auto;
 
     strong {
       font-size: 20px;

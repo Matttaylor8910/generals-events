@@ -1,3 +1,11 @@
-<p>
-  tournament-overview works!
-</p>
+<ion-card class="tournament-overview" (click)="navToTournament()">
+  <ion-card-header>
+    <ion-card-title>
+      <span>{{ tournament.name }}</span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>{{ tournament.startTime | date:'M/d/yyyy'}} at {{ tournament.startTime | date:'h:mm a'}}</p>
+    <p>{{ tournament.type }} arena for {{ duration }}</p>
+  </ion-card-content>
+</ion-card>

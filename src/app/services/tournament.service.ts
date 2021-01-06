@@ -25,18 +25,20 @@ export class TournamentService {
         .collection<ITournament>(
             'tournaments',
             ref => {
-              let query = ref.orderBy('asc');
-
-              if (finished) {
-                query = ref.where('endTime', '!=', null);
-              }
-
-              return query;
+              return ref.where('endTime', finished ? '!=' : '==', null)
+                  .limit(10);
             })
         .snapshotChanges()
-        .pipe(map(actions => {return actions.map(action => {
-                    const {doc} = action.payload;
-                    return {...doc.data(), id: doc.id};
-                  })}));
+        .pipe(map(actions => {
+          return actions
+              .map(action => {
+                const {doc} = action.payload;
+                return {...doc.data(), id: doc.id};
+              })
+              .sort((a, b) => {
+                return finished ? b.endTime - a.endTime :
+                                  a.startTime - b.startTime;
+              });
+        }));
   }
 }

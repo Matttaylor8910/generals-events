@@ -1,3 +1,21 @@
-<p>
-  tournament-list-item works!
-</p>
+<ion-card class="tournament-list-item" (click)="navToTournament()">
+  <ion-card-header>
+    <ion-card-title>
+      <span>{{ tournament.name }}</span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>
+      <span *ngIf="tournament.endTime">Started at</span>
+      {{ tournament.startTime | date:'M/d/yyyy'}} at {{ tournament.startTime | date:'h:mm a'}}
+    </p>
+    <p *ngIf="tournament.endTime">
+      <span>Finished at</span>
+      {{ tournament.endTime | date:'M/d/yyyy'}} at {{ tournament.endTime | date:'h:mm a'}}
+    </p>
+    <p>
+      {{ tournament.type }} arena
+      <span *ngIf="!tournament.endTime">for {{ duration }}</span>
+    </p>
+  </ion-card-content>
+</ion-card>

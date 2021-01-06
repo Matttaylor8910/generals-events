@@ -11,6 +11,22 @@
     <ion-icon name="add"></ion-icon>
   </div>
   <div class="home-container">
+    <!-- in progress or upcoming tournaments -->
+    <ng-container *ngIf="unfinishedTournaments$ | async as unfinished">
+      <h2 *ngIf="unfinished.length">Join a tournament:</h2>
+      <app-tournament-overview
+        *ngFor="let tournament of unfinished"
+        [tournament]="tournament">
+      </app-tournament-overview>
+    </ng-container>
 
+    <!-- finished games -->
+    <ng-container *ngIf="finishedTournaments$ | async as finished">
+      <h3 *ngIf="finished.length">Finished Tournaments</h3>
+      <app-tournament-list-item
+        *ngFor="let tournament of finished"
+        [tournament]="tournament">
+      </app-tournament-list-item>
+    </ng-container>
   </div>
 </ion-content>
