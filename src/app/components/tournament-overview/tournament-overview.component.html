@@ -1,7 +1,11 @@
 <ion-card class="tournament-overview" (click)="navToTournament()">
   <ion-card-header>
-    <ion-card-title>
+    <ion-card-title class="space-between">
       <span>{{ tournament.name }}</span>
+      <span class="player-count">
+        <ion-icon name="people"></ion-icon>
+        {{ tournament.playerCount }}
+      </span>
     </ion-card-title>
   </ion-card-header>
   <ion-card-content>
