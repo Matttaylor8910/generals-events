@@ -1,5 +1,10 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="goHome()">
+        <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>{{ tournament?.name }}</ion-title>
     <ion-buttons slot="end" *ngIf="name">
       <app-actions-popover [actions]="actions"></app-actions-popover>
@@ -15,10 +20,10 @@
     </div>
 
     <div class="main-panel">
-      <app-tournament-queue *ngIf="!finished"></app-tournament-queue>
-      <app-tournament-trophies *ngIf="finished"></app-tournament-trophies>
+      <!-- <app-tournament-queue *ngIf="!finished"></app-tournament-queue> -->
+      <!-- <app-tournament-trophies *ngIf="finished"></app-tournament-trophies> -->
       <app-tournament-leaderboard [tournament]="tournament"></app-tournament-leaderboard>
-      <app-rules></app-rules>
+      <!-- <app-rules></app-rules> -->
     </div>
 
     <div class="right-panel">

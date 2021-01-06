@@ -1,5 +1,5 @@
 import {Component, OnDestroy} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
@@ -28,6 +28,7 @@ export class TournamentPage implements OnDestroy {
   constructor(
       public readonly generals: GeneralsService,
       private readonly route: ActivatedRoute,
+      private readonly router: Router,
       private readonly tournamentService: TournamentService,
   ) {
     this.tournamentId = this.route.snapshot.paramMap.get('id');
@@ -44,6 +45,10 @@ export class TournamentPage implements OnDestroy {
 
   get finished(): boolean {
     return this.tournament && this.tournament.endTime !== null;
+  }
+
+  goHome() {
+    this.router.navigate(['/']);
   }
 
   ngOnDestroy() {
