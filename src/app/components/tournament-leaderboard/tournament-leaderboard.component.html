@@ -1,3 +1,40 @@
-<p>
-  tournament-leaderboard works!
-</p>
+<table>
+  <tr class="table-header">
+    <th colspan="5">
+      <div class="header-container">
+        <div class="page-control">
+          <ion-button size="small" fill="clear" color="dark" [disabled]="!canPrev" (click)="prev()">
+            <ion-icon slot="icon-only" name="play-skip-back"></ion-icon>
+          </ion-button>
+          <div>{{ pageControlText }}</div>
+          <ion-button size="small" fill="clear" color="dark" [disabled]="!canNext" (click)="next()">
+            <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
+          </ion-button>
+        </div>
+        <ng-container *ngIf="players">
+          <ion-button size="small" fill="clear" color="dark" (click)="join()" *ngIf="canJoin">
+            <ion-icon name="play"></ion-icon>
+            Join
+          </ion-button>
+          <ion-button size="small" fill="clear" color="dark" (click)="leave()" *ngIf="canLeave">
+            <ion-icon name="exit"></ion-icon>
+            Leave
+          </ion-button>
+        </ng-container>
+      </div>
+    </th>
+  </tr>
+  <tr [class.highlight]="player.name === name" *ngFor="let player of visible">
+    <td class="you-marker"><!-- only highlighted when this is you --></td>
+    <td class="rank">{{ player.rank }}</td>
+    <td class="name">
+      <a (click)="generals.goToProfile(player.name)">{{ player.name }}</a>
+    </td>
+    <td class="record">
+      <span *ngFor="let game of player.record">
+        {{ game.points }}
+      </span>
+    </td>
+    <td class="points">{{ player.points }}</td>
+  </tr>
+</table>

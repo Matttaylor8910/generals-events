@@ -67,9 +67,9 @@ ion-modal {
 }
 
 ion-button.generals-button {
-  --background: #fff;
-  --ion-toolbar-background: teal;
-  --color: teal;
+  --background: #fff !important;
+  --ion-toolbar-background: teal !important;
+  --color: teal !important;
   box-shadow: 2px 2px teal;
   margin: 10px;
   font-size: 18px;
@@ -83,9 +83,9 @@ ion-button.generals-button {
   --border-radius: 1px;
 
   &.color-secondary {
-    --background: teal;
-    --ion-toolbar-background: #fff;
-    --color: #fff;
+    --background: teal !important;
+    --ion-toolbar-background: #fff !important;
+    --color: #fff !important;
     box-shadow: 2px 2px #000;
 
     &:hover {
@@ -99,4 +99,27 @@ ion-button.generals-button {
     background-color: #bbb;
     box-shadow: 3px 3px teal;
   }
+}
+
+.empty-container,
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  min-height: 100px;
+  font-size: 20px;
+}
+
+.space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+a {
+  color: #fff;
+  cursor: pointer;
 }

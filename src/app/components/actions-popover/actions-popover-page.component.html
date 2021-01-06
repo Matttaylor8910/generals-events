@@ -1,0 +1,9 @@
+<ion-list>
+  <ion-item button
+    (click)="popoverController.dismiss(action)"
+    *ngFor="let action of actions"
+  >
+    <ion-icon [name]="action.icon" slot="start" *ngIf="action.icon"></ion-icon>
+    {{action.label}}
+  </ion-item>
+</ion-list>

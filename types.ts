@@ -13,15 +13,16 @@ export interface ITournament {
   endTime: number;          // unix timestamp of end of tournament
   durationMinutes: number;  // # of minutes the tournament should go
   playersPerGame:
-      number;       // number of players to wait for before starting a game
-  queue: string[];  // player names in the queue, server will start games
-  id?: string;      // client field
+      number;           // number of players to wait for before starting a game
+  queue: string[];      // player names in the queue, server will start games
+  playerCount: number;  // total players in the tournament
+  id?: string;          // client field
 }
 
 // the items to be shown in the leaderboard list
 // located at /tournaments/:id/players
 export interface ILeaderboardPlayer {
-  name: string;           // generals.io username
+  name: string;           // generals.io username, will also be the id
   rank: number;           // the person with the most points, show ties
   points: number;         // start at 0
   currentStreak: number;  // start at 0, potentially used to determine bonus for

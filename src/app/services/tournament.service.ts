@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {ITournament} from 'types';
+import {ILeaderboardPlayer, ITournament} from 'types';
 
 @Injectable({providedIn: 'root'})
 export class TournamentService {
@@ -16,6 +16,7 @@ export class TournamentService {
       queue: [],
       startTime: null,
       endTime: null,
+      playerCount: 0,
       ...tournament,
     });
   }
@@ -48,6 +49,51 @@ export class TournamentService {
         .snapshotChanges()
         .pipe(map(tournament => {
           return {...tournament.payload.data(), id: tournament.payload.id};
+        }));
+  }
+
+  addPlayer(tournamentId: string, name: string) {
+    return this.afs.collection('tournaments')
+        .doc(tournamentId)
+        .collection<ILeaderboardPlayer>('players')
+        .doc(name)
+        .set({name, rank: 0, points: 0, currentStreak: 0, record: []});
+  }
+
+  removePlayer(tournamentId: string, name: string) {
+    return this.afs.collection('tournaments')
+        .doc(tournamentId)
+        .collection<ILeaderboardPlayer>('players')
+        .doc(name)
+        .delete();
+  }
+
+  getPlayers(tournamentId: string): Observable<ILeaderboardPlayer[]> {
+    return this.afs.collection('tournaments')
+        .doc(tournamentId)
+        .collection<ILeaderboardPlayer>(
+            'players', ref => ref.orderBy('points', 'desc').orderBy('name'))
+        .snapshotChanges()
+        .pipe(map(actions => {
+          const players = actions.map(action => {
+            return action.payload.doc.data();
+          });
+
+          let rank = 0;
+          let gap = 1;
+          let lastPoints = -1;
+          for (const player of players) {
+            if (lastPoints !== player.points) {
+              rank += gap;
+              gap = 1;
+            } else {
+              gap++;
+            }
+            player.rank = rank;
+            lastPoints = player.points;
+          }
+
+          return players;
         }));
   }
 }

@@ -1,0 +1,58 @@
+table {
+  width: 100%;
+
+  .table-header {
+    background: teal;
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 36px;
+
+      .page-control {
+        display: flex;
+        align-items: center;
+
+        ion-button {
+          margin: 0 10px;
+          width: 40px;
+        }
+      }
+    }
+  }
+
+  tr {
+    background: #333;
+
+    &:nth-child(even) {
+      background: #555;
+    }
+
+    td {
+      padding: 10px;
+    }
+
+    .you-marker {
+      width: 8px;
+      padding: 0;
+    }
+
+    .rank {
+      width: 20px;
+    }
+
+    .record {
+      text-align: right;
+    }
+
+    .points {
+      width: 100px;
+      text-align: right;
+    }
+
+    &.highlight .you-marker {
+      background: purple;
+    }
+  }
+}

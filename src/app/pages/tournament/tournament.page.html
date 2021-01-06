@@ -1,11 +1,15 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>{{ tournament?.name }}</ion-title>
+    <ion-buttons slot="end" *ngIf="name">
+      <app-actions-popover [actions]="actions"></app-actions-popover>
+      <ion-button class="generals-button color-secondary" (click)="generals.goToProfile(name)">{{ name }}</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="page-container">
+  <div class="page-container" *ngIf="tournament; else loading">
     <div class="left-panel">
 
     </div>
@@ -13,7 +17,7 @@
     <div class="main-panel">
       <app-tournament-queue *ngIf="!finished"></app-tournament-queue>
       <app-tournament-trophies *ngIf="finished"></app-tournament-trophies>
-      <app-tournament-leaderboard></app-tournament-leaderboard>
+      <app-tournament-leaderboard [tournament]="tournament"></app-tournament-leaderboard>
       <app-rules></app-rules>
     </div>
 
@@ -24,3 +28,9 @@
     </div>
   </div>
 </ion-content>
+
+<ng-template #loading>
+  <div class="spinner-container">
+    <ion-spinner></ion-spinner>
+  </div>
+</ng-template>
