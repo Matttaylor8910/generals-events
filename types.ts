@@ -1,4 +1,4 @@
-import {GeneralsServer} from 'servers';
+import {GeneralsServer} from './servers';
 
 export enum TournamentType {
   FFA = 'FFA',

@@ -21,8 +21,9 @@ export class TournamentPage implements OnDestroy {
   // TODO: show the player summary when a player is selected
   selectedPlayer: ILeaderboardPlayer;
 
-  actions: IPopoverAction[] =
-      [{label: 'Logout', onClick: () => this.generals.logout()}];
+  actions: IPopoverAction[] = [
+    {label: 'Logout', onClick: () => this.generals.logout(this.tournamentId)}
+  ];
 
   constructor(
       public readonly generals: GeneralsService,

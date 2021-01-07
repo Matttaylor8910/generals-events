@@ -1,5 +1,6 @@
 import {EventEmitter, Injectable} from '@angular/core';
-import {GeneralsServer, SITE_URLS} from 'servers';
+import {GeneralsServer, SITE_URLS} from '../../../servers';
+import {TournamentService} from './tournament.service';
 
 const GENERALS_NAME = 'generals-name';
 @Injectable({providedIn: 'root'})
@@ -7,7 +8,9 @@ export class GeneralsService {
   name = localStorage.getItem(GENERALS_NAME);
   nameChanged$ = new EventEmitter();
 
-  constructor() {}
+  constructor(
+      private readonly tournamentService: TournamentService,
+  ) {}
 
   goToProfile(name: string, server = GeneralsServer.NA) {
     window.open(
@@ -28,7 +31,11 @@ export class GeneralsService {
     this.nameChanged$.emit();
   }
 
-  logout() {
+  logout(tournamentId: string) {
+    if (tournamentId && this.name) {
+      this.tournamentService.removePlayer(tournamentId, this.name);
+    }
+
     localStorage.removeItem(GENERALS_NAME);
     delete this.name;
     this.nameChanged$.emit();

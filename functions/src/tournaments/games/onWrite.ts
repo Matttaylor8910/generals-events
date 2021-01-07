@@ -38,8 +38,9 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
     console.log(`tracked replays for ${tournamentSnap.id}:`, trackedReplays);
 
     // for each player, request their latest replay
-    const replayPromises: Promise<IGeneralsReplay>[] =
-        players.map((player: string) => getLastReplayForUsername(player));
+    const replayPromises: Promise<IGeneralsReplay>[] = players.map(
+        (player: string) =>
+            getLastReplayForUsername(player, tournament.server));
 
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
