@@ -15,6 +15,7 @@ export class TournamentService {
     return this.afs.collection('tournaments').add({
       name: 'New Tournament',
       queue: [],
+      replays: [],
       startTime: null,
       endTime: null,
       playerCount: 0,

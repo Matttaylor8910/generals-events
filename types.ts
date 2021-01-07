@@ -21,6 +21,7 @@ export interface ITournament {
       number;           // number of players to wait for before starting a game
   queue: string[];      // player names in the queue, server will start games
   playerCount: number;  // total players in the tournament
+  replays: string[];    // a list of all replays that are tracked so far
   id?: string;          // client field
 }
 
@@ -40,10 +41,12 @@ export interface ILeaderboardPlayer {
 // a game that was played during a tournament
 // located at /tournaments/:id/games
 export interface IGame {
-  started: number;     // unix timestamp of start of the game
-  players: string[];   // a list of the players in a game, ordered by points
-  status: GameStatus;  // the current status of the game
-  replayId?: string;   // replay id from generals api response
+  started: number;       // unix timestamp of start of the game
+  players: string[];     // a list of the players in a game, ordered by points
+  status: GameStatus;    // the current status of the game
+  lastChecked?: number;  // just some metadata for the last time a game was
+                         // checked to see if there was a replay
+  replayId?: string;     // replay id from generals api response
   replay?: IGameReplay;
 }
 
@@ -78,8 +81,8 @@ export interface IPlayerHistoryRecord {
                       // timestamp of the last game this player played in
 }
 
-// the game object from the generals.io api
-export interface IGeneralsGame {
+// the replay object from the generals.io api
+export interface IGeneralsReplay {
   type: '1v1'|'2v2'|'classic'|'custom';
   id: string;
   started: number;
