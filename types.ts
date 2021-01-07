@@ -1,3 +1,5 @@
+import {GeneralsServer} from 'servers';
+
 export enum TournamentType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
@@ -22,7 +24,8 @@ export interface ITournament {
   queue: string[];      // player names in the queue, server will start games
   playerCount: number;  // total players in the tournament
   replays: string[];    // a list of all replays that are tracked so far
-  id?: string;          // client field
+  server?: GeneralsServer;  // optional server override
+  id?: string;              // client field
 }
 
 // the items to be shown in the leaderboard list

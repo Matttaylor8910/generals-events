@@ -1,5 +1,6 @@
 import {default as http} from 'axios';
 
+import {GeneralsServer, SITE_URLS} from '../../../servers';
 import {IGeneralsReplay} from '../../../types';
 
 export function getLastReplayForUsername(name: string):
@@ -11,8 +12,9 @@ export function getReplaysForUsername(
     name: string,
     offset: number,
     count: number,
+    server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
-  const url = `http://generals.io/api/replaysForUsername?u=${name}&offset=${
+  const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${name}&offset=${
       offset}&count=${count}`;
   return http.get(url).then((response: {data: IGeneralsReplay[]}) => {
     return response.data;

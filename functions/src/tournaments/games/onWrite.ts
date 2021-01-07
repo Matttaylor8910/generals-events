@@ -82,7 +82,8 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
       console.log(`committing ${most.replayId}`);
 
       // pull down the replay and save it
-      const replay = await simulator.getReplay(most.replayId);
+      const replay =
+          await simulator.getReplay(most.replayId, tournament.server);
       batch.update(snapshot.ref, {
         replay,
         replayId: most.replayId,

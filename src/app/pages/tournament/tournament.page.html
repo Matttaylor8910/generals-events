@@ -8,7 +8,10 @@
     <ion-title>{{ tournament?.name }}</ion-title>
     <ion-buttons slot="end" *ngIf="generals.name">
       <app-actions-popover [actions]="actions"></app-actions-popover>
-      <ion-button class="generals-button color-secondary" (click)="generals.goToProfile(generals.name)">
+      <ion-button
+        class="generals-button color-secondary"
+        (click)="generals.goToProfile(generals.name, tournament?.server)"
+      >
         {{ generals.name }}
       </ion-button>
     </ion-buttons>

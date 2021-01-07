@@ -34,10 +34,14 @@
     <td class="you-marker"><!-- only highlighted when this is you --></td>
     <td class="rank">{{ player.rank }}</td>
     <td class="name">
-      <a (click)="generals.goToProfile(player.name)">{{ player.name }}</a>
+      <a (click)="generals.goToProfile(player.name, tournament?.server)">{{ player.name }}</a>
     </td>
     <td class="record">
-      <span *ngFor="let game of player.record">
+      <span
+        class="game"
+        *ngFor="let game of player.record"
+        (click)="generals.goToReplay(game.replayId, tournament?.server)"
+      >
         {{ game.points }}
       </span>
     </td>

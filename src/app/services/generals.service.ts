@@ -1,4 +1,5 @@
 import {EventEmitter, Injectable} from '@angular/core';
+import {GeneralsServer, SITE_URLS} from 'servers';
 
 const GENERALS_NAME = 'generals-name';
 @Injectable({providedIn: 'root'})
@@ -8,12 +9,17 @@ export class GeneralsService {
 
   constructor() {}
 
-  goToProfile(name: string) {
-    window.open(`http://generals.io/profiles/${encodeURIComponent(name)}`);
+  goToProfile(name: string, server = GeneralsServer.NA) {
+    window.open(
+        `${SITE_URLS[server]}/profiles/${encodeURIComponent(name)}`, '_blank');
   }
 
-  joinLobby(name: string) {
-    window.open(`http://generals.io/games/${name}`);
+  goToReplay(replayId: string, server = GeneralsServer.NA) {
+    window.open(`${SITE_URLS[server]}/replays/${replayId}`, '_blank');
+  }
+
+  joinLobby(name: string, server = GeneralsServer.NA) {
+    location.href = `${SITE_URLS[server]}/games/${name}`, '_blank';
   }
 
   setName(name: string) {
