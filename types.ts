@@ -3,6 +3,11 @@ export enum TournamentType {
   ONE_VS_ONE = '1v1',
 }
 
+export enum GameStatus {
+  STARTED = 'STARTED',
+  FINISHED = 'FINISHED',
+}
+
 // the tournament object
 // let's design for the ability to have multiple tournaments happening
 // simultaneously located at /tournaments/:id
@@ -35,10 +40,16 @@ export interface ILeaderboardPlayer {
 // a game that was played during a tournament
 // located at /tournaments/:id/games
 export interface IGame {
-  type: string;            // game type from generals api response
-  replayId: string;        // replay id from generals api response
-  started: number;         // unix timestamp of start of the game
-  players: IGamePlayer[];  // a list of the players in a game, ordered by points
+  started: number;     // unix timestamp of start of the game
+  players: string[];   // a list of the players in a game, ordered by points
+  status: GameStatus;  // the current status of the game
+  replayId?: string;   // replay id from generals api response
+  replay?: IGameReplay;
+}
+
+export interface IGameReplay {
+  scores: IGamePlayer[];
+  summary: string[];
 }
 
 export interface IGamePlayer {

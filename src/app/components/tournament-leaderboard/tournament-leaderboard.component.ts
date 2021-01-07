@@ -63,11 +63,7 @@ export class TournamentLeaderboardComponent {
   }
 
   get canLeave() {
-    return this.inTournament && this.name;
-  }
-
-  get name() {
-    return localStorage.getItem('generals-name');
+    return this.inTournament && this.generals.name;
   }
 
   prev() {
@@ -85,7 +81,7 @@ export class TournamentLeaderboardComponent {
   }
 
   async join() {
-    let name = this.name;
+    let name = this.generals.name;
 
     // if no name is set, prompt for it
     if (!name) {
@@ -101,7 +97,7 @@ export class TournamentLeaderboardComponent {
   }
 
   async leave() {
-    this.tournamentService.removePlayer(this.tournament.id, this.name);
+    this.tournamentService.removePlayer(this.tournament.id, this.generals.name);
   }
 
   async promptForName(): Promise<string> {
@@ -124,13 +120,13 @@ export class TournamentLeaderboardComponent {
           return alert(`${name} is already in this tournament!`);
         }
 
-        localStorage.setItem('generals-name', name);
+        this.generals.setName(name);
       }
       return name;
     });
   }
 
   determineInTournament() {
-    this.inTournament = !!this.players.find(p => p.name === this.name);
+    this.inTournament = !!this.players.find(p => p.name === this.generals.name);
   }
 }

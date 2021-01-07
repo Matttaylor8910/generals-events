@@ -1,3 +1,9 @@
+<app-tournament-queue
+  [tournament]="tournament"
+  [notJoined]="canJoin"
+  *ngIf="!tournament?.endTime">
+</app-tournament-queue>
+
 <table>
   <tr class="table-header">
     <th colspan="5">
@@ -24,7 +30,7 @@
       </div>
     </th>
   </tr>
-  <tr [class.highlight]="player.name === name" *ngFor="let player of visible">
+  <tr [class.highlight]="player.name === generals.name" *ngFor="let player of visible">
     <td class="you-marker"><!-- only highlighted when this is you --></td>
     <td class="rank">{{ player.rank }}</td>
     <td class="name">

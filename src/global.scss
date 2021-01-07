@@ -90,13 +90,14 @@ ion-button.generals-button {
 
     &:hover {
       cursor: pointer;
+      opacity: initial;
       box-shadow: 3px 3px #000;
     }
   }
 
   &:hover {
     cursor: pointer;
-    background-color: #bbb;
+    opacity: .9;
     box-shadow: 3px 3px teal;
   }
 }

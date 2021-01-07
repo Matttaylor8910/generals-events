@@ -1,3 +1,8 @@
-<p>
-  tournament-queue works!
-</p>
+<div class="tournament-queue space-between" [class.joined]="inQueue">
+  <div class="message">
+    {{ message }}
+  </div>
+  <ion-button class="generals-button" (click)="toggleQueue()" [disabled]="notJoined">
+    {{ inQueue ? 'Leave' : 'Join' }} Queue
+  </ion-button>
+</div>

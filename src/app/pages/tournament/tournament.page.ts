@@ -21,9 +21,8 @@ export class TournamentPage implements OnDestroy {
   // TODO: show the player summary when a player is selected
   selectedPlayer: ILeaderboardPlayer;
 
-  actions: IPopoverAction[] = [
-    {label: 'Logout', onClick: () => localStorage.removeItem('generals-name')}
-  ];
+  actions: IPopoverAction[] =
+      [{label: 'Logout', onClick: () => this.generals.logout()}];
 
   constructor(
       public readonly generals: GeneralsService,
@@ -37,10 +36,6 @@ export class TournamentPage implements OnDestroy {
         .subscribe(tournament => {
           this.tournament = tournament;
         });
-  }
-
-  get name() {
-    return localStorage.getItem('generals-name');
   }
 
   get finished(): boolean {
