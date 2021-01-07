@@ -4,7 +4,7 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {IGamePlayerRecord, ILeaderboardPlayer, ITournament} from 'types';
+import {ILeaderboardPlayer, ITournament} from 'types';
 
 @Component({
   selector: 'app-tournament-leaderboard',
