@@ -16,38 +16,10 @@ const db = admin.firestore();
 export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
-          await checkReplay(gameDoc.before, gameDoc.after);
+          // await checkReplay(gameDoc.before, gameDoc.after);
           await lookForFinishedGame(gameDoc.after);
           return 'Done';
         });
-
-async function checkReplay(before: DocumentSnapshot, after: DocumentSnapshot) {
-  const {replayId: beforeId} = before.data() || {} as IGame;
-  const {replayId: afterId} = after.data() || {} as IGame;
-
-  // get the replay info when a replay is added to the game
-  if (beforeId !== afterId && afterId !== undefined) {
-    const replay = await simulator.getReplay(afterId);
-    const batch = db.batch();
-    batch.update(after.ref, {replay, status: GameStatus.FINISHED});
-    const tournamentRef = after.ref.parent.parent!;
-    for (const player of replay.scores) {
-      const winner = player.rank === 1;
-      // TODO: safety around players not existing yet?
-      batch.update(tournamentRef.collection('players').doc(player.name), {
-        points: admin.firestore.FieldValue.increment(player.points),
-        currentStreak: winner ? admin.firestore.FieldValue.increment(1) : 0,
-        record: admin.firestore.FieldValue.arrayUnion({
-          replayId: afterId,
-          points: player.points,
-          onStreak: false,  // TODO: support streaks?
-          win: winner,
-        }),
-      });
-    }
-    await batch.commit();
-  }
-}
 
 async function lookForFinishedGame(snapshot: DocumentSnapshot) {
   const game = snapshot.data() || {} as IGame;
@@ -64,13 +36,10 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
     const trackedReplays = tournament.replays || [];
 
     console.log(`tracked replays for ${tournamentSnap.id}:`, trackedReplays);
-    console.log('getting replays');
 
     // for each player, request their latest replay
     const replayPromises: Promise<IGeneralsReplay>[] =
         players.map((player: string) => getLastReplayForUsername(player));
-
-    console.log('waiting for all promises');
 
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
@@ -91,8 +60,6 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
           replayCounts.set(replayId, (replayCounts.get(replayId) || 0) + 1);
         });
 
-    console.log(replayCounts);
-
     // determine which replay has the most shared players
     let most = {count: 0, replayId: ''};
     for (const entry of replayCounts.entries()) {
@@ -108,13 +75,32 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
     // game, and we have not tracked it already, count the game
     if (most.count > players.length / 2) {
       const batch = db.batch();
-      batch.update(snapshot.ref, {replayId: most.replayId});
       batch.update(tournamentSnap.ref, {
         replays: admin.firestore.FieldValue.arrayUnion(most.replayId),
       });
-      await batch.commit();
 
       console.log(`committing ${most.replayId}`);
+
+      // pull down the replay and save it
+      const replay = await simulator.getReplay(most.replayId);
+      batch.update(snapshot.ref, {
+        replay,
+        replayId: most.replayId,
+        status: GameStatus.FINISHED,
+      });
+
+      // update each of the player's leaderboard item
+      for (const player of replay.scores) {
+        const recordId = `${snapshot.id}_${player.name}`;
+        batch.create(tournamentSnap.ref.collection('records').doc(recordId), {
+          name: player.name,
+          replayId: most.replayId,
+          points: player.points,
+          win: player.rank === 1,
+        });
+      }
+
+      await batch.commit();
       return;
     }
 

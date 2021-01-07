@@ -73,13 +73,17 @@ export interface IGamePlayer {
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
 export interface IPlayerHistoryRecord {
-  name: string;           // generals.io username
-  tournamentId: string;   // id of the tournament
-  currentStreak: number;  // current streak
-  bestStreak: number;     // best streak
-  points: number;         // current points
-  timestamp: number;  // unix timestamp of this record, should be the started
-                      // timestamp of the last game this player played in
+  // name: string;           // generals.io username
+  // currentStreak: number;  // current streak
+  // bestStreak: number;     // best streak
+  // points: number;         // current points
+  // timestamp: number;  // unix timestamp of this record, should be the started
+  //                     // timestamp of the last game this player played in
+
+  name: string;
+  replayId: string;
+  points: number;
+  win: boolean;
 }
 
 // the replay object from the generals.io api
