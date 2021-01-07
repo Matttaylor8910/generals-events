@@ -1,9 +1,12 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import {user} from 'firebase-functions/lib/providers/auth';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
+import {flatten} from 'lodash';
 
+import {GeneralsServer} from '../../../../servers';
 import {GameStatus, IGame, IGeneralsReplay, ITournament} from '../../../../types';
-import {getLastReplayForUsername} from '../../util/api';
+import {getReplaysForUsername} from '../../util/api';
 import * as simulator from '../../util/simulator';
 
 try {
@@ -16,13 +19,12 @@ const db = admin.firestore();
 export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
-          // await checkReplay(gameDoc.before, gameDoc.after);
           await lookForFinishedGame(gameDoc.after);
           return 'Done';
         });
 
 async function lookForFinishedGame(snapshot: DocumentSnapshot) {
-  const game = snapshot.data() || {} as IGame;
+  const game = (snapshot.data() || {}) as IGame;
   const {players} = game;
   const timesChecked = game.timesChecked || 0;
   const TWENTY_MINUTES = 120;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
@@ -32,83 +34,136 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
   if (!game.replayId && players?.length && timesChecked < TWENTY_MINUTES) {
     // get list of tracked replays for a tournament
     const tournamentSnap = await snapshot.ref.parent.parent!.get();
-    const tournament = tournamentSnap.data() || {} as ITournament;
+    const tournament = (tournamentSnap.data() || {}) as ITournament;
     const trackedReplays = tournament.replays || [];
 
     console.log(`tracked replays for ${tournamentSnap.id}:`, trackedReplays);
 
-    // for each player, request their latest replay
-    const replayPromises: Promise<IGeneralsReplay>[] = players.map(
-        (player: string) =>
-            getLastReplayForUsername(player, tournament.server));
-
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
-    const replays: IGeneralsReplay[] = await Promise.all(replayPromises);
+    const replayIds = await getReplayIdsForPlayers(
+        players,
+        tournament.replays,
+        game.started,
+        tournament.server,
+    );
 
-    // build up a map of the present replayIds and their counts
-    const replayCounts = new Map<string, number>();
-    console.log(`loaded ${replays.length} replays`);
-    replays
-        .filter(replay => {
-          // replays must exist, not already be tracked, and have to start
-          // after this game was created in the database
-          return replay && !trackedReplays.includes(replay.id) &&
-              replay.started > game.started;
-        })
-        .map(replay => replay.id)
-        .forEach(replayId => {
-          replayCounts.set(replayId, (replayCounts.get(replayId) || 0) + 1);
-        });
+    const {count, replayId} = getMostPrevalentReplay(replayIds);
+    console.log(
+        `${replayId} is shared by ${count} of the ${players.length} players`);
 
-    // determine which replay has the most shared players
-    let most = {count: 0, replayId: ''};
-    for (const entry of replayCounts.entries()) {
-      const [replayId, count] = entry;
-      if (count > most.count) {
-        most = {count, replayId};
-      }
+    if (count > players.length / 2) {
+      // if over half (but not exactly half) of the og players were in this
+      // game, and we have not tracked it already, count the game
+      await saveReplayToGame(
+          replayId,
+          snapshot,
+          tournamentSnap.ref,
+          tournament.server,
+      );
+    } else {
+      // otherwise, gotta keep looking, start in 10 seconds
+      await keepLookingIn10Seconds(snapshot);
     }
-    console.log(`${most.replayId} is shared by ${most.count} of the ${
-        players.length} players`);
-
-    // if over half (but not exactly half) of the og players were in this
-    // game, and we have not tracked it already, count the game
-    if (most.count > players.length / 2) {
-      const batch = db.batch();
-      batch.update(tournamentSnap.ref, {
-        replays: admin.firestore.FieldValue.arrayUnion(most.replayId),
-      });
-
-      console.log(`committing ${most.replayId}`);
-
-      // pull down the replay and save it
-      const replay =
-          await simulator.getReplay(most.replayId, tournament.server);
-      batch.update(snapshot.ref, {
-        replay,
-        replayId: most.replayId,
-        status: GameStatus.FINISHED,
-      });
-
-      // update each of the player's leaderboard item
-      for (const player of replay.scores) {
-        const recordId = `${snapshot.id}_${player.name}`;
-        batch.create(tournamentSnap.ref.collection('records').doc(recordId), {
-          name: player.name,
-          replayId: most.replayId,
-          points: player.points,
-          win: player.rank === 1,
-        });
-      }
-
-      await batch.commit();
-      return;
-    }
-
-    // if we made it this far, gotta keep looking, start in 10 seconds
-    await keepLookingIn10Seconds(snapshot);
   }
+}
+
+/**
+ * Given the list of usernames, get the last 10 replays for each of them, and
+ * then return a list of the replayIds for the replays that:
+ * 1) aren't already tracked on this tournament
+ * 2) started after this lobby was created
+ * 3) the replay has <= the # of usernames in this game
+ *
+ * @param usernames
+ * @param trackedReplays
+ * @param gameStarted
+ * @param server
+ */
+async function getReplayIdsForPlayers(
+    usernames: string[],
+    trackedReplays: string[],
+    gameStarted: number,
+    server = GeneralsServer.NA,
+    ): Promise<string[]> {
+  // for each player, request their latest 10 replays
+  const replayPromises: Promise<IGeneralsReplay[]>[] =
+      usernames.map(name => getReplaysForUsername(name, 0, 10, server));
+
+  // wait for all requests to come back
+  const replays = await Promise.all(replayPromises);
+
+  return flatten(replays)
+      .filter(replay => {
+        // replays must exist, not already be tracked, and have to start
+        // after this game was created in the database
+        return replay && !trackedReplays.includes(replay.id) &&
+            replay.started > gameStarted &&
+            replay.ranking.length <= usernames.length;
+      })
+      .map(replay => replay.id);
+}
+
+/**
+ * Given a list of ids for replays for the players in this game, return the
+ * replayId that is most prevalent in this list, along with the number of times
+ * it is seen
+ * @param replayIds
+ */
+function getMostPrevalentReplay(replayIds: string[]):
+    {count: number, replayId: string} {
+  // build up a map of the present replayIds and their counts
+  const replayCounts = new Map<string, number>();
+  console.log(`loaded ${replayIds.length} replays`);
+  replayIds.forEach(replayId => {
+    replayCounts.set(replayId, (replayCounts.get(replayId) || 0) + 1);
+  });
+
+  // determine which replay has the most shared players
+  let most = {count: 0, replayId: ''};
+  for (const entry of replayCounts.entries()) {
+    const [replayId, count] = entry;
+    if (count > most.count) {
+      most = {count, replayId};
+    }
+  }
+
+  return most;
+}
+
+async function saveReplayToGame(
+    replayId: string,
+    gameSnapshot: DocumentSnapshot,
+    tournamentRef: admin.firestore.DocumentReference,
+    server = GeneralsServer.NA,
+    ): Promise<void> {
+  const batch = db.batch();
+  batch.update(tournamentRef, {
+    replays: admin.firestore.FieldValue.arrayUnion(replayId),
+  });
+
+  console.log(`committing ${replayId}`);
+
+  // pull down the replay and save it
+  const replay = await simulator.getReplay(replayId, server);
+  batch.update(gameSnapshot.ref, {
+    replay,
+    replayId,
+    status: GameStatus.FINISHED,
+  });
+
+  // update each of the player's leaderboard item
+  for (const player of replay.scores) {
+    const recordId = `${gameSnapshot.id}_${player.name}`;
+    batch.create(tournamentRef.collection('records').doc(recordId), {
+      replayId,
+      name: player.name,
+      points: player.points,
+      win: player.rank === 1,
+    });
+  }
+
+  await batch.commit();
 }
 
 function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
