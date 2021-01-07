@@ -25,7 +25,7 @@ table {
   tr {
     background: #333;
 
-    &:nth-child(even) {
+    &.even {
       background: #555;
     }
 
@@ -36,6 +36,10 @@ table {
     .you-marker {
       width: 8px;
       padding: 0;
+
+      &.highlight {
+        background: purple;
+      }
     }
 
     .rank {
@@ -57,15 +61,26 @@ table {
     }
 
     .points {
-      width: 120px;
+      width: 15%;
       text-align: right;
       font-weight: bold;
       font-size: 16px;
       padding-right: 16px;
     }
 
-    &.highlight .you-marker {
-      background: purple;
+    &.small-devices {
+      display: none;
+    }
+  }
+}
+
+@media(max-width: 500px) {
+  table {
+    tr:not(.small-devices) .record .game {
+      display: none;
+    }
+    tr.small-devices {
+      display: table-row;
     }
   }
 }

@@ -30,21 +30,38 @@
       </div>
     </th>
   </tr>
-  <tr [class.highlight]="player.name === generals.name" *ngFor="let player of visible">
-    <td class="you-marker"><!-- only highlighted when this is you --></td>
-    <td class="rank">{{ player.rank }}</td>
-    <td class="name">
-      <a (click)="generals.goToProfile(player.name, tournament?.server)">{{ player.name }}</a>
-    </td>
-    <td class="record">
-      <span
+  <ng-container *ngFor="let player of visible; let i = index">
+    <tr [class.even]="i % 2 === 0">
+      <td class="you-marker" [class.highlight]="player.name === generals.name"></td>
+      <td class="rank">{{ player.rank }}</td>
+      <td class="name">
+        <a (click)="generals.goToProfile(player.name, tournament?.server)">{{ player.name }}</a>
+      </td>
+      <td class="record">
+        <span
+          class="game"
+          *ngFor="let game of player.record"
+          (click)="generals.goToReplay(game.replayId, tournament?.server)"
+        >
+          {{ game.points }}
+        </span>
+      </td>
+      <td class="points">
+        <span *ngIf="player.currentStreak > 2">🔥</span>
+        {{ player.points }}
+      </td>
+    </tr>
+    <tr [class.even]="i % 2 === 0" class="small-devices">
+      <td class="you-marker" [class.highlight]="player.name === generals.name"></td>
+      <td class="record" colspan="5">
+        <span
         class="game"
         *ngFor="let game of player.record"
         (click)="generals.goToReplay(game.replayId, tournament?.server)"
       >
         {{ game.points }}
       </span>
-    </td>
-    <td class="points">{{ player.points }}</td>
-  </tr>
+      </td>
+    </tr>
+  </ng-container>
 </table>
