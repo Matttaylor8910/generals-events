@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 
-import {IGame, IGeneralsReplay, ITournament} from '../../../../types';
+import {GameStatus, IGame, IGeneralsReplay, ITournament} from '../../../../types';
 import {getLastReplayForUsername} from '../../util/api';
 import * as simulator from '../../util/simulator';
 
@@ -11,6 +11,7 @@ try {
 } catch (e) {
   console.log(e);
 }
+const db = admin.firestore();
 
 export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
@@ -27,18 +28,36 @@ async function checkReplay(before: DocumentSnapshot, after: DocumentSnapshot) {
   // get the replay info when a replay is added to the game
   if (beforeId !== afterId && afterId !== undefined) {
     const replay = await simulator.getReplay(afterId);
-    await after.ref.update({replay});
-    // TODO: add the latest scores to each of the players
+    const batch = db.batch();
+    batch.update(after.ref, {replay, status: GameStatus.FINISHED});
+    const tournamentRef = after.ref.parent.parent!;
+    for (const player of replay.scores) {
+      const winner = player.rank === 1;
+      // TODO: safety around players not existing yet?
+      batch.update(tournamentRef.collection('players').doc(player.name), {
+        points: admin.firestore.FieldValue.increment(player.points),
+        currentStreak: winner ? admin.firestore.FieldValue.increment(1) : 0,
+        record: admin.firestore.FieldValue.arrayUnion({
+          replayId: afterId,
+          points: player.points,
+          onStreak: false,  // TODO: support streaks?
+          win: winner,
+        }),
+      });
+    }
+    await batch.commit();
   }
 }
 
 async function lookForFinishedGame(snapshot: DocumentSnapshot) {
   const game = snapshot.data() || {} as IGame;
   const {players} = game;
+  const timesChecked = game.timesChecked || 0;
+  const TWENTY_MINUTES = 120;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
 
   // if we have a game with some players, and we haven't set a replayId yet,
   // find games for these players
-  if (!game.replayId && players?.length) {
+  if (!game.replayId && players?.length && timesChecked < TWENTY_MINUTES) {
     // get list of tracked replays for a tournament
     const tournamentSnap = await snapshot.ref.parent.parent!.get();
     const tournament = tournamentSnap.data() || {} as ITournament;
@@ -88,7 +107,7 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
     // if over half (but not exactly half) of the og players were in this
     // game, and we have not tracked it already, count the game
     if (most.count > players.length / 2) {
-      const batch = admin.firestore().batch();
+      const batch = db.batch();
       batch.update(snapshot.ref, {replayId: most.replayId});
       batch.update(tournamentSnap.ref, {
         replays: admin.firestore.FieldValue.arrayUnion(most.replayId),
@@ -107,7 +126,9 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot) {
 function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
   return new Promise(resolve => {
     setTimeout(async () => {
-      await snapshot.ref.update({lastChecked: Date.now()})
+      await snapshot.ref.update({
+        timesChecked: admin.firestore.FieldValue.increment(1),
+      })
       resolve();
     }, 10000);
   });

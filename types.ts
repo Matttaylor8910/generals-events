@@ -38,15 +38,22 @@ export interface ILeaderboardPlayer {
                             // played in the tournament and some metadata
 }
 
+export interface IGamePlayerRecord {
+  replayId: string;
+  points: number;
+  onStreak: number;
+  win: boolean;
+}
+
 // a game that was played during a tournament
 // located at /tournaments/:id/games
 export interface IGame {
-  started: number;       // unix timestamp of start of the game
-  players: string[];     // a list of the players in a game, ordered by points
-  status: GameStatus;    // the current status of the game
-  lastChecked?: number;  // just some metadata for the last time a game was
-                         // checked to see if there was a replay
-  replayId?: string;     // replay id from generals api response
+  started: number;        // unix timestamp of start of the game
+  players: string[];      // a list of the players in a game, ordered by points
+  status: GameStatus;     // the current status of the game
+  timesChecked?: number;  // just some metadata for the last time a game was
+                          // checked to see if there was a replay
+  replayId?: string;      // replay id from generals api response
   replay?: IGameReplay;
 }
 
@@ -60,12 +67,6 @@ export interface IGamePlayer {
   kills: number;
   rank: number;
   points: number;
-}
-
-export interface IGamePlayerRecord {
-  points: number;
-  onStreak: number;
-  win: boolean;
 }
 
 // a record of a player's stats for this tournament at a given point in time
