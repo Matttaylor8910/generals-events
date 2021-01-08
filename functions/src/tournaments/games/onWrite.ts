@@ -150,10 +150,11 @@ async function saveReplayToGame(
 
   // pull down the replay and save it to the game doc
   const replay = await simulator.getReplay(replayId, server);
+  const finished = Date.now();
   batch.update(gameSnapshot.ref, {
     replay,
     replayId,
-    finished: Date.now(),
+    finished,
     status: GameStatus.FINISHED,
   });
 
@@ -162,6 +163,7 @@ async function saveReplayToGame(
     const recordId = `${gameSnapshot.id}_${player.name}`;
     batch.create(tournamentRef.collection('records').doc(recordId), {
       replayId,
+      finished,
       name: player.name,
       points: player.points,
       rank: player.rank,

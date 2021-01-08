@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase
 
 on:
   push:
@@ -19,10 +19,12 @@ jobs:
           cordova-version: 8
       - name: Install app dependencies
         run: npm ci
+      - name: Install functions dependencies
+        run: cd functions && npm i && cd ..
       - name: Build prod app
         run: npm run build
       - uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting
+          args: deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

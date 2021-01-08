@@ -72,6 +72,7 @@ export interface IGamePlayer {
 // located at /tournaments/:id/records
 export interface IPlayerHistoryRecord {
   name: string;
+  finished: number;
   replayId: string;
   points: number;
   kills: number;
