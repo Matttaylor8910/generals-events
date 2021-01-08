@@ -10,8 +10,6 @@ function getReplay(replayId, server = 'na') {
 }
 // TODO: handle team games (#7)
 // TODO: maybe recognize players that turtle, give 0 points (#8)
-// TODO: maybe determine the final AFK as a "kill" if you have more total army
-// than them (#9)
 function simulate(gior) {
     // Read in the replay file.
     var replay = deserialize(gior);
