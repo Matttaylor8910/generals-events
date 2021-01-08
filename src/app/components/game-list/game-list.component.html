@@ -1,5 +1,5 @@
 <div class="games-container" *ngIf="games$ | async as games">
-  <h2>Recent Games</h2>
+  <h2 *ngIf="games.length">Recent Games</h2>
   <app-game-summary
     [game]="game"
     [server]="tournament.server"
