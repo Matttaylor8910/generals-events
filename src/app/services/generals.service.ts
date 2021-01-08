@@ -53,7 +53,8 @@ export class GeneralsService {
     if (tournamentId) {
       localStorage.setItem('generals-last-tournament', tournamentId);
     }
-    location.href = 'http://generals.io/?eventGetUsername=true';
+    // TODO: change to NA server
+    location.href = 'http://bot.generals.io/?eventGetUsername=true';
   }
 
   logout(tournamentId?: string) {
