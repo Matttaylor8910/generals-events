@@ -1,4 +1,5 @@
 import {EventEmitter, Injectable} from '@angular/core';
+import {AngularFireFunctions} from '@angular/fire/functions';
 import {GeneralsServer, SITE_URLS} from '../../../servers';
 import {TournamentService} from './tournament.service';
 
@@ -10,6 +11,7 @@ export class GeneralsService {
 
   constructor(
       private readonly tournamentService: TournamentService,
+      private readonly aff: AngularFireFunctions,
   ) {}
 
   goToProfile(name: string, server = GeneralsServer.NA) {
@@ -29,6 +31,12 @@ export class GeneralsService {
     localStorage.setItem(GENERALS_NAME, name);
     this.name = name;
     this.nameChanged$.emit();
+  }
+
+  async decryptUsername(encryptedString: string): Promise<string> {
+    const decryptUsername =
+        this.aff.httpsCallable<string, string>('decryptUsername');
+    return await decryptUsername({text: encryptedString}).toPromise();
   }
 
   logout(tournamentId: string) {

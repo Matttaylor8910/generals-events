@@ -2,6 +2,7 @@ import {NgModule} from '@angular/core';
 import {AngularFireModule} from '@angular/fire';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
+import {AngularFireFunctionsModule} from '@angular/fire/functions';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouteReuseStrategy} from '@angular/router';
 import {SplashScreen} from '@ionic-native/splash-screen/ngx';
@@ -22,6 +23,7 @@ import {AppComponent} from './app.component';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    AngularFireFunctionsModule,
   ],
   providers: [
     StatusBar,
