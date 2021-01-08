@@ -31,12 +31,25 @@ export class TournamentPage implements OnDestroy {
       private readonly router: Router,
       private readonly tournamentService: TournamentService,
   ) {
-    this.tournamentId = this.route.snapshot.paramMap.get('id');
+    this.tournamentId = this.route.snapshot.params.id;
+
     this.tournamentService.getTournament(this.tournamentId)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(tournament => {
           this.tournament = tournament;
         });
+
+    // if this url has the url param "join=true" and the user has their
+    // generals name set, join the queue
+    if (location.href.includes('join=true')) {
+      if (this.generals.name) {
+        this.tournamentService.joinQueue(this.tournamentId, this.generals.name);
+      }
+    }
+    // remove the join url param
+    if (location.href.includes('join=')) {
+      this.router.navigate(['/', this.tournamentId]);
+    }
   }
 
   get finished(): boolean {
