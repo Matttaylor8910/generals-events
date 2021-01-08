@@ -34,8 +34,8 @@
     <tr [class.even]="i % 2 === 0">
       <td class="you-marker" [class.highlight]="player.name === generals.name"></td>
       <td class="rank">{{ player.rank }}</td>
-      <td class="name">
-        <a (click)="generals.goToProfile(player.name, tournament?.server)">{{ player.name }}</a>
+      <td class="name" (click)="generals.goToProfile(player.name, tournament?.server)">
+        {{ player.name }}
       </td>
       <td class="record">
         <span

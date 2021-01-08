@@ -26,7 +26,7 @@ table {
     background: #333;
 
     &.even {
-      background: #555;
+      background: #444;
     }
 
     td {
@@ -44,6 +44,11 @@ table {
 
     .rank {
       width: 20px;
+    }
+
+    .name:hover {
+      cursor: pointer;
+      color: teal;
     }
 
     .record {

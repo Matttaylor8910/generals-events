@@ -13,7 +13,9 @@
       <div class="left">
         <div class="rank">#{{ player.rank }}</div>
         <ion-label>
-          <h2 class="name">{{ player.name }}</h2>
+          <h2 class="name" (click)="generals.goToProfile(player.name, server)">
+            {{ player.name }}
+          </h2>
           <p>{{ player.kills }} {{ player.kills === 1 ? 'kill' : 'kills' }}</p>
         </ion-label>
       </div>

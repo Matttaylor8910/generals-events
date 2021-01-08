@@ -41,6 +41,11 @@
       .name {
         color: #fff;
         font-size: 18px;
+        cursor: pointer;
+
+        &:hover {
+          color: teal;
+        }
       }
     }
 
