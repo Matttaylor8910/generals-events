@@ -1,5 +1,6 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
+import {Router} from '@angular/router';
 import {GeneralsServer, SITE_URLS} from '../../../servers';
 import {TournamentService} from './tournament.service';
 
@@ -12,6 +13,7 @@ export class GeneralsService {
   constructor(
       private readonly tournamentService: TournamentService,
       private readonly aff: AngularFireFunctions,
+      private readonly router: Router,
   ) {}
 
   goToProfile(name: string, server = GeneralsServer.NA) {
@@ -31,6 +33,14 @@ export class GeneralsService {
     localStorage.setItem(GENERALS_NAME, name);
     this.name = name;
     this.nameChanged$.emit();
+
+    const lastTourney = localStorage.getItem('generals-last-tournament');
+    if (lastTourney) {
+      this.router.navigate(['/', lastTourney]);
+    } else {
+      this.router.navigate(['/']);
+    }
+    localStorage.removeItem('generals-last-tournament');
   }
 
   async decryptUsername(encryptedString: string): Promise<string> {
@@ -39,7 +49,14 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
-  logout(tournamentId: string) {
+  login(tournamentId?: string) {
+    if (tournamentId) {
+      localStorage.setItem('generals-last-tournament', tournamentId);
+    }
+    location.href = 'http://generals.io/?eventGetUsername=true';
+  }
+
+  logout(tournamentId?: string) {
     if (tournamentId && this.name) {
       this.tournamentService.removePlayer(tournamentId, this.name);
     }

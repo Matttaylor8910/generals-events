@@ -1,0 +1,20 @@
+<div class="button-container">
+  <ng-container *ngIf="generals.name">
+    <app-actions-popover [actions]="actions"></app-actions-popover>
+    <ion-button
+      class="generals-button color-secondary"
+      (click)="generals.goToProfile(generals.name, tournament?.server)"
+    >
+      {{ generals.name }}
+    </ion-button>
+  </ng-container>
+
+  <ng-container *ngIf="!generals.name">
+    <ion-button
+      class="generals-button color-secondary"
+      (click)="generals.login(tournament?.id)"
+    >
+      Login
+    </ion-button>
+  </ng-container>
+</div>

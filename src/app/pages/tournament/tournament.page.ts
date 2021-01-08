@@ -2,7 +2,6 @@ import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {ILeaderboardPlayer, ITournament} from 'types';
@@ -20,10 +19,6 @@ export class TournamentPage implements OnDestroy {
 
   // TODO: show the player summary when a player is selected
   selectedPlayer: ILeaderboardPlayer;
-
-  actions: IPopoverAction[] = [
-    {label: 'Logout', onClick: () => this.generals.logout(this.tournamentId)}
-  ];
 
   constructor(
       public readonly generals: GeneralsService,
