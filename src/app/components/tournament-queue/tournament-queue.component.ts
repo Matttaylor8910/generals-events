@@ -39,7 +39,17 @@ export class TournamentQueueComponent implements OnDestroy {
       return 'Join the tournament!';
     }
     if (this.inQueue) {
-      return `Stand by ${this.generals.name}, pairing players, get ready!`;
+      const count = this.tournament.queue.length;
+      const max = this.tournament.playersPerGame;
+
+      const current = ((count - 1) % max) + 1;
+      const myPlace = this.tournament.queue.indexOf(this.generals.name);
+
+      if (count >= max && myPlace < max) {
+        return `Creating lobby to join!`
+      } else {
+        return `Waiting for players, ${current} of ${max}. Get ready!`
+      }
     }
     return 'Join the queue to get your next game going!';
   }
