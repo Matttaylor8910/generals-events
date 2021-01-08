@@ -65,7 +65,8 @@ table {
         cursor: pointer;
 
         &.winner {
-          border-color: var(--ion-color-warning);
+          color: var(--ion-color-warning);
+          font-weight: bold;
         }
       }
     }
