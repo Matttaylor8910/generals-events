@@ -18,6 +18,6 @@ export class GameListComponent {
   ) {}
 
   ngOnInit() {
-    this.games$ = this.tournamentService.getGames(this.tournament.id, 5);
+    this.games$ = this.tournamentService.getGames(this.tournament.id, 15);
   }
 }
