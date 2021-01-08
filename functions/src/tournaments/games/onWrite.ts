@@ -164,6 +164,8 @@ async function saveReplayToGame(
       replayId,
       name: player.name,
       points: player.points,
+      rank: player.rank,
+      kills: player.kills,
       win: player.rank === 1,
     });
   }

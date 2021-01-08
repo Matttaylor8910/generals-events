@@ -35,6 +35,9 @@ export class TournamentQueueComponent implements OnDestroy {
     if (this.tournament.startTime > Date.now()) {
       return 'This tournament will start in 69 minutes';
     }
+    if (!this.generals.name) {
+      return 'Login to be able to join the tournament';
+    }
     if (this.notJoined) {
       return 'Join the tournament!';
     }

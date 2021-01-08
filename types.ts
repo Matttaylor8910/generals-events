@@ -37,15 +37,8 @@ export interface ILeaderboardPlayer {
   currentStreak: number;  // start at 0, potentially used to determine bonus for
                           // being on a streak
   record:
-      IGamePlayerRecord[];  // a list of the point values earned in each game
-                            // played in the tournament and some metadata
-}
-
-export interface IGamePlayerRecord {
-  replayId: string;
-  points: number;
-  onStreak: number;
-  win: boolean;
+      IPlayerHistoryRecord[];  // a list of the point values earned in each game
+                               // played in the tournament and some metadata
 }
 
 // a game that was played during a tournament
@@ -78,16 +71,11 @@ export interface IGamePlayer {
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
 export interface IPlayerHistoryRecord {
-  // name: string;           // generals.io username
-  // currentStreak: number;  // current streak
-  // bestStreak: number;     // best streak
-  // points: number;         // current points
-  // timestamp: number;  // unix timestamp of this record, should be the started
-  //                     // timestamp of the last game this player played in
-
   name: string;
   replayId: string;
   points: number;
+  kills: number;
+  rank: number;
   win: boolean;
 }
 

@@ -28,11 +28,6 @@ export const onCreateRecord =
                 points: admin.firestore.FieldValue.increment(record.points),
                 currentStreak:
                     record.win ? admin.firestore.FieldValue.increment(1) : 0,
-                record: admin.firestore.FieldValue.arrayUnion({
-                  replayId: record.replayId,
-                  points: record.points,
-                  onStreak: false,  // TODO: support streaks?
-                  win: record.win,
-                }),
+                record: admin.firestore.FieldValue.arrayUnion(record),
               });
         });

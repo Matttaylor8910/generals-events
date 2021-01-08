@@ -1,5 +1,4 @@
 import {Component, Input} from '@angular/core';
-import {AlertController} from '@ionic/angular';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
@@ -26,7 +25,6 @@ export class TournamentLeaderboardComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly tournamentService: TournamentService,
-      private readonly alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -59,7 +57,7 @@ export class TournamentLeaderboardComponent {
   }
 
   get canJoin() {
-    return !this.canLeave;
+    return !this.inTournament && this.generals.name;
   }
 
   get canLeave() {
@@ -81,49 +79,11 @@ export class TournamentLeaderboardComponent {
   }
 
   async join() {
-    let name = this.generals.name;
-
-    // if no name is set, prompt for it
-    if (!name) {
-      name = await this.promptForName();
-    }
-
-    // if there's still no name, they probably clicked cancel
-    if (!name) {
-      return;
-    }
-
-    this.tournamentService.addPlayer(this.tournament.id, name);
+    this.tournamentService.addPlayer(this.tournament.id, this.generals.name);
   }
 
   async leave() {
     this.tournamentService.removePlayer(this.tournament.id, this.generals.name);
-  }
-
-  async promptForName(): Promise<string> {
-    const ionAlert = await this.alertController.create({
-      cssClass: 'my-custom-class',
-      header: 'Enter your generals.io username',
-      message: 'Your username must exactly match or your games won\'t count!',
-      inputs:
-          [{name: 'name', type: 'text', placeholder: 'generals.io username'}],
-      buttons: [{text: 'Cancel', role: 'cancel'}, {text: 'Join'}]
-    });
-
-    await ionAlert.present();
-
-    return ionAlert.onDidDismiss().then(response => {
-      const name = response?.data?.values?.name;
-      if (name) {
-        // catch players trying to join as a player already in the tournament
-        if (this.players.find(player => player.name === name)) {
-          return alert(`${name} is already in this tournament!`);
-        }
-
-        this.generals.setName(name);
-      }
-      return name;
-    });
   }
 
   determineInTournament() {

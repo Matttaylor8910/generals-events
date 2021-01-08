@@ -3,6 +3,7 @@ import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
 import {GeneralsServer, SITE_URLS} from '../../../servers';
 import {TournamentService} from './tournament.service';
+import {UtilService} from './util.service';
 
 const GENERALS_NAME = 'generals-name';
 @Injectable({providedIn: 'root'})
@@ -14,6 +15,7 @@ export class GeneralsService {
       private readonly tournamentService: TournamentService,
       private readonly aff: AngularFireFunctions,
       private readonly router: Router,
+      private readonly utilService: UtilService,
   ) {}
 
   goToProfile(name: string, server = GeneralsServer.NA) {
@@ -49,12 +51,20 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
-  login(tournamentId?: string) {
+  async login(tournamentId?: string) {
     if (tournamentId) {
       localStorage.setItem('generals-last-tournament', tournamentId);
     }
-    // TODO: change to NA server
-    location.href = 'http://bot.generals.io/?eventGetUsername=true';
+
+    if (location.href.includes('localhost')) {
+      const name = await this.utilService.promptForText();
+      if (name) {
+        this.setName(name);
+      }
+    } else {
+      // TODO: change to NA server
+      location.href = 'http://bot.generals.io/?eventGetUsername=true';
+    }
   }
 
   logout(tournamentId?: string) {
