@@ -21,6 +21,9 @@
 <ion-content>
   <div class="page-container" *ngIf="tournament; else loading">
     <div class="left-panel">
+      <app-tournament-player-summary
+        *ngIf="selectedPlayer">
+      </app-tournament-player-summary>
     </div>
 
     <div class="main-panel">
@@ -30,9 +33,7 @@
     </div>
 
     <div class="right-panel">
-      <app-tournament-player-summary
-        *ngIf="selectedPlayer">
-      </app-tournament-player-summary>
+      <app-game-list [tournament]="tournament"></app-game-list>
     </div>
   </div>
 </ion-content>

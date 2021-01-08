@@ -7,6 +7,14 @@
         {"fieldPath": "points", "order": "DESCENDING"},
         {"fieldPath": "name", "order": "ASCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "finished", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []

@@ -3,7 +3,7 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import * as firebase from 'firebase';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {ILeaderboardPlayer, ITournament} from 'types';
+import {GameStatus, IGame, ILeaderboardPlayer, ITournament} from 'types';
 
 @Injectable({providedIn: 'root'})
 export class TournamentService {
@@ -140,5 +140,29 @@ export class TournamentService {
         .set({
           players: firebase.default.firestore.FieldValue.arrayRemove(name),
         });
+  }
+
+  getGames(tournamentId: string, limit?: number): Observable<IGame[]> {
+    return this.afs.collection<ITournament>('tournaments')
+        .doc(tournamentId)
+        .collection<IGame>(
+            'games',
+            ref => {
+              let query = ref.where('status', '==', GameStatus.FINISHED)
+                              .orderBy('finished', 'desc');
+
+              if (limit) {
+                query = query.limit(limit);
+              }
+
+              return query;
+            })
+        .snapshotChanges()
+        .pipe(map(actions => {
+          return actions.map(action => {
+            const {doc} = action.payload;
+            return {...doc.data(), id: doc.id};
+          });
+        }));
   }
 }

@@ -1,6 +1,5 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import {user} from 'firebase-functions/lib/providers/auth';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
@@ -23,15 +22,20 @@ export const onWriteGame =
           return 'Done';
         });
 
-async function lookForFinishedGame(snapshot: DocumentSnapshot) {
+async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
   const game = (snapshot.data() || {}) as IGame;
   const {players} = game;
   const timesChecked = game.timesChecked || 0;
   const TWENTY_MINUTES = 120;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
 
+  // if we still haven't found a replay within 20 minutes, pull the plug
+  if (timesChecked >= TWENTY_MINUTES) {
+    return await snapshot.ref.delete();
+  }
+
   // if we have a game with some players, and we haven't set a replayId yet,
   // find games for these players
-  if (!game.replayId && players?.length && timesChecked < TWENTY_MINUTES) {
+  if (!game.replayId && players?.length) {
     // get list of tracked replays for a tournament
     const tournamentSnap = await snapshot.ref.parent.parent!.get();
     const tournament = (tournamentSnap.data() || {}) as ITournament;
@@ -144,11 +148,12 @@ async function saveReplayToGame(
 
   console.log(`committing ${replayId}`);
 
-  // pull down the replay and save it
+  // pull down the replay and save it to the game doc
   const replay = await simulator.getReplay(replayId, server);
   batch.update(gameSnapshot.ref, {
     replay,
     replayId,
+    finished: Date.now(),
     status: GameStatus.FINISHED,
   });
 

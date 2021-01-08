@@ -1,0 +1,24 @@
+<ion-card class="game-summary" *ngIf="game?.replay">
+  <div class="players">
+    <div class="player" *ngFor="let player of game.replay.scores">
+      <div class="left">
+        <div class="rank">#{{ player.rank }}</div>
+        <ion-label>
+          <h2 class="name">{{ player.name }}</h2>
+          <p>{{ player.kills }} {{ player.kills === 1 ? 'kill' : 'kills' }}</p>
+        </ion-label>
+      </div>
+      <div class="points" [class.winner]="player.rank === 1">
+        +{{ player.points }}
+      </div>
+    </div>
+  </div>
+  <div class="summary" *ngIf="expanded">
+    <div class="line" *ngFor="let line of game.replay.summary">
+      {{ line }}
+    </div>
+  </div>
+  <div class="expand-collapse" (click)="toggleExpanded()">
+    <ion-icon [name]="expanded ? 'chevron-up' : 'chevron-down'"></ion-icon>
+  </div>
+</ion-card>

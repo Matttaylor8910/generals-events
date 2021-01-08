@@ -1,0 +1,54 @@
+.game-summary {
+  .summary,
+  .players {
+    padding: 8px;
+  }
+
+  .player {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--ion-color-light);
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+
+      .rank {
+        margin-right: 15px;
+      }
+
+      .name {
+        color: #fff;
+        font-size: 18px;
+      }
+    }
+
+    .points {
+      margin-right: 5px;
+      font-size: 20px;
+      color: teal;
+    }
+  }
+
+  .summary .line:last-child {
+    color: teal;
+  }
+
+  .expand-collapse {
+    display: flex;
+    justify-content: center;
+    background: #333;
+    font-size: 16px;
+    padding: 4px;
+    opacity: .9;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

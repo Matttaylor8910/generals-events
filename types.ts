@@ -56,8 +56,10 @@ export interface IGame {
   status: GameStatus;     // the current status of the game
   timesChecked?: number;  // just some metadata for the last time a game was
                           // checked to see if there was a replay
+  finished?: number;      // unix timestamp of the end of the game
   replayId?: string;      // replay id from generals api response
-  replay?: IGameReplay;
+  replay?: IGameReplay;   // replay summary and scores
+  id?: string;            // client field
 }
 
 export interface IGameReplay {

@@ -4,7 +4,8 @@ import {FormsModule} from '@angular/forms';
 import {IonicModule} from '@ionic/angular';
 import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-page.component';
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
-import {GameListItemComponent} from './game-list-item/game-list-item.component';
+import {GameListComponent} from './game-list/game-list.component';
+import {GameSummaryComponent} from './game-summary/game-summary.component';
 import {RulesComponent} from './rules/rules.component';
 import {TimerComponent} from './timer/timer.component';
 import {TournamentLeaderboardComponent} from './tournament-leaderboard/tournament-leaderboard.component';
@@ -19,7 +20,8 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
   declarations: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
-    GameListItemComponent,
+    GameListComponent,
+    GameSummaryComponent,
     RulesComponent,
     TimerComponent,
     TournamentLeaderboardComponent,
@@ -38,7 +40,8 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
   exports: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
-    GameListItemComponent,
+    GameListComponent,
+    GameSummaryComponent,
     RulesComponent,
     TimerComponent,
     TournamentLeaderboardComponent,
