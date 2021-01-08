@@ -4,6 +4,19 @@
     padding: 8px;
   }
 
+  .header {
+    background: teal;
+
+    .date {
+      color: #fff;
+      padding: 0 16px;
+    }
+
+    ion-button ion-icon {
+      margin-right: 3px;
+    }
+  }
+
   .player {
     display: flex;
     justify-content: space-between;
@@ -13,12 +26,16 @@
       border-bottom: 1px solid var(--ion-color-light);
     }
 
+    &:first-child .rank {
+      color: var(--ion-color-warning);
+    }
+
     .left {
       display: flex;
       align-items: center;
 
       .rank {
-        margin-right: 15px;
+        width: 30px;
       }
 
       .name {

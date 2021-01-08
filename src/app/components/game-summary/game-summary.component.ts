@@ -1,4 +1,6 @@
 import {Component, Input} from '@angular/core';
+import {GeneralsServer} from 'servers';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {IGame} from 'types';
 
 @Component({
@@ -7,11 +9,14 @@ import {IGame} from 'types';
   styleUrls: ['./game-summary.component.scss'],
 })
 export class GameSummaryComponent {
+  @Input() server = GeneralsServer.NA;
   @Input() game: IGame;
 
   expanded = false;
 
-  constructor() {}
+  constructor(
+      public readonly generals: GeneralsService,
+  ) {}
 
   toggleExpanded() {
     this.expanded = !this.expanded;

@@ -1,4 +1,13 @@
 <ion-card class="game-summary" *ngIf="game?.replay">
+  <div class="header space-between">
+    <div class="date">
+      {{ game.finished | date:'M/d/yyyy h:mm a'}}
+    </div>
+    <ion-button fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, server)">
+      <ion-icon name="eye"></ion-icon>
+      Replay
+    </ion-button>
+  </div>
   <div class="players">
     <div class="player" *ngFor="let player of game.replay.scores">
       <div class="left">
