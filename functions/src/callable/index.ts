@@ -12,5 +12,6 @@ try {
 const ENCRYPTION_KEY = functions.config().generals.encryption;
 
 export const decryptUsername = functions.https.onCall((encryptedString) => {
-  return crypto.AES.decrypt(encryptedString, ENCRYPTION_KEY);
+  return crypto.AES.decrypt(encryptedString, ENCRYPTION_KEY)
+      .toString(crypto.enc.Utf8);
 });

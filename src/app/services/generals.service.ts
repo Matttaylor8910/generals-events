@@ -36,7 +36,7 @@ export class GeneralsService {
   async decryptUsername(encryptedString: string): Promise<string> {
     const decryptUsername =
         this.aff.httpsCallable<string, string>('decryptUsername');
-    return await decryptUsername({text: encryptedString}).toPromise();
+    return await decryptUsername(encryptedString).toPromise();
   }
 
   logout(tournamentId: string) {
