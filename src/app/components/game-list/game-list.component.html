@@ -1,4 +1,4 @@
 <div class="games-container" *ngIf="games$ | async as games">
-  <h2>Finished Games</h2>
+  <h2>Recent Games</h2>
   <app-game-summary [game]="game" *ngFor="let game of games"></app-game-summary>
 </div>
