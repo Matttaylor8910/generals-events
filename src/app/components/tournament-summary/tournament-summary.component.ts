@@ -17,6 +17,6 @@ export class TournamentSummaryComponent implements OnInit {
   ngOnInit() {}
 
   get duration(): string {
-    return this.utilService.durationString(this.tournament?.durationMinutes);
+    return this.utilService.getDurationString(this.tournament?.durationMinutes);
   }
 }

@@ -105,10 +105,10 @@ export class UtilService {
     });
   }
 
-  durationString(minutes: number): string {
+  getDurationString(minutes: number): string {
     if (minutes) {
       const hours = Math.floor(minutes / 60);
-      const rem = minutes % 60;
+      const rem = Math.ceil(minutes % 60);
       return `${hours ? hours + 'h ' : ''}${rem ? rem + 'm' : ''}`;
     }
     return '';

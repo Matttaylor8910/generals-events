@@ -2,6 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
+import {UtilService} from 'src/app/services/util.service';
 import {ITournament} from 'types';
 
 @Component({
@@ -19,6 +20,7 @@ export class TournamentQueueComponent implements OnDestroy {
   constructor(
       private readonly generals: GeneralsService,
       private readonly tournamentService: TournamentService,
+      private readonly utilService: UtilService,
   ) {
     this.generals.nameChanged$.subscribe(this.checkRedirect.bind(this));
   }
@@ -33,7 +35,7 @@ export class TournamentQueueComponent implements OnDestroy {
 
   get message(): string {
     if (this.tournament.startTime > Date.now()) {
-      return 'This tournament will start in 69 minutes';
+      return `This tournament will start in ${this.timeToStart()}`;
     }
     if (!this.generals.name) {
       return 'Login to be able to join the tournament';
@@ -86,6 +88,15 @@ export class TournamentQueueComponent implements OnDestroy {
                 });
       }
     }
+  }
+
+  private timeToStart(): string {
+    if (!this.tournament?.startTime) return '';
+
+    const MINUTE = 36000;
+
+    const minutes = (this.tournament?.startTime - Date.now()) / MINUTE;
+    return this.utilService.getDurationString(minutes);
   }
 
   private unsubscribe() {
