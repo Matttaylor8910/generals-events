@@ -28,7 +28,7 @@ export const onCreatePlayer =
           const batch = db.batch();
           batch.update(doc.ref, {
             record,
-            points: record.map(r => r.points).reduce((a, b) => a + b),
+            points: record.map(r => r.points).reduce((a, b) => a + b, 0),
           });
 
           batch.update(tournamentRef, {
