@@ -1,4 +1,5 @@
 import {Component, Input} from '@angular/core';
+import {GeneralsServer} from 'servers';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {ITournament} from 'types';
@@ -18,6 +19,10 @@ export class LoginComponent {
   ) {
     this.checkUserParam();
     this.ngOnChanges();
+  }
+
+  get server(): GeneralsServer {
+    return this.tournament?.server || GeneralsServer.NA;
   }
 
   async checkUserParam() {
