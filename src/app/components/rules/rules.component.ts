@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {ITournament} from 'types';
+import {ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -8,16 +8,17 @@ import {ITournament} from 'types';
 })
 export class RulesComponent {
   @Input() tournament: ITournament;
+  @Input() status: TournamentStatus;
 
-  explicitlyShowRules = false;
+  private _showRules = false;
 
   constructor() {}
 
   get showRules() {
-    return this.explicitlyShowRules || this.tournament?.startTime > Date.now();
+    return this._showRules || this.status === TournamentStatus.UPCOMING;
   }
 
   toggleShowRules() {
-    this.explicitlyShowRules = !this.explicitlyShowRules;
+    this._showRules = !this._showRules;
   }
 }

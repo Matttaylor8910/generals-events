@@ -5,6 +5,13 @@ export enum TournamentType {
   ONE_VS_ONE = '1v1',
 }
 
+export enum TournamentStatus {
+  UNKOWN = 'UNKOWN',
+  UPCOMING = 'UPCOMING',
+  ONGOING = 'ONGOING',
+  FINISHED = 'FINISHED'
+}
+
 export enum GameStatus {
   STARTED = 'STARTED',
   FINISHED = 'FINISHED',

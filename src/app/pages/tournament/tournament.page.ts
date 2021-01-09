@@ -4,7 +4,7 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {ILeaderboardPlayer, ITournament} from 'types';
+import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament',
@@ -13,6 +13,8 @@ import {ILeaderboardPlayer, ITournament} from 'types';
 })
 export class TournamentPage implements OnDestroy {
   private destroyed$ = new Subject<void>();
+
+  TournamentStatus = TournamentStatus;
 
   tournamentId: string;
   tournament: ITournament;
@@ -45,6 +47,24 @@ export class TournamentPage implements OnDestroy {
     if (location.href.includes('join=')) {
       this.router.navigate(['/', this.tournamentId]);
     }
+  }
+
+  get status(): TournamentStatus {
+    if (this.tournament) {
+      const now = Date.now();
+      const endTime = new Date(this.tournament.startTime + (30 * 60 * 1000));
+
+      if (this.tournament.endTime || endTime.getTime() < now) {
+        return TournamentStatus.FINISHED;
+      } else {
+        if (this.tournament.startTime < now) {
+          return TournamentStatus.UPCOMING;
+        } else {
+          return TournamentStatus.ONGOING;
+        }
+      }
+    }
+    return TournamentStatus.UNKOWN;
   }
 
   get finished(): boolean {

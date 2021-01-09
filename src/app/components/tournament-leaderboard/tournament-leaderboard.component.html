@@ -1,7 +1,8 @@
 <app-tournament-queue
   [tournament]="tournament"
-  [notJoined]="canJoin"
-  *ngIf="!tournament?.endTime">
+  [inTournament]="!canJoin"
+  [status]="status"
+  *ngIf="showQueue">
 </app-tournament-queue>
 
 <table>

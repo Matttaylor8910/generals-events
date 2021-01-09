@@ -3,7 +3,7 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {ILeaderboardPlayer, ITournament} from 'types';
+import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament-leaderboard',
@@ -14,6 +14,7 @@ export class TournamentLeaderboardComponent {
   private destroyed$ = new Subject<void>();
 
   @Input() tournament: ITournament;
+  @Input() status: TournamentStatus;
 
   players: ILeaderboardPlayer[];
   visible: ILeaderboardPlayer[];
@@ -41,7 +42,11 @@ export class TournamentLeaderboardComponent {
           this.setVisible();
         });
   }
-  z
+
+  get showQueue(): boolean {
+    return [TournamentStatus.UPCOMING, TournamentStatus.ONGOING].includes(
+        this.status);
+  }
 
   get pageControlText(): string {
     const players = this.players?.length || 0;

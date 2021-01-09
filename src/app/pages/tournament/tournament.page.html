@@ -24,9 +24,18 @@
     </div>
 
     <div class="main-panel">
-      <!-- <app-tournament-trophies *ngIf="finished"></app-tournament-trophies> -->
-      <app-tournament-leaderboard [tournament]="tournament"></app-tournament-leaderboard>
-      <app-rules [tournament]="tournament"></app-rules>
+      <app-tournament-trophies
+        [tournament]="tournament"
+        [status]="status">
+      </app-tournament-trophies>
+      <app-tournament-leaderboard
+        [tournament]="tournament"
+        [status]="status">
+      </app-tournament-leaderboard>
+      <app-rules
+        [tournament]="tournament"
+        [status]="status">
+      </app-rules>
     </div>
 
     <div class="right-panel">

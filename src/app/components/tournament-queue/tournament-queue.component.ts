@@ -3,7 +3,7 @@ import {Subscription} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {UtilService} from 'src/app/services/util.service';
-import {ITournament} from 'types';
+import {GameStatus, ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament-queue',
@@ -12,7 +12,8 @@ import {ITournament} from 'types';
 })
 export class TournamentQueueComponent implements OnDestroy {
   @Input() tournament: ITournament;
-  @Input() notJoined: boolean;
+  @Input() inTournament: boolean;
+  @Input() status: TournamentStatus;
 
   currentSubscription: string;
   redirect$: Subscription;
@@ -34,15 +35,13 @@ export class TournamentQueueComponent implements OnDestroy {
   }
 
   get message(): string {
-    if (this.tournament.startTime > Date.now()) {
-      return `This tournament will start in ${this.timeToStart()}`;
+    if (this.status === TournamentStatus.UPCOMING) {
+      if (!this.inTournament) {
+        return 'Join the tournament!';
+      }
+      return `Welcome! The tournament has not started yet.`;
     }
-    if (!this.generals.name) {
-      return 'Login to be able to join the tournament';
-    }
-    if (this.notJoined) {
-      return 'Join the tournament!';
-    }
+
     if (this.inQueue) {
       const count = this.tournament.queue.length;
       const max = this.tournament.playersPerGame;
@@ -88,15 +87,6 @@ export class TournamentQueueComponent implements OnDestroy {
                 });
       }
     }
-  }
-
-  private timeToStart(): string {
-    if (!this.tournament?.startTime) return '';
-
-    const MINUTE = 36000;
-
-    const minutes = (this.tournament?.startTime - Date.now()) / MINUTE;
-    return this.utilService.getDurationString(minutes);
   }
 
   private unsubscribe() {

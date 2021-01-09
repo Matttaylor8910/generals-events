@@ -34,9 +34,4 @@ export class HomePage {
     });
     return await modal.present();
   }
-
-  // this.tournamentService.createTournament({
-  //   durationMinutes: 60,
-  //   playersPerGame: 8,
-  // });
 }

@@ -2,7 +2,7 @@
   <div class="message">
     {{ message }}
   </div>
-  <ion-button class="generals-button" (click)="toggleQueue()" [disabled]="notJoined">
+  <ion-button class="generals-button" (click)="toggleQueue()" [disabled]="!inTournament">
     {{ inQueue ? 'Leave' : 'Join' }} Queue
   </ion-button>
 </div>
