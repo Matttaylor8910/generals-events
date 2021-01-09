@@ -104,4 +104,13 @@ export class UtilService {
       return response?.data?.values?.name;
     });
   }
+
+  durationString(minutes: number): string {
+    if (minutes) {
+      const hours = Math.floor(minutes / 60);
+      const rem = minutes % 60;
+      return `${hours ? hours + 'h ' : ''}${rem ? rem + 'm' : ''}`;
+    }
+    return '';
+  }
 }

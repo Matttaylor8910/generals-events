@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
+import {UtilService} from 'src/app/services/util.service';
+import {ITournament} from 'types';
 
 @Component({
   selector: 'app-tournament-summary',
@@ -6,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./tournament-summary.component.scss'],
 })
 export class TournamentSummaryComponent implements OnInit {
+  @Input() tournament: ITournament;
 
-  constructor() { }
+  constructor(
+      private readonly utilService: UtilService,
+  ) {}
 
   ngOnInit() {}
 
+  get duration(): string {
+    return this.utilService.durationString(this.tournament?.durationMinutes);
+  }
 }

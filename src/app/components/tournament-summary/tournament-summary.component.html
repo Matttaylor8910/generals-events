@@ -1,3 +1,28 @@
-<p>
-  tournament-summary works!
-</p>
+<div class="tournament-summary">
+  <ion-card *ngIf="tournament">
+    <ion-card-header>
+      <ion-card-title>{{ tournament.name }}</ion-card-title>
+    </ion-card-header>
+    <ion-item>
+      <ion-icon slot="start" name="calendar"></ion-icon>
+      <ion-label>
+        <h2>{{ tournament.startTime | date:'M/d/yyyy' }}</h2>
+        <p>{{ tournament.startTime | date:'h:mm a' }}</p>
+      </ion-label>
+    </ion-item>
+    <ion-item *ngIf="tournament.playersPerGame as players">
+      <ion-icon slot="start" name="people"></ion-icon>
+      <ion-label>
+        <h2>{{ tournament.type }}</h2>
+        <p>{{ players }} {{ players === 1 ? 'player' : 'players' }} per game</p>
+      </ion-label>
+    </ion-item>
+    <ion-item *ngIf="!tournament.endTime">
+      <ion-icon slot="start" name="stopwatch"></ion-icon>
+      <ion-label>
+        <h2>Time Limit</h2>
+        <p>{{ duration }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+</div>

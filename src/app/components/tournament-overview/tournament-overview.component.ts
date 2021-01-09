@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
+import {UtilService} from 'src/app/services/util.service';
 import {ITournament} from 'types';
 
 @Component({
@@ -12,16 +13,11 @@ export class TournamentOverviewComponent {
 
   constructor(
       private readonly router: Router,
+      private readonly utilService: UtilService,
   ) {}
 
   get duration(): string {
-    if (this.tournament) {
-      const {durationMinutes: mins} = this.tournament
-      const hours = Math.floor(mins / 60);
-      const rem = mins % 60;
-      return `${hours ? hours + 'h ' : ''}${rem ? rem + 'm' : ''}`;
-    }
-    return '';
+    return this.utilService.durationString(this.tournament?.durationMinutes);
   }
 
   navToTournament() {
