@@ -18,7 +18,7 @@ export class TournamentLeaderboardComponent {
   size = 10;
 
   tracking: boolean;
-  trackingTooltip: string;
+  trackingTooltip = 'Automatically change pages to show my username';
 
   inTournament = false;
 
@@ -34,6 +34,10 @@ export class TournamentLeaderboardComponent {
       this.determineInTournament();
       this.setVisible();
     }
+  }
+
+  get showTracker(): boolean {
+    return this.inTournament && this.players?.length > this.size;
   }
 
   get showTimer(): boolean {
@@ -115,10 +119,6 @@ export class TournamentLeaderboardComponent {
 
   toggleTracking(setTo?: boolean) {
     this.tracking = setTo === undefined ? !this.tracking : setTo;
-    this.trackingTooltip = `
-      ${this.tracking ? 'Disable' : 'Enable'}
-      tracking which page you\'re on
-    `;
     this.setVisible();
   }
 }
