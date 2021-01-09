@@ -72,13 +72,13 @@ export class TournamentLeaderboardComponent {
 
   prev() {
     this.offset -= this.size;
-    this.tracking = false;
+    this.toggleTracking(false);
     this.setVisible();
   }
 
   next() {
     this.offset += this.size;
-    this.tracking = false;
+    this.toggleTracking(false);
     this.setVisible();
   }
 
@@ -108,8 +108,8 @@ export class TournamentLeaderboardComponent {
     this.inTournament = !!this.players.find(p => p.name === this.generals.name);
   }
 
-  toggleTracking() {
-    this.tracking = !this.tracking;
+  toggleTracking(setTo?: boolean) {
+    this.tracking = setTo === undefined ? !this.tracking : setTo;
     this.trackingTooltip = `
       ${this.tracking ? 'Disable' : 'Enable'}
       tracking which page you\'re on
