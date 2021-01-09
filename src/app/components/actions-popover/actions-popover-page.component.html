@@ -3,6 +3,9 @@
     (click)="popoverController.dismiss(action)"
     *ngFor="let action of actions"
   >
+    <!-- https://github.com/ionic-team/ionic-framework/issues/21939 -->
+    <div tabindex="0"></div>
+
     <ion-icon [name]="action.icon" slot="start" *ngIf="action.icon"></ion-icon>
     {{action.label}}
   </ion-item>
