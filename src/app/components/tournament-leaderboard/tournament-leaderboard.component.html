@@ -1,6 +1,6 @@
 <app-tournament-queue
   [tournament]="tournament"
-  [inTournament]="!canJoin"
+  [inTournament]="inTournament"
   [status]="status"
   *ngIf="showQueue">
 </app-tournament-queue>
@@ -9,6 +9,8 @@
   <tr class="table-header">
     <th colspan="5">
       <div class="header-container">
+
+        <!-- left side -->
         <div class="page-control">
           <ion-button size="small" fill="clear" color="dark" [class.tracking]="tracking" (click)="toggleTracking()" [tooltip]="trackingTooltip" *ngIf="inTournament">
             <ion-icon slot="icon-only" name="locate"></ion-icon>
@@ -21,6 +23,8 @@
             <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
           </ion-button>
         </div>
+
+        <!-- right side -->
         <ng-container *ngIf="players">
           <ion-button size="small" fill="clear" color="dark" (click)="join()" *ngIf="canJoin">
             <ion-icon name="play"></ion-icon>
@@ -28,9 +32,11 @@
           </ion-button>
           <ion-button size="small" fill="clear" color="dark" (click)="leave()" *ngIf="canLeave">
             <ion-icon name="exit"></ion-icon>
-            Leave
+            Withdraw
           </ion-button>
+          <app-timer [stopAt]="tournament.endTime" *ngIf="showTimer"></app-timer>
         </ng-container>
+
       </div>
     </th>
   </tr>

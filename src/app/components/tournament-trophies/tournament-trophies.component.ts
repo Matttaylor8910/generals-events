@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ITournament, TournamentStatus} from 'types';
+import {ILeaderboardPlayer, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament-trophies',
@@ -7,7 +7,7 @@ import {ITournament, TournamentStatus} from 'types';
   styleUrls: ['./tournament-trophies.component.scss'],
 })
 export class TournamentTrophiesComponent implements OnInit {
-  @Input() tournament: ITournament;
+  @Input() players: ILeaderboardPlayer[];
   @Input() status: TournamentStatus;
 
   constructor() {}
@@ -19,6 +19,7 @@ export class TournamentTrophiesComponent implements OnInit {
   }
 
   get winnerString(): string {
-    return 'No one won?';
+    return this.players?.length ? `${this.players[0].name} wins!` :
+                                  'No one won?';
   }
 }

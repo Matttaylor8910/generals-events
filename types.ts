@@ -6,10 +6,10 @@ export enum TournamentType {
 }
 
 export enum TournamentStatus {
-  UNKOWN = 'UNKOWN',
+  UNKNOWN = 'UNKNOWN',
   UPCOMING = 'UPCOMING',
   ONGOING = 'ONGOING',
-  FINISHED = 'FINISHED'
+  FINISHED = 'FINISHED',
 }
 
 export enum GameStatus {
@@ -23,6 +23,7 @@ export enum GameStatus {
 export interface ITournament {
   name: string;
   type: TournamentType;
+  finished: boolean;
   startTime: number;        // unix timestamp of start of tournament
   endTime: number;          // unix timestamp of end of tournament
   durationMinutes: number;  // # of minutes the tournament should go

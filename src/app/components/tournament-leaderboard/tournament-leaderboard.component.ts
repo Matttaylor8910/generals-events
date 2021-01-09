@@ -1,6 +1,4 @@
-import {Component, Input} from '@angular/core';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {Component, Input, SimpleChanges} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
@@ -11,12 +9,10 @@ import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
   styleUrls: ['./tournament-leaderboard.component.scss'],
 })
 export class TournamentLeaderboardComponent {
-  private destroyed$ = new Subject<void>();
-
   @Input() tournament: ITournament;
   @Input() status: TournamentStatus;
+  @Input() players: ILeaderboardPlayer[];
 
-  players: ILeaderboardPlayer[];
   visible: ILeaderboardPlayer[];
   offset = 0;
   size = 10;
@@ -33,14 +29,15 @@ export class TournamentLeaderboardComponent {
     this.toggleTracking();
   }
 
-  ngOnInit() {
-    this.tournamentService.getPlayers(this.tournament.id)
-        .pipe(takeUntil(this.destroyed$))
-        .subscribe(players => {
-          this.players = players;
-          this.determineInTournament();
-          this.setVisible();
-        });
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.players) {
+      this.determineInTournament();
+      this.setVisible();
+    }
+  }
+
+  get showTimer(): boolean {
+    return this.status === TournamentStatus.ONGOING;
   }
 
   get showQueue(): boolean {
@@ -68,11 +65,13 @@ export class TournamentLeaderboardComponent {
   }
 
   get canJoin() {
-    return !this.inTournament && this.generals.name;
+    return !this.inTournament && this.generals.name &&
+        this.status === TournamentStatus.UPCOMING;
   }
 
   get canLeave() {
-    return this.inTournament && this.generals.name;
+    return this.inTournament && this.generals.name &&
+        this.status === TournamentStatus.UPCOMING;
   }
 
   prev() {
@@ -110,7 +109,8 @@ export class TournamentLeaderboardComponent {
   }
 
   determineInTournament() {
-    this.inTournament = !!this.players.find(p => p.name === this.generals.name);
+    this.inTournament =
+        this.players && !!this.players.find(p => p.name === this.generals.name);
   }
 
   toggleTracking(setTo?: boolean) {

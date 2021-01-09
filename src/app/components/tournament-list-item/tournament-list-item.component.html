@@ -10,16 +10,16 @@
   </ion-card-header>
   <ion-card-content>
     <p>
-      <span *ngIf="tournament.endTime">Started at</span>
+      <span *ngIf="tournament.finished">Started at</span>
       {{ tournament.startTime | date:'M/d/yyyy'}} at {{ tournament.startTime | date:'h:mm a'}}
     </p>
-    <p *ngIf="tournament.endTime">
+    <p *ngIf="tournament.finished">
       <span>Finished at</span>
       {{ tournament.endTime | date:'M/d/yyyy'}} at {{ tournament.endTime | date:'h:mm a'}}
     </p>
     <p>
       {{ tournament.type }} arena
-      <span *ngIf="!tournament.endTime">for {{ duration }}</span>
+      <span *ngIf="!tournament.finished">for {{ duration }}</span>
     </p>
   </ion-card-content>
 </ion-card>

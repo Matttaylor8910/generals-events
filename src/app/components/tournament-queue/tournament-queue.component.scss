@@ -1,4 +1,5 @@
 .tournament-queue {
+  height: 56px;
   margin: 10px 0 20px;
   background: #333;
   padding: 0 12px 0 18px;
@@ -6,5 +7,22 @@
 
   &.joined {
     border-color: purple;
+  }
+
+  .generals-button {
+    width: 150px;
+  }
+
+  .starting-in {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+
+    b {
+      color: #7f7f7f;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
   }
 }

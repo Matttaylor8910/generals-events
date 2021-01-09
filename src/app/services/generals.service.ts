@@ -35,14 +35,6 @@ export class GeneralsService {
     localStorage.setItem(GENERALS_NAME, name);
     this.name = name;
     this.nameChanged$.emit();
-
-    const lastTourney = localStorage.getItem('generals-last-tournament');
-    if (lastTourney) {
-      this.router.navigate(['/', lastTourney]);
-    } else {
-      this.router.navigate(['/']);
-    }
-    localStorage.removeItem('generals-last-tournament');
   }
 
   async decryptUsername(encryptedString: string): Promise<string> {
@@ -51,20 +43,38 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
-  async login(tournamentId?: string) {
+  async login(tournamentId?: string, join?: boolean) {
     if (tournamentId) {
       localStorage.setItem('generals-last-tournament', tournamentId);
+      localStorage.setItem('generals-join', String(join || false));
     }
 
     if (location.href.includes('localhost')) {
       const name = await this.utilService.promptForText();
       if (name) {
-        this.setName(name);
+        this.handleDidLogin(name);
+        setTimeout(() => {
+          location.reload();  // reload for dev to mimick the redirect
+        });
       }
     } else {
       // TODO: change to NA server
       location.href = 'http://bot.generals.io/?eventGetUsername=true';
     }
+  }
+
+  handleDidLogin(name: string) {
+    this.setName(name);
+
+    let lastTourney = localStorage.getItem('generals-last-tournament');
+    const join = localStorage.getItem('generals-join');
+    if (lastTourney) {
+      this.router.navigate(['/', lastTourney], {queryParams: {join}});
+    } else {
+      this.router.navigate(['/']);
+    }
+    localStorage.removeItem('generals-last-tournament');
+    localStorage.removeItem('generals-join');
   }
 
   logout(tournamentId?: string) {

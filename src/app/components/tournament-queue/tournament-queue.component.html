@@ -2,7 +2,14 @@
   <div class="message">
     {{ message }}
   </div>
-  <ion-button class="generals-button" (click)="toggleQueue()" [disabled]="!inTournament">
+  <ion-button class="generals-button" (click)="toggleQueue()" *ngIf="showQueueButton; else timer">
     {{ inQueue ? 'Leave' : 'Join' }} Queue
   </ion-button>
 </div>
+
+<ng-template #timer>
+  <div class="starting-in">
+    <b>Starting in</b>
+    <app-timer [stopAt]="tournament.startTime"></app-timer>
+  </div>
+</ng-template>

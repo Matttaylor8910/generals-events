@@ -24,18 +24,21 @@
     </div>
 
     <div class="main-panel">
-      <app-tournament-trophies
-        [tournament]="tournament"
-        [status]="status">
-      </app-tournament-trophies>
-      <app-tournament-leaderboard
-        [tournament]="tournament"
-        [status]="status">
-      </app-tournament-leaderboard>
-      <app-rules
-        [tournament]="tournament"
-        [status]="status">
-      </app-rules>
+      <ng-container *ngIf="players$ | async as players">
+        <app-tournament-trophies
+          [players]="players"
+          [status]="status">
+        </app-tournament-trophies>
+        <app-tournament-leaderboard
+          [tournament]="tournament"
+          [players]="players"
+          [status]="status">
+        </app-tournament-leaderboard>
+        <app-rules
+          [tournament]="tournament"
+          [status]="status">
+        </app-rules>
+      </ng-container>
     </div>
 
     <div class="right-panel">

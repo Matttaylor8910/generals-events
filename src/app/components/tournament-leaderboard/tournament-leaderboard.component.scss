@@ -9,11 +9,11 @@ table {
       justify-content: space-between;
       align-items: center;
       height: 36px;
+      padding: 0 10px;
 
       .page-control {
         display: flex;
         align-items: center;
-        margin-left: 10px;
 
         ion-button {
           margin: 0;

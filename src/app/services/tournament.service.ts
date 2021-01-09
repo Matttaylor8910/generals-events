@@ -12,10 +12,17 @@ export class TournamentService {
   ) {}
 
   createTournament(tournament: Partial<ITournament>) {
+    const {startTime, durationMinutes} = tournament;
+    if (startTime && durationMinutes) {
+      const endDate = new Date(startTime + (durationMinutes * 60 * 1000));
+      tournament.endTime = endDate.getTime();
+    }
+
     return this.afs.collection('tournaments').add({
       name: 'New Tournament',
       queue: [],
       replays: [],
+      finished: false,
       startTime: null,
       endTime: null,
       playerCount: 0,
@@ -28,8 +35,7 @@ export class TournamentService {
         .collection<ITournament>(
             'tournaments',
             ref => {
-              return ref.where('endTime', finished ? '!=' : '==', null)
-                  .limit(10);
+              return ref.where('finished', '==', finished).limit(10);
             })
         .snapshotChanges()
         .pipe(map(actions => {

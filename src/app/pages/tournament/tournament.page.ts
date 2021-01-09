@@ -1,7 +1,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {Observable, Subject} from 'rxjs';
+import {takeUntil, tap} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
@@ -18,6 +18,7 @@ export class TournamentPage implements OnDestroy {
 
   tournamentId: string;
   tournament: ITournament;
+  players$: Observable<ILeaderboardPlayer[]>;
 
   // TODO: show the player summary when a player is selected
   selectedPlayer: ILeaderboardPlayer;
@@ -29,46 +30,51 @@ export class TournamentPage implements OnDestroy {
       private readonly tournamentService: TournamentService,
   ) {
     this.tournamentId = this.route.snapshot.params.id;
+    this.players$ = this.tournamentService.getPlayers(this.tournamentId)
+                        .pipe(tap(players => {
+                          this.checkJoinQueue(players);
+                        }));
 
     this.tournamentService.getTournament(this.tournamentId)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(tournament => {
           this.tournament = tournament;
         });
-
-    // if this url has the url param "join=true" and the user has their
-    // generals name set, join the queue
-    if (location.href.includes('join=true')) {
-      if (this.generals.name) {
-        this.tournamentService.joinQueue(this.tournamentId, this.generals.name);
-      }
-    }
-    // remove the join url param
-    if (location.href.includes('join=')) {
-      this.router.navigate(['/', this.tournamentId]);
-    }
   }
 
   get status(): TournamentStatus {
     if (this.tournament) {
       const now = Date.now();
-      const endTime = new Date(this.tournament.startTime + (30 * 60 * 1000));
 
-      if (this.tournament.endTime || endTime.getTime() < now) {
+      if (this.tournament.finished || this.tournament.endTime < now) {
         return TournamentStatus.FINISHED;
       } else {
-        if (this.tournament.startTime < now) {
+        if (this.tournament.startTime > now) {
           return TournamentStatus.UPCOMING;
         } else {
           return TournamentStatus.ONGOING;
         }
       }
     }
-    return TournamentStatus.UNKOWN;
+    return TournamentStatus.UNKNOWN;
   }
 
-  get finished(): boolean {
-    return this.tournament && this.tournament.endTime !== null;
+  async checkJoinQueue(players: ILeaderboardPlayer[]) {
+    // if this url has the url param "join=true" and the user has their
+    // generals name set, join the queue
+    if (location.href.includes('join=true')) {
+      const {name} = this.generals;
+      if (name && this.status === TournamentStatus.ONGOING) {
+        if (!players.some(p => p.name === name)) {
+          await this.tournamentService.addPlayer(this.tournamentId, name);
+        }
+        this.tournamentService.joinQueue(this.tournamentId, name);
+      }
+    }
+    // remove the join url param
+    if (location.href.includes('join=')) {
+      this.router.navigate(['/', this.tournamentId]);
+    }
   }
 
   goHome() {

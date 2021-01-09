@@ -2,8 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {UtilService} from 'src/app/services/util.service';
-import {GameStatus, ITournament, TournamentStatus} from 'types';
+import {ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament-queue',
@@ -21,7 +20,6 @@ export class TournamentQueueComponent implements OnDestroy {
   constructor(
       private readonly generals: GeneralsService,
       private readonly tournamentService: TournamentService,
-      private readonly utilService: UtilService,
   ) {
     this.generals.nameChanged$.subscribe(this.checkRedirect.bind(this));
   }
@@ -30,8 +28,12 @@ export class TournamentQueueComponent implements OnDestroy {
     this.checkRedirect();
   }
 
+  get showQueueButton(): boolean {
+    return this.status === TournamentStatus.ONGOING;
+  }
+
   get inQueue(): boolean {
-    return this.tournament?.queue.includes(this.generals.name);
+    return this.tournament?.queue?.includes(this.generals.name);
   }
 
   get message(): string {
@@ -58,11 +60,20 @@ export class TournamentQueueComponent implements OnDestroy {
     return 'Join the queue to get your next game going!';
   }
 
-  toggleQueue() {
+  async toggleQueue() {
     if (this.inQueue) {
       this.tournamentService.leaveQueue(this.tournament.id, this.generals.name);
     } else {
-      this.tournamentService.joinQueue(this.tournament.id, this.generals.name);
+      if (this.generals.name) {
+        if (!this.inTournament) {
+          await this.tournamentService.addPlayer(
+              this.tournament.id, this.generals.name);
+        }
+        this.tournamentService.joinQueue(
+            this.tournament.id, this.generals.name);
+      } else {
+        this.generals.login(this.tournament.id, true);
+      }
     }
   }
 
