@@ -24,5 +24,12 @@
         <p>{{ duration }}</p>
       </ion-label>
     </ion-item>
+    <ion-item *ngIf="tournament.server">
+      <ion-icon slot="start" name="server"></ion-icon>
+      <ion-label>
+        <h2>Server override</h2>
+        <p>Using <b>{{ tournament.server }}</b> server</p>
+      </ion-label>
+    </ion-item>
   </ion-card>
 </div>
