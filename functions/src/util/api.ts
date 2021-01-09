@@ -16,8 +16,8 @@ export function getReplaysForUsername(
     count: number,
     server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
-  const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${name}&offset=${
-      offset}&count=${count}`;
+  const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${
+      encodeURIComponent(name)}&offset=${offset}&count=${count}`;
   return http.get(url).then((response: {data: IGeneralsReplay[]}) => {
     return response.data;
   });
