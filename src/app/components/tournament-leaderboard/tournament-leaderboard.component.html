@@ -9,10 +9,13 @@
     <th colspan="5">
       <div class="header-container">
         <div class="page-control">
+          <ion-button size="small" fill="clear" color="dark" [class.tracking]="tracking" (click)="toggleTracking()" [tooltip]="trackingTooltip">
+            <ion-icon slot="icon-only" name="locate"></ion-icon>
+          </ion-button>
           <ion-button size="small" fill="clear" color="dark" [disabled]="!canPrev" (click)="prev()">
             <ion-icon slot="icon-only" name="play-skip-back"></ion-icon>
           </ion-button>
-          <div>{{ pageControlText }}</div>
+          <div class="control-text">{{ pageControlText }}</div>
           <ion-button size="small" fill="clear" color="dark" [disabled]="!canNext" (click)="next()">
             <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
           </ion-button>

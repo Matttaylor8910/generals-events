@@ -13,10 +13,20 @@ table {
       .page-control {
         display: flex;
         align-items: center;
+        margin-left: 10px;
 
         ion-button {
-          margin: 0 10px;
+          margin: 0;
           width: 40px;
+        }
+
+        .control-text {
+          margin: 0 10px;
+        }
+
+        .tracking {
+          background: #ffffff38 !important;
+          border-radius: 4px;
         }
       }
     }

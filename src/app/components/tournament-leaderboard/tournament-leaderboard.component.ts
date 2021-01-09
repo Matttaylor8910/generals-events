@@ -20,20 +20,25 @@ export class TournamentLeaderboardComponent {
   offset = 0;
   size = 10;
 
+  tracking: boolean;
+  trackingTooltip: string;
+
   inTournament = false;
 
   constructor(
       public readonly generals: GeneralsService,
       private readonly tournamentService: TournamentService,
-  ) {}
+  ) {
+    this.toggleTracking();
+  }
 
   ngOnInit() {
     this.tournamentService.getPlayers(this.tournament.id)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(players => {
           this.players = players;
-          this.setVisible();
           this.determineInTournament();
+          this.setVisible();
         });
   }
 
@@ -66,15 +71,25 @@ export class TournamentLeaderboardComponent {
 
   prev() {
     this.offset -= this.size;
+    this.tracking = false;
     this.setVisible();
   }
 
   next() {
     this.offset += this.size;
+    this.tracking = false;
     this.setVisible();
   }
 
   setVisible() {
+    // short circuit
+    if (!this.players?.length) return;
+
+    if (this.tracking && this.inTournament) {
+      const index = this.players.findIndex(p => p.name === this.generals.name);
+      const page = Math.floor(index / this.size);
+      this.offset = page * this.size;
+    }
     this.visible = this.players.slice(this.offset, this.offset + this.size);
   }
 
@@ -88,5 +103,14 @@ export class TournamentLeaderboardComponent {
 
   determineInTournament() {
     this.inTournament = !!this.players.find(p => p.name === this.generals.name);
+  }
+
+  toggleTracking() {
+    this.tracking = !this.tracking;
+    this.trackingTooltip = `
+      ${this.tracking ? 'Disable' : 'Enable'}
+      tracking which page you\'re on
+    `;
+    this.setVisible();
   }
 }
