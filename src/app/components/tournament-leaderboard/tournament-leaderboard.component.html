@@ -71,4 +71,7 @@
       </td>
     </tr>
   </ng-container>
+  <tr *ngIf="!visible?.length > 0">
+    <td colspan="5">No players to show</td>
+  </tr>
 </table>

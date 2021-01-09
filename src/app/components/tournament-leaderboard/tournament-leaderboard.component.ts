@@ -41,6 +41,7 @@ export class TournamentLeaderboardComponent {
           this.setVisible();
         });
   }
+  z
 
   get pageControlText(): string {
     const players = this.players?.length || 0;
@@ -83,7 +84,9 @@ export class TournamentLeaderboardComponent {
 
   setVisible() {
     // short circuit
-    if (!this.players?.length) return;
+    if (!this.players?.length) {
+      return this.visible = [];
+    }
 
     if (this.tracking && this.inTournament) {
       const index = this.players.findIndex(p => p.name === this.generals.name);
