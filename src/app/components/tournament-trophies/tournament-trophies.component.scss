@@ -11,4 +11,13 @@
     height: 50px;
     margin-right: 20px;
   }
+
+  .generals-title .emoji {
+    text-shadow: none;
+  }
+
+  .winner:hover {
+    cursor: pointer;
+    opacity: .9;
+  }
 }

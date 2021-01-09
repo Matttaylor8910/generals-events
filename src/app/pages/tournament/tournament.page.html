@@ -16,7 +16,9 @@
   <div class="page-container" *ngIf="tournament; else loading">
     <div class="left-panel">
       <div class="panel-container">
-        <app-tournament-summary [tournament]="tournament"></app-tournament-summary>
+        <app-tournament-summary
+          [tournament]="tournament">
+        </app-tournament-summary>
         <app-tournament-player-summary
           *ngIf="selectedPlayer">
         </app-tournament-player-summary>
@@ -26,6 +28,7 @@
     <div class="main-panel">
       <ng-container *ngIf="players$ | async as players">
         <app-tournament-trophies
+          [server]="tournament.server"
           [players]="players"
           [status]="status">
         </app-tournament-trophies>

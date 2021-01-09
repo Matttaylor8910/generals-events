@@ -1,4 +1,15 @@
 <div class="trophies-container" *ngIf="showTrophies">
-  <img src="../../../assets/leaderboard.png">
-  <div class="generals-title">{{ winnerString }}</div>
+  <ng-container *ngIf="winner; else noWinner">
+    <img src="../../../assets/leaderboard.png">
+    <div class="generals-title">
+      <span class="winner" (click)="generals.goToProfile(winner, server)">{{ winner }}</span>
+      wins!
+    </div>
+  </ng-container>
 </div>
+
+<ng-template #noWinner>
+  <div class="generals-title">
+    No one joined this tournament <span class="emoji">😢</span>
+  </div>
+</ng-template>

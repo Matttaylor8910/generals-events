@@ -1,4 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
+import {GeneralsServer} from 'servers';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {ILeaderboardPlayer, TournamentStatus} from 'types';
 
 @Component({
@@ -7,10 +9,13 @@ import {ILeaderboardPlayer, TournamentStatus} from 'types';
   styleUrls: ['./tournament-trophies.component.scss'],
 })
 export class TournamentTrophiesComponent implements OnInit {
+  @Input() server = GeneralsServer.NA;
   @Input() players: ILeaderboardPlayer[];
   @Input() status: TournamentStatus;
 
-  constructor() {}
+  constructor(
+      public readonly generals: GeneralsService,
+  ) {}
 
   ngOnInit() {}
 
@@ -18,8 +23,7 @@ export class TournamentTrophiesComponent implements OnInit {
     return this.status === TournamentStatus.FINISHED;
   }
 
-  get winnerString(): string {
-    return this.players?.length ? `${this.players[0].name} wins!` :
-                                  'No one won?';
+  get winner(): string|null {
+    return this.players?.length ? this.players[0].name : null;
   }
 }
