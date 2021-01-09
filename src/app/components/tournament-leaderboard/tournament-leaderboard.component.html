@@ -9,7 +9,7 @@
     <th colspan="5">
       <div class="header-container">
         <div class="page-control">
-          <ion-button size="small" fill="clear" color="dark" [class.tracking]="tracking" (click)="toggleTracking()" [tooltip]="trackingTooltip">
+          <ion-button size="small" fill="clear" color="dark" [class.tracking]="tracking" (click)="toggleTracking()" [tooltip]="trackingTooltip" *ngIf="inTournament">
             <ion-icon slot="icon-only" name="locate"></ion-icon>
           </ion-button>
           <ion-button size="small" fill="clear" color="dark" [disabled]="!canPrev" (click)="prev()">
