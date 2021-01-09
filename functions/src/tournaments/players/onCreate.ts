@@ -25,12 +25,15 @@ export const onCreatePlayer =
                           []) as IPlayerHistoryRecord[];
 
           // if you already had records or points, give them back to you
-          await doc.ref.update({
+          const batch = db.batch();
+          batch.update(doc.ref, {
             record,
             points: record.map(r => r.points).reduce((a, b) => a + b),
           });
 
-          return tournamentRef.update({
+          batch.update(tournamentRef, {
             playerCount: admin.firestore.FieldValue.increment(1),
           });
+
+          return batch.commit();
         });
