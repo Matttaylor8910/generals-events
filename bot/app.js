@@ -1,145 +1,160 @@
+const http = require('axios').default;
 const io = require('socket.io-client');
 const config = require('./config.js');
 const Bot = require('./scripts/bot.js');
 
 let socket = io('http://bot.generals.io');
-const fs = require('fs');
-const args = require('minimist')(process.argv.slice(2));
+const args = process.argv.slice(2);
+
+const BASE_URL =
+    'https://us-central1-generals-tournaments.cloudfunctions.net/webApi/api/v1';
 
 let bot;
 let playerIndex;
 let replay_url = null;
 let usernames;
+let chatRoom;
 let started = false;
-let restartWaitTime = 10000;
+let connected = false;
 
-if (process.argv.length > 2) {
-  config.user_id = process.argv[2];
-}
-if (process.argv.length > 3) {
-  config.custom_game_id = process.argv[3];
+const tournamentId = args[0];
+const botIndex = args[1] || 0;
+const {userId, name} = config.bots[botIndex];
+
+if (args.length < 1) {
+  throw 'need to pass the tournamentId';
 }
 
 socket.on('disconnect', function() {
-	console.error('Disconnected from server.');
-	process.exit();
+  console.error('Disconnected from server.');
+  connected = false;
+
+  // 1) join the tournament queue again
+  // 2) poll for a lobby to join, when not null, join that game
+  // restart();
+
+  process.exit();
 });
 
 socket.on('connect', function() {
-	console.log('Connected to server.');
-	
-	if(args.o) {
-		joinOneVsOneQueue();
-	} else if(args.f) {
-		joinFFAQueue();
-	} else {
-		joinCustomGameQueue();
-	}
+  console.log('Connected to server.');
+  connected = true;
 
-	// Join the FFA queue.
-	// socket.emit('play', user_id);
-
-	// Join a 2v2 team.
-	// socket.emit('join_team', 'team_name', user_id);
+  // if there is a lobby to join, joinCustomGameQueue();
+  // else join tournament
+  loadTournament();
 });
 
 socket.on('game_start', function(data) {
-	// Get ready to start playing the game.
-	playerIndex = data.playerIndex;
-	started = false;
-	replay_url = 'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
+  // Get ready to start playing the game.
+  playerIndex = data.playerIndex;
+  started = false;
+  replay_url =
+      'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
   usernames = data.usernames;
-	console.log(getFormattedDate() + ' Game starting! playing:' + getEnemies() + ' Replay ' + replay_url);
-	socket.emit('chat_message', data.chat_room, "gl hf");
+  chatRoom = data.chat_room;
+  console.log(getFormattedDate() + ' Game starting! Replay: ' + replay_url);
+  socket.emit('chat_message', chatRoom, 'glhf');
 });
 
 socket.on('game_update', function(data) {
-	if(!started) {
-		bot = new Bot(socket, playerIndex, data);
-		started = true;
-	}
-	
-	bot.update(data);
+  if (!started) {
+    bot = new Bot(socket, playerIndex, data);
+    started = true;
+  }
+
+  bot.update(data);
 });
 
-socket.on('game_lost', function() {
-	leaveGame(false);
-});
+// win or lose, jump back in the queue
+socket.on('game_lost', gameOver.bind(this));
+socket.on('game_won', gameOver.bind(this));
 
-socket.on('game_won', function() {
-	leaveGame(true);
-});
-
-function joinOneVsOneQueue() {
-	socket.emit('set_username', config.user_id, config.username);
-	socket.emit('join_1v1', config.user_id);
-	console.log(getFormattedDate() + ' 1vs1 Lobby');
+function joinCustomGameQueue(lobbyId) {
+  socket.emit('join_private', lobbyId, userId);
+  setTimeout(() => {
+    socket.emit('set_force_start', lobbyId, true);
+  }, 2000);
+  console.log(
+      getFormattedDate() + ' Custom game Lobby http://bot.generals.io/games/' +
+      encodeURIComponent(lobbyId));
 }
 
-function joinFFAQueue() {
-	socket.emit('set_username', config.user_idFFA, config.usernameFFA);
-	socket.emit('play', config.user_idFFA);
-	socket.emit('set_force_start', true);
-	console.log(getFormattedDate() + ' FFA Lobby');
+function gameOver() {
+  socket.emit('chat_message', chatRoom, 'gg');
+  socket.emit('leave_game');
+
+  joinTournamentQueue();
 }
 
-function joinCustomGameQueue() {
-	let custom_game_id = config.custom_game_id;
-	socket.emit('join_private', custom_game_id, config.user_id);
-	setTimeout(() => {
-    socket.emit('set_force_start', custom_game_id, true);
-  },2000);
-	console.log(getFormattedDate() + ' Custom game Lobby http://bot.generals.io/games/' + encodeURIComponent(custom_game_id));
+function loadTournament() {
+  console.log(`loading tournament ${tournamentId}`);
+  http.get(`${BASE_URL}/tournaments/${tournamentId}`).then(response => {
+    if (response.data) {
+      startTime = response.data.startTime;
+      endTime = response.data.endTime;
+
+      // endTime is in the future
+      if (endTime > Date.now()) {
+        joinTournament();
+      } else {
+        tournamentOver();
+      }
+    }
+  });
 }
 
-function leaveGame(won) {
-	socket.emit('leave_game');
-	//game_lost and game_won are called at startup. make sure to not write to file in this situation
-	if(replay_url !== undefined && replay_url !== null) {
-		let date = getFormattedDate();
-		let winningString = won ? "won" : "lost";
-		let enemies = getEnemies();
-		let fileString = date + " " + winningString + " against: " + enemies + " replay: " + replay_url + "\r\n";
-		console.log(date + " " + winningString);
-		let logfile;
-		if(args.o) {
-			logfile = "history1v1.log";
-		} else if(args.f) {
-			logfile = "historyFFA.log";
-		}
-
-		if(args.o || args.f) {
-			fs.appendFile(logfile, fileString, function (err) {
-				if(err !== null) {
-					console.log("error while writing file: " + err);
-				}
-			});
-		}
-		replay_url = null;
-		socket.disconnect();
-	}
+function joinTournament() {
+  console.log(`joining tournament ${tournamentId} as ${name}`);
+  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${name}`);
+  joinTournamentQueue();
 }
 
-function restart() {
-	socket.connect();
+function joinTournamentQueue() {
+  const now = Date.now();
+  if (startTime > now) {
+    const difference = startTime - now;
+    console.log(`tournament starts in ${difference / 1000} seconds`);
+    setTimeout(joinTournamentQueue.bind(this), difference);
+  } else if (endTime < now) {
+    tournamentOver();
+  } else {
+    console.log(`joining queue as ${name}`);
+    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${name}`);
+    pollLobby();
+  }
 }
 
-function getEnemies() {
-	let enemies = [];
-	for(username of usernames) {
-		if(args.f && username != config.usernameFFA) {
-			enemies.push(username);
-		}
-		else if(args.o && username != config.username) {
-			enemies.push(username);
-		}
-	}
-	return enemies;
+function pollLobby() {
+  if (endTime < Date.now()) {
+    return tournamentOver();
+  }
+  http.get(`${BASE_URL}/tournaments/${tournamentId}/lobby/${name}`)
+      .then(response => {
+        if (response.data.lobby) {
+          joinCustomGameQueue(response.data.lobby);
+        } else {
+          console.log(`still waiting for a lobby...`);
+          setTimeout(pollLobby.bind(this), 3000);
+        }
+      })
+      .catch(error => {
+        console.log('something went wrong... polling for lobby again...');
+        setTimeout(pollLobby.bind(this), 1000);
+      });
+}
+
+function tournamentOver() {
+  console.log('tournament is over');
+  socket.disconnect();
+  process.exit();
 }
 
 function getFormattedDate() {
-    var date = new Date();
-    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  var date = new Date();
+  var str = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' +
+      date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' +
+      date.getSeconds();
 
-    return str;
+  return str;
 }

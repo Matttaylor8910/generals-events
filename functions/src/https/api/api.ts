@@ -101,13 +101,17 @@ app.post('/tournaments/:tournamentId/join/:name', async (request, response) => {
     }
 
     // add the player to the tournament
-    await tournamentSnapshot.ref.collection('players').doc(name).set({
-      name,
-      rank: 0,
-      points: 0,
-      currentStreak: 0,
-      record: [],
-    });
+    try {
+      await tournamentSnapshot.ref.collection('players').doc(name).create({
+        name,
+        rank: 0,
+        points: 0,
+        currentStreak: 0,
+        record: [],
+      });
+    } catch (error) {
+      // do nothing
+    }
 
     response.json({success: true});
   } catch (error) {

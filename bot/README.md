@@ -11,22 +11,23 @@ Another instance is playing Free For All(**[Bot] FLOBOT9000**) where it reached 
 You need a **config.js** file in the main directory, that looks like:
 
 ```javascript
-let config = {};
+// bots that are available to be spun up
+const bots = [
+  {userId: 'someIdHere', name: '[BOT] googleman'},
+  {userId: 'someIdHere', name: '[BOT] Lazerpent'},
+  {userId: 'someIdHere', name: '[BOT] pasghetti'},
+  {userId: 'someIdHere', name: '[BOT] syLph'},
+];
 
-config.user_id = 'myid';
-config.username = '[Bot] MyBotName';
-config.custom_game_id = 'MyRoomName';
-
-config.user_idFFA = 'myFFAid';
-config.usernameFFA = '[Bot] MyFFABotName';
-
-module.exports = config;
+module.exports = {
+  bots: bots
+};
 ```
 
 Run the bot:
 
 ```
-node app.js			//start in custom game lobby
-node app.js -o		//one vs one lobby
-node app.js -f		//free for all lobby
+node app.js kusWBBYT0oZUEkRmLa4M 0
 ```
+
+where the first param is the tournamentId and the second is the index of the bot to use
