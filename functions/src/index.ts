@@ -1,3 +1,5 @@
+// callable functions and public API
+export * from './https';
 
-export * from './callable';
+// functions reacting to database changes
 export * from './tournaments';
