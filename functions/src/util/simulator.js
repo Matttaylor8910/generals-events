@@ -1,4 +1,3 @@
-// import {default as http} from 'axios';
 const http = require('axios').default;
 const LZString = require('lz-string');
 const Game = require('./Game');

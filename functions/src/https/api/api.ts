@@ -83,14 +83,25 @@ app.post('/tournaments/:tournamentId/join/:name', async (request, response) => {
     if (!tournamentId) throw new Error('tournamentId is blank');
     if (!name) throw new Error('name is blank');
 
+    const tournamentRef = db.collection('tournaments').doc(tournamentId);
+
     // ensure the tournament exists
-    const snapshot = await db.collection('tournaments').doc(tournamentId).get();
-    if (!snapshot.exists) {
-      response.json({success: false, message: 'tournament doesn\'t esist'});
+    const tournamentSnapshot = await tournamentRef.get();
+    if (!tournamentSnapshot.exists) {
+      response.json({success: false, message: 'tournament doesn\'t exist'});
+    }
+
+    // ensure this user doesn't already exist
+    const player = await tournamentRef.collection('players').doc(name).get();
+    if (player.exists) {
+      response.json({
+        success: false,
+        message: `${name} is already in this tournament`,
+      });
     }
 
     // add the player to the tournament
-    await snapshot.ref.collection('players').doc(name).set({
+    await tournamentSnapshot.ref.collection('players').doc(name).set({
       name,
       rank: 0,
       points: 0,
