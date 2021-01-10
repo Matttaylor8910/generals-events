@@ -143,7 +143,7 @@ export class TournamentService {
         .doc(tournamentId)
         .collection('redirect')
         .doc(redirectId)
-        .set({
+        .update({
           players: firebase.default.firestore.FieldValue.arrayRemove(name),
         });
   }
