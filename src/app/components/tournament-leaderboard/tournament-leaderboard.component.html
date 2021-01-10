@@ -50,7 +50,8 @@
       <td class="record">
         <span
           class="game"
-          [class.winner]="game.win"
+          [class.winner]="game.rank === 1"
+          [class.streak]="game.streak"
           *ngFor="let game of player.record"
           (click)="generals.goToReplay(game.replayId, tournament?.server)"
           tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
@@ -68,7 +69,8 @@
       <td class="record" colspan="5">
         <span
           class="game"
-          [class.winner]="game.win"
+          [class.winner]="game.rank === 1"
+          [class.streak]="game.streak"
           *ngFor="let game of player.record"
           (click)="generals.goToReplay(game.replayId, tournament?.server)"
           tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"

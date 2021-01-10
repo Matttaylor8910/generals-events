@@ -85,7 +85,7 @@ export interface IPlayerHistoryRecord {
   points: number;
   kills: number;
   rank: number;
-  win: boolean;
+  streak: boolean;
 }
 
 // the replay object from the generals.io api

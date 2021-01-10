@@ -78,6 +78,10 @@ table {
           color: var(--ion-color-warning);
           font-weight: bold;
         }
+
+        &.streak {
+          color:#ff6e3f;
+        }
       }
     }
 

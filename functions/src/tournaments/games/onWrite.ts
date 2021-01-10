@@ -168,7 +168,10 @@ async function saveReplayToGame(
       points: player.points,
       rank: player.rank,
       kills: player.kills,
-      win: player.rank === 1,
+
+      // we assume players are not on a streak
+      // the record onCreate function handles player streaks
+      streak: false,
     });
   }
 
