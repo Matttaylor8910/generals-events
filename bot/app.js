@@ -19,10 +19,14 @@ let connected = false;
 
 const tournamentId = args[0];
 const botIndex = args[1] || 0;
-const {userId, name} = config.bots[botIndex];
+const userId = config.bots[botIndex].userId;
+const name = encodeURIComponent(config.bots[botIndex].name);
 
 if (args.length < 1) {
   throw 'need to pass the tournamentId';
+}
+if (!userId) {
+  throw `no bot for index ${botIndex}`;
 }
 
 socket.on('disconnect', function() {
@@ -53,7 +57,7 @@ socket.on('game_start', function(data) {
       'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
   usernames = data.usernames;
   chatRoom = data.chat_room;
-  console.log(getFormattedDate() + ' Game starting! Replay: ' + replay_url);
+  console.log('game starting! replay: ' + replay_url);
   socket.emit('chat_message', chatRoom, 'glhf');
 });
 
@@ -76,7 +80,7 @@ function joinCustomGameQueue(lobbyId) {
     socket.emit('set_force_start', lobbyId, true);
   }, 2000);
   console.log(
-      getFormattedDate() + ' Custom game Lobby http://bot.generals.io/games/' +
+      'custom game lobby: http://bot.generals.io/games/' +
       encodeURIComponent(lobbyId));
 }
 
@@ -148,13 +152,4 @@ function tournamentOver() {
   console.log('tournament is over');
   socket.disconnect();
   process.exit();
-}
-
-function getFormattedDate() {
-  var date = new Date();
-  var str = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' +
-      date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' +
-      date.getSeconds();
-
-  return str;
 }
