@@ -1,0 +1,32 @@
+{
+  "name": "generals.io-bot",
+  "version": "1.0.2",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "code42day-binary-heap": "^2.2.0",
+    "minimist": "^1.2.0",
+    "socket.io-client": "^1.7.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlorianLangeder/generals.io-Bot.git"
+  },
+  "keywords": [
+    "generals.io",
+    "bot",
+    "node.js",
+    "javascript",
+    "ai"
+  ],
+  "author": "Florian Langeder",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/FlorianLangeder/generals.io-Bot/issues"
+  },
+  "homepage": "https://github.com/FlorianLangeder/generals.io-Bot#readme"
+}
