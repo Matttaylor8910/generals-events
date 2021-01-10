@@ -23,6 +23,7 @@ export const onCreatePlayer =
 
           const record = (recordSnapshots.docs.map(snap => snap.data()) ||
                           []) as IPlayerHistoryRecord[];
+          record.sort((a, b) => a.finished - b.finished);
 
           // if you already had records or points, give them back to you
           const batch = db.batch();
