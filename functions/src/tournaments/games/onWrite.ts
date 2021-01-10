@@ -160,7 +160,7 @@ async function saveReplayToGame(
 
   // update each of the player's leaderboard item
   for (const player of replay.scores) {
-    const recordId = `${gameSnapshot.id}_${player.name}`;
+    const recordId = `${replayId}_${player.name}`;
     batch.create(tournamentRef.collection('records').doc(recordId), {
       replayId,
       finished,
