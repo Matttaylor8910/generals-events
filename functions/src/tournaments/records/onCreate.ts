@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import {ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
+import {IPlayerHistoryRecord} from '../../../../types';
 
 try {
   admin.initializeApp();
