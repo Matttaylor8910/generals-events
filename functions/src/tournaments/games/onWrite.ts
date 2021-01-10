@@ -150,6 +150,20 @@ async function saveReplayToGame(
 
   // pull down the replay and save it to the game doc
   const replay = await simulator.getReplay(replayId, server);
+
+  // determine if the winner is on a streak
+  const winner = replay.scores[0];
+  const snapshot =
+      await tournamentRef.collection('players').doc(winner.name).get();
+  const {currentStreak} = snapshot.data() || {};
+
+  // double points from the 3rd win in a row onward
+  if (currentStreak >= 2) {
+    winner.streak = true;
+    winner.points *= 2;
+  }
+
+  // save the replay to the game doc
   const finished = Date.now();
   batch.update(gameSnapshot.ref, {
     replay,
@@ -168,10 +182,7 @@ async function saveReplayToGame(
       points: player.points,
       rank: player.rank,
       kills: player.kills,
-
-      // we assume players are not on a streak
-      // the record onCreate function handles player streaks
-      streak: false,
+      streak: player.streak,
     });
   }
 

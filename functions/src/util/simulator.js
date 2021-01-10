@@ -112,7 +112,7 @@ function simulate(gior) {
     const {name, kills} = players[score.i];
     const rank = index + 1;
     const points = game.generals.length - rank + kills;
-    return {name, kills, rank, points};
+    return {name, kills, rank, points, streak: false};
   });
 
   return {scores, summary};

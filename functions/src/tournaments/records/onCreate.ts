@@ -23,16 +23,6 @@ export const onCreateRecord =
           const record = doc.data() as IPlayerHistoryRecord;
           const winner = record.rank === 1;
 
-          const snapshot =
-              await tournamentRef.collection('players').doc(record.name).get();
-          const {currentStreak} = (snapshot.data() || {}) as ILeaderboardPlayer;
-
-          // double points from the 3rd win in a row onward
-          if (currentStreak >= 2 && winner) {
-            record.points *= 2;
-            record.streak = true;
-          }
-
           return tournamentRef.collection('players').doc(record.name).update({
             points: admin.firestore.FieldValue.increment(record.points),
             currentStreak: winner ? admin.firestore.FieldValue.increment(1) : 0,

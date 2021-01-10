@@ -73,6 +73,7 @@ export interface IGamePlayer {
   kills: number;
   rank: number;
   points: number;
+  streak: boolean;
 }
 
 // a record of a player's stats for this tournament at a given point in time
