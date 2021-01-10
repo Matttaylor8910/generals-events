@@ -9,12 +9,13 @@
     </ion-button>
   </div>
   <div class="players">
-    <div class="player" *ngFor="let player of game.replay.scores">
+    <div class="player" [class.streak]="player.streak" *ngFor="let player of game.replay.scores">
       <div class="left">
         <div class="rank">#{{ player.rank }}</div>
         <ion-label>
           <h2 class="name" (click)="generals.goToProfile(player.name, server)">
             {{ player.name }}
+            <span *ngIf="player.streak">🔥</span>
           </h2>
           <p>{{ player.kills }} {{ player.kills === 1 ? 'kill' : 'kills' }}</p>
         </ion-label>

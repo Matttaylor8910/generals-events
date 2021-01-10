@@ -22,6 +22,15 @@
     justify-content: space-between;
     align-items: center;
 
+    &.streak {
+      &:first-child .rank {
+        color: #ff6e3f;
+      }
+      .points {
+        color: #ff6e3f !important;
+      }
+    }
+
     &:not(:last-child) {
       border-bottom: 1px solid var(--ion-color-light);
     }
@@ -52,7 +61,11 @@
     .points {
       margin-right: 5px;
       font-size: 20px;
-      color: teal;
+      color: #fff;
+
+      &.winner {
+        color: var(--ion-color-warning);
+      }
     }
   }
 
