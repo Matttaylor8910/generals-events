@@ -19,8 +19,8 @@ let connected = false;
 
 const tournamentId = args[0];
 const botIndex = args[1] || 0;
-const userId = config.bots[botIndex].userId;
-const name = encodeURIComponent(config.bots[botIndex].name);
+const {userId, name} = config.bots[botIndex];
+const safeName = encodeURIComponent(name);
 
 if (args.length < 1) {
   throw 'need to pass the tournamentId';
@@ -57,7 +57,7 @@ socket.on('game_start', function(data) {
       'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
   usernames = data.usernames;
   chatRoom = data.chat_room;
-  console.log('game starting! replay: ' + replay_url);
+  console.log(name + '\tgame starting! replay: ' + replay_url);
   socket.emit('chat_message', chatRoom, 'glhf');
 });
 
@@ -78,7 +78,7 @@ function joinCustomGameQueue(lobbyId) {
   socket.emit('join_private', lobbyId, userId);
   setTimeout(() => {
     socket.emit('set_force_start', lobbyId, true);
-  }, 2000);
+  }, 5000);
   console.log(
       'custom game lobby: http://bot.generals.io/games/' +
       encodeURIComponent(lobbyId));
@@ -110,7 +110,7 @@ function loadTournament() {
 
 function joinTournament() {
   console.log(`joining tournament ${tournamentId} as ${name}`);
-  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${name}`);
+  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${safeName}`);
   joinTournamentQueue();
 }
 
@@ -124,7 +124,7 @@ function joinTournamentQueue() {
     tournamentOver();
   } else {
     console.log(`joining queue as ${name}`);
-    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${name}`);
+    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${safeName}`);
     pollLobby();
   }
 }
@@ -133,13 +133,13 @@ function pollLobby() {
   if (endTime < Date.now()) {
     return tournamentOver();
   }
-  http.get(`${BASE_URL}/tournaments/${tournamentId}/lobby/${name}`)
+  http.get(`${BASE_URL}/tournaments/${tournamentId}/lobby/${safeName}`)
       .then(response => {
         if (response.data.lobby) {
           joinCustomGameQueue(response.data.lobby);
         } else {
-          console.log(`still waiting for a lobby...`);
-          setTimeout(pollLobby.bind(this), 3000);
+          console.log(`${name}\twaiting for a lobby...`);
+          setTimeout(pollLobby.bind(this), 1000);
         }
       })
       .catch(error => {
