@@ -79,15 +79,19 @@ export class TournamentLeaderboardComponent {
   }
 
   prev() {
-    this.offset -= this.size;
-    this.toggleTracking(false);
-    this.setVisible();
+    if (this.canPrev) {
+      this.offset -= this.size;
+      this.toggleTracking(false);
+      this.setVisible();
+    }
   }
 
   next() {
-    this.offset += this.size;
-    this.toggleTracking(false);
-    this.setVisible();
+    if (this.canNext) {
+      this.offset += this.size;
+      this.toggleTracking(false);
+      this.setVisible();
+    }
   }
 
   setVisible() {
