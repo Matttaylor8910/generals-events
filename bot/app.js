@@ -15,7 +15,6 @@ let replay_url = null;
 let usernames;
 let chatRoom;
 let started = false;
-let connected = false;
 
 const tournamentId = args[0];
 const botIndex = args[1] || 0;
@@ -31,18 +30,14 @@ if (!userId) {
 
 socket.on('disconnect', function() {
   console.error('Disconnected from server.');
-  connected = false;
 
-  // 1) join the tournament queue again
-  // 2) poll for a lobby to join, when not null, join that game
-  // restart();
-
-  process.exit();
+  // try to join tournament again if we disconnect
+  // if the tournament is over, it will end the process
+  loadTournament();
 });
 
 socket.on('connect', function() {
   console.log('Connected to server.');
-  connected = true;
 
   // if there is a lobby to join, joinCustomGameQueue();
   // else join tournament
@@ -80,7 +75,7 @@ function joinCustomGameQueue(lobbyId) {
     socket.emit('set_force_start', lobbyId, true);
   }, 5000);
   console.log(
-      'custom game lobby: http://bot.generals.io/games/' +
+      name + '\tjoining lobby: http://bot.generals.io/games/' +
       encodeURIComponent(lobbyId));
 }
 
@@ -93,19 +88,24 @@ function gameOver() {
 
 function loadTournament() {
   console.log(`loading tournament ${tournamentId}`);
-  http.get(`${BASE_URL}/tournaments/${tournamentId}`).then(response => {
-    if (response.data) {
-      startTime = response.data.startTime;
-      endTime = response.data.endTime;
+  http.get(`${BASE_URL}/tournaments/${tournamentId}`)
+      .then(response => {
+        if (response.data) {
+          startTime = response.data.startTime;
+          endTime = response.data.endTime;
 
-      // endTime is in the future
-      if (endTime > Date.now()) {
-        joinTournament();
-      } else {
-        tournamentOver();
-      }
-    }
-  });
+          // endTime is in the future
+          if (endTime > Date.now()) {
+            joinTournament();
+          } else {
+            tournamentOver();
+          }
+        }
+      })
+      .catch(error => {
+        console.log(`${name}\tcouldn't load tournament`);
+        setTimeout(loadTournament.bind(this), 5000);
+      });
 }
 
 function joinTournament() {
@@ -162,6 +162,5 @@ function pollLobby() {
 
 function tournamentOver() {
   console.log('tournament is over');
-  socket.disconnect();
   process.exit();
 }
