@@ -18,7 +18,9 @@ const db = admin.firestore();
 export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
-          await lookForFinishedGame(gameDoc.after);
+          if (gameDoc.after.exists) {
+            await lookForFinishedGame(gameDoc.after);
+          }
           return 'Done';
         });
 
