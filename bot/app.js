@@ -109,9 +109,15 @@ function loadTournament() {
 }
 
 function joinTournament() {
-  console.log(`joining tournament ${tournamentId} as ${name}`);
-  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${safeName}`);
-  joinTournamentQueue();
+  console.log(`${name}\tjoining tournament ${tournamentId}`);
+  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${safeName}`)
+      .then(() => {
+        joinTournamentQueue();
+      })
+      .catch(error => {
+        console.log(`${name}\tcouldn't join tournament`);
+        setTimeout(joinTournament.bind(this), 5000);
+      });
 }
 
 function joinTournamentQueue() {
@@ -124,8 +130,14 @@ function joinTournamentQueue() {
     tournamentOver();
   } else {
     console.log(`joining queue as ${name}`);
-    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${safeName}`);
-    pollLobby();
+    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${safeName}`)
+        .then(() => {
+          pollLobby();
+        })
+        .catch(error => {
+          console.log(`${name}\tcouldn't join queue`);
+          setTimeout(joinTournamentQueue.bind(this), 3000);
+        });
   }
 }
 
@@ -143,7 +155,7 @@ function pollLobby() {
         }
       })
       .catch(error => {
-        console.log('something went wrong... polling for lobby again...');
+        console.log(`${name}\tget lobby failed`);
         setTimeout(pollLobby.bind(this), 1000);
       });
 }
