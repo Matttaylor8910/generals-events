@@ -174,8 +174,13 @@ async function saveReplayToGame(
 
   // update each of the player's leaderboard item
   for (const player of replay.scores) {
+    // determine if this player is in the tournament
+    const playerRef = tournamentRef.collection('players').doc(player.name);
+    const playerDoc = await playerRef.get();
+    if (!playerDoc.exists) continue;
+
     const recordId = `${replayId}_${player.name}`;
-    batch.create(tournamentRef.collection('records').doc(recordId), {
+    const record = {
       replayId,
       finished,
       name: player.name,
@@ -183,6 +188,17 @@ async function saveReplayToGame(
       rank: player.rank,
       kills: player.kills,
       streak: player.streak,
+    };
+
+    // save the record in case we ever build features around this
+    batch.create(tournamentRef.collection('records').doc(recordId), record);
+
+    // update the player's points, streak, and record on the leaderboard
+    batch.update(playerRef, {
+      points: admin.firestore.FieldValue.increment(player.points),
+      currentStreak:
+          player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
+      record: admin.firestore.FieldValue.arrayUnion(record),
     });
   }
 
