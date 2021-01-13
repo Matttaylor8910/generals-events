@@ -48,16 +48,18 @@
         {{ player.name }}
       </td>
       <td class="record">
-        <span
-          class="game"
-          [class.winner]="game.rank === 1"
-          [class.streak]="game.streak"
-          *ngFor="let game of player.record"
-          (click)="generals.goToReplay(game.replayId, tournament?.server)"
-          tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
-        >
-          {{ game.points }}
-        </span>
+        <div class="record-container">
+          <span
+            class="game"
+            [class.winner]="game.rank === 1"
+            [class.streak]="game.streak"
+            *ngFor="let game of player.record"
+            (click)="generals.goToReplay(game.replayId, tournament?.server)"
+            tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
+          >
+            {{ game.points }}
+          </span>
+        </div>
       </td>
       <td class="points">
         <span *ngIf="player.currentStreak > 2">🔥</span>
@@ -67,16 +69,18 @@
     <tr [class.even]="i % 2 === 0" class="small-devices">
       <td class="you-marker" [class.highlight]="player.name === generals.name"></td>
       <td class="record" colspan="5">
-        <span
-          class="game"
-          [class.winner]="game.rank === 1"
-          [class.streak]="game.streak"
-          *ngFor="let game of player.record"
-          (click)="generals.goToReplay(game.replayId, tournament?.server)"
-          tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
-        >
-          {{ game.points }}
-        </span>
+        <div class="record-container">
+          <span
+            class="game"
+            [class.winner]="game.rank === 1"
+            [class.streak]="game.streak"
+            *ngFor="let game of player.record"
+            (click)="generals.goToReplay(game.replayId, tournament?.server)"
+            tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
+          >
+            {{ game.points }}
+          </span>
+        </div>
       </td>
     </tr>
   </ng-container>

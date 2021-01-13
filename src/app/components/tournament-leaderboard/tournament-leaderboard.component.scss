@@ -61,7 +61,7 @@ table {
       color: teal;
     }
 
-    .record {
+    .record .record-container {
       display: flex;
       flex-wrap: wrap;
       flex-direction: row-reverse;
@@ -103,9 +103,16 @@ table {
   }
 }
 
+// let bigger screens show the full name on one line
+@media(min-width: 1700px) {
+  table tr .name {
+    white-space: nowrap;
+  }
+}
+
 @media(max-width: 500px) {
   table {
-    tr:not(.small-devices) .record .game {
+    tr:not(.small-devices) .record .record-container {
       display: none;
     }
     tr.small-devices {
