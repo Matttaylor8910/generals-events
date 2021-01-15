@@ -60,5 +60,5 @@
     "tslint": "~6.1.0",
     "typescript": "~3.9.5"
   },
-  "description": "Tournament app for generals.io"
+  "description": "Events app for generals.io"
 }

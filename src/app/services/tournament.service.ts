@@ -22,7 +22,7 @@ export class TournamentService {
     }
 
     tournament = {
-      name: 'New Tournament',
+      name: 'New Event',
       queue: [],
       replays: [],
       finished: false,

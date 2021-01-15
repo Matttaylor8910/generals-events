@@ -39,9 +39,9 @@ export class TournamentQueueComponent implements OnDestroy {
   get message(): string {
     if (this.status === TournamentStatus.UPCOMING) {
       if (!this.inTournament) {
-        return 'Join the tournament!';
+        return 'Join the event!';
       }
-      return `Welcome! The tournament has not started yet.`;
+      return 'Welcome! This event has not started yet.';
     }
 
     if (this.inQueue) {
@@ -52,9 +52,9 @@ export class TournamentQueueComponent implements OnDestroy {
       const myPlace = this.tournament.queue.indexOf(this.generals.name);
 
       if (count >= max && myPlace < max) {
-        return `Creating lobby to join!`
+        return 'Creating lobby to join!';
       } else {
-        return `Waiting for players, ${current} of ${max}. Get ready!`
+        return `Waiting for players, ${current} of ${max}. Get ready!`;
       }
     }
     return 'Join the queue to get your next game going!';
