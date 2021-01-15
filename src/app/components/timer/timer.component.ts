@@ -1,5 +1,5 @@
 import {Component, Input, SimpleChanges} from '@angular/core';
-import {ITournament} from 'types';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-timer',
@@ -26,24 +26,31 @@ export class TimerComponent {
     }
   }
   calculateClock() {
-    const timerRelativeTo = Date.now();
-    this.seconds = (this.stopAt - timerRelativeTo) / 1000;
-    this.clock = this.fancyTimeFormat(this.seconds);
+    this.clock = this.fancyTimeFormat();
 
     // determine the amount of time to the middle of the next second
     const timeToWait = (1500 - (Date.now() % 1000)) % 1000;
     this.timeout = setTimeout(this.calculateClock.bind(this), timeToWait);
   }
 
-  fancyTimeFormat(seconds: number) {
-    if (seconds <= 0) {
+  fancyTimeFormat() {
+    this.seconds = (this.stopAt - Date.now()) / 1000;
+
+    // never go below 0:00
+    if (this.seconds <= 0) {
       return '0:00';
     }
 
     // Hours, minutes and seconds
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds) % 60;
+    const hrs = Math.floor(this.seconds / 3600);
+    const mins = Math.floor((this.seconds % 3600) / 60);
+    const secs = Math.floor(this.seconds) % 60;
+
+    // if this tournament is still quite some time away, show a relative time
+    // like "in 2 days"
+    if (hrs >= 18) {
+      return moment.unix(this.stopAt / 1000).fromNow();
+    }
 
     // Output like '1:01' or '4:03:59' or '123:03:59'
     let ret = '';

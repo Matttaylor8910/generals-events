@@ -30,6 +30,7 @@
     "@ionic/angular": "^5.0.0",
     "firebase": "^8.2.1",
     "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "ng2-tooltip-directive": "^2.9.22",
     "rxjs": "~6.5.5",
     "tslib": "^2.0.0",
