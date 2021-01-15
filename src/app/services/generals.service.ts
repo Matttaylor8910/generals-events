@@ -63,18 +63,43 @@ export class GeneralsService {
     }
   }
 
-  handleDidLogin(name: string) {
+  /**
+   * Set the given name to be the logged in user. A tournamentId can be passed
+   * as the tournament to redirect to after logging in.
+   *
+   * Hitting a URL like the following will login as only_human and join the Jan
+   * 2021 FFA tournament for example:
+   * https://generals-tournaments.web.app/FFA-Jan-2021?encryptedUser=U2FsdGVkX18mHNxXmZ1WzCEtYugx86GG7AS7jLEBD1Y%3D&join=true
+   *
+   * @param name
+   * @param currentTournament
+   */
+  handleDidLogin(name: string, tournamentId?: string) {
     this.setName(name);
 
-    let lastTourney = localStorage.getItem('generals-last-tournament');
-    const join = localStorage.getItem('generals-join');
-    if (lastTourney) {
-      this.router.navigate(['/', lastTourney], {queryParams: {join}});
-    } else {
-      this.router.navigate(['/']);
-    }
+    console.log(`set name to ${name}`);
+
+    // support redirecting to a provided tournament, or the last one saved to
+    // localStorage before redirecting to generals.io
+    // also support auto-joining the tournament when you get there
+    tournamentId =
+        tournamentId || localStorage.getItem('generals-last-tournament');
+    const join = localStorage.getItem('generals-join') ||
+        location.href.includes('join=true');
     localStorage.removeItem('generals-last-tournament');
     localStorage.removeItem('generals-join');
+
+    console.log(`tournamentId: ${tournamentId}, join? ${join}`);
+
+    // redirect to either the tournament or home
+    if (tournamentId) {
+      const queryParams = join ? {join} : undefined;
+      this.router.navigate(['/', tournamentId], {queryParams});
+      console.log(`redirecting to tournament: ${tournamentId}`, queryParams);
+    } else {
+      this.router.navigate(['/']);
+      console.log(`going home`);
+    }
   }
 
   logout(tournamentId?: string) {

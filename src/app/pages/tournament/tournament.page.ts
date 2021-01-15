@@ -64,11 +64,15 @@ export class TournamentPage implements OnDestroy {
     // generals name set, join the queue
     if (location.href.includes('join=true')) {
       const {name} = this.generals;
-      if (name && this.status === TournamentStatus.ONGOING) {
+      if (name && this.status !== TournamentStatus.FINISHED) {
         if (!players.some(p => p.name === name)) {
           await this.tournamentService.addPlayer(this.tournamentId, name);
         }
-        this.tournamentService.joinQueue(this.tournamentId, name);
+
+        // only add to queue if the tournament is ongoing
+        if (this.status === TournamentStatus.ONGOING) {
+          this.tournamentService.joinQueue(this.tournamentId, name);
+        }
       }
     }
     // remove the join url param

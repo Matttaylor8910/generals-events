@@ -2,7 +2,6 @@ import {Component, Input} from '@angular/core';
 import {GeneralsServer} from 'servers';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {ITournament} from 'types';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +9,8 @@ import {ITournament} from 'types';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  @Input() tournament?: ITournament;
+  @Input() tournamentId?: string;
+  @Input() server = GeneralsServer.NA;
 
   actions: IPopoverAction[];
 
@@ -21,23 +21,19 @@ export class LoginComponent {
     this.ngOnChanges();
   }
 
-  get server(): GeneralsServer {
-    return this.tournament?.server || GeneralsServer.NA;
-  }
-
   async checkUserParam() {
     if (location.href.includes('encryptedUser=')) {
-      const param = location.href.split('encryptedUser=')[1];
+      const param = location.href.split('encryptedUser=')[1].split('&')[0];
       const decoded = decodeURIComponent(param);
+      console.log(`decoded param: ${decoded}`);
       const decrypted = await this.generals.decryptUsername(decoded);
-      this.generals.setName(decrypted);
+      this.generals.handleDidLogin(decrypted, this.tournamentId);
     }
   }
 
   ngOnChanges() {
-    this.actions = [{
-      label: 'Logout',
-      onClick: () => this.generals.logout(this.tournament?.id)
-    }];
+    this.actions = [
+      {label: 'Logout', onClick: () => this.generals.logout(this.tournamentId)}
+    ];
   }
 }
