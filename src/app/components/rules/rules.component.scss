@@ -3,4 +3,8 @@
 }
 .highlight {
   color: var(--ion-color-warning);
+
+  &.streak {
+    color: #ff6e3f;
+  }
 }
