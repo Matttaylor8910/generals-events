@@ -15,11 +15,17 @@ const tournamentTypes = {
   },
 }
 
+const months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
+  'Dec'
+];
+
 @Component({
   selector: 'app-create-tournament',
   templateUrl: './create-tournament.page.html',
   styleUrls: ['./create-tournament.page.scss'],
-}) export class CreateTournamentPage {
+})
+export class CreateTournamentPage {
   types = Object.keys(tournamentTypes);
   type = this.types[0];
 
@@ -35,6 +41,13 @@ const tournamentTypes = {
       private readonly tournamentService: TournamentService,
       private readonly modalController: ModalController,
   ) {}
+
+  get namePlaceholder(): string {
+    const date = new Date(this.date);
+    const year = date.getFullYear();
+    const month = months[date.getMonth()];
+    return `${this.type}-${month}-${year}`;
+  }
 
   get invalidDate(): boolean {
     const date = this.getDate();
@@ -52,7 +65,7 @@ const tournamentTypes = {
   async create() {
     this.saving = true;
     await this.tournamentService.createTournament({
-      name: this.name || `${this.type} ${this.date}`,
+      name: this.name || this.namePlaceholder,
       type: this.type as TournamentType,
       startTime: this.getDate().getTime(),
       playersPerGame: tournamentTypes[this.type].playersPerGame,

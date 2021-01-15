@@ -7,18 +7,21 @@ import {GameStatus, IGame, ILeaderboardPlayer, ITournament} from 'types';
 
 @Injectable({providedIn: 'root'})
 export class TournamentService {
+  private db: firebase.default.firestore.Firestore;
   constructor(
       private readonly afs: AngularFirestore,
-  ) {}
+  ) {
+    this.db = firebase.default.firestore();
+  }
 
-  createTournament(tournament: Partial<ITournament>) {
+  async createTournament(tournament: Partial<ITournament>) {
     const {startTime, durationMinutes} = tournament;
     if (startTime && durationMinutes) {
       const endDate = new Date(startTime + (durationMinutes * 60 * 1000));
       tournament.endTime = endDate.getTime();
     }
 
-    return this.afs.collection('tournaments').add({
+    tournament = {
       name: 'New Tournament',
       queue: [],
       replays: [],
@@ -27,7 +30,24 @@ export class TournamentService {
       endTime: null,
       playerCount: 0,
       ...tournament,
-    });
+    };
+
+    // assign this tournament a human readable id that doesn't clash with an
+    // existing tournament
+    let counter;
+    let value;
+    while (!value) {
+      let id = this.getId(tournament.name, counter);
+      const doc = await this.db.collection('tournaments').doc(id).get();
+
+      if (doc.exists) {
+        counter = (counter || 0) + 1;
+      } else {
+        value = this.afs.collection('tournaments').doc(id).set(tournament);
+      }
+    }
+
+    return value;
   }
 
   getTournaments(finished: boolean): Observable<ITournament[]> {
@@ -174,5 +194,16 @@ export class TournamentService {
             return {...doc.data(), id: doc.id};
           });
         }));
+  }
+
+  private getId(name: string, counter?: number) {
+    let id = name.replace(/[^a-zA-Z0-9 \-]/g, '')  // remove illegal values
+                 .trim()                           // remove trailing whitespace
+                 .replace(/[ ]/g, '-');            // spaces to dashes
+
+    if (counter) {
+      id += `-${counter}`;
+    }
+    return id;
   }
 }
