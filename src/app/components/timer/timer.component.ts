@@ -46,9 +46,9 @@ export class TimerComponent {
     const mins = Math.floor((this.seconds % 3600) / 60);
     const secs = Math.floor(this.seconds) % 60;
 
-    // if this tournament is still quite some time away, show a relative time
+    // if this tournament is more than a day away, show a relative time
     // like "in 2 days"
-    if (hrs >= 18) {
+    if (hrs >= 24) {
       return moment.unix(this.stopAt / 1000).fromNow();
     }
 
