@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="create-tournament-button" (click)="createTournament()">
+  <div class="create-tournament-button" (click)="createTournament()" *ngIf="canCreateEvent">
     <ion-icon name="add"></ion-icon>
   </div>
   <div class="home-container">

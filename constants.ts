@@ -9,3 +9,5 @@ export const SITE_URLS = {
   [GeneralsServer.EU]: 'http://eu.generals.io',
   [GeneralsServer.BOT]: 'http://bot.generals.io',
 };
+
+export const ADMINS = ['googleman', 'Lazerpent', 'DavidC'];

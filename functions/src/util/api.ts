@@ -1,6 +1,6 @@
 import {default as http} from 'axios';
 
-import {GeneralsServer, SITE_URLS} from '../../../servers';
+import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {IGeneralsReplay} from '../../../types';
 
 export function getLastReplayForUsername(

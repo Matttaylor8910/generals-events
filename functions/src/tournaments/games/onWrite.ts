@@ -3,7 +3,7 @@ import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
-import {GeneralsServer} from '../../../../servers';
+import {GeneralsServer} from '../../../../constants';
 import {GameStatus, IGame, IGeneralsReplay, ITournament} from '../../../../types';
 import {getReplaysForUsername} from '../../util/api';
 import * as simulator from '../../util/simulator';

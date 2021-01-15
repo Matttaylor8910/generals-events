@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {GeneralsServer} from 'servers';
+import {GeneralsServer} from 'constants';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {ILeaderboardPlayer, TournamentStatus} from 'types';
 

@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {GeneralsServer} from 'servers';
+import {GeneralsServer} from 'constants';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
 

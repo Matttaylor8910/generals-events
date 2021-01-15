@@ -1,7 +1,7 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
-import {GeneralsServer, SITE_URLS} from '../../../servers';
+import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {TournamentService} from './tournament.service';
 import {UtilService} from './util.service';
 

@@ -1,8 +1,12 @@
 import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {Observable} from 'rxjs';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {ITournament} from 'types';
+
+import {ADMINS} from '../../../../constants';
+
 import {CreateTournamentPage} from './create-tournament/create-tournament.page';
 
 @Component({
@@ -17,9 +21,14 @@ export class HomePage {
   constructor(
       private readonly tournamentService: TournamentService,
       private readonly modalController: ModalController,
+      private readonly generals: GeneralsService,
   ) {
     this.unfinishedTournaments$ = this.tournamentService.getTournaments(false);
     this.finishedTournaments$ = this.tournamentService.getTournaments(true);
+  }
+
+  get canCreateEvent() {
+    return ADMINS.includes(this.generals.name);
   }
 
   async createTournament() {
