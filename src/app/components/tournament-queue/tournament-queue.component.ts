@@ -72,7 +72,7 @@ export class TournamentQueueComponent implements OnDestroy {
         this.tournamentService.joinQueue(
             this.tournament.id, this.generals.name);
       } else {
-        this.generals.login(this.tournament.id, true);
+        this.generals.login(this.tournament.id, true, this.tournament.server);
       }
     }
   }

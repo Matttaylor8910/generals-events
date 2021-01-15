@@ -43,7 +43,7 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
-  async login(tournamentId?: string, join?: boolean) {
+  async login(tournamentId: string, join: boolean, server = GeneralsServer.NA) {
     if (tournamentId) {
       localStorage.setItem('generals-last-tournament', tournamentId);
       localStorage.setItem('generals-join', String(join || false));
@@ -58,8 +58,7 @@ export class GeneralsService {
         });
       }
     } else {
-      // TODO: change to NA server
-      location.href = 'http://bot.generals.io/?eventGetUsername=true';
+      location.href = `${SITE_URLS[server]}/?eventGetUsername=true`;
     }
   }
 
