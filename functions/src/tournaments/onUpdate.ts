@@ -1,7 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
-import {GeneralsServer} from '../../../servers';
 import {ITournament} from '../../../types';
 
 try {
@@ -15,14 +14,6 @@ export const onUpdateTournament =
     functions.firestore.document('tournaments/{tournamentId}')
         .onUpdate(async (tournamentDoc, context) => {
           const tournamentId = context.params.tournamentId;
-
-          const {server} = tournamentDoc.after.data() || {};
-          if (server === undefined) {
-            const config = await db.collection('meta').doc('config').get();
-            const defaultServer = config?.data()?.server || GeneralsServer.NA;
-            await tournamentDoc.after.ref.update({server: defaultServer});
-          }
-
           await checkQueue(tournamentDoc.after, tournamentId);
           return 'Done';
         });
