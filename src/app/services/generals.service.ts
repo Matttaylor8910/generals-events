@@ -44,23 +44,22 @@ export class GeneralsService {
   }
 
   async login(tournamentId: string, join: boolean, server = GeneralsServer.NA) {
-    // if (tournamentId) {
-    //   localStorage.setItem('generals-last-tournament', tournamentId);
-    //   localStorage.setItem('generals-join', String(join || false));
-    // }
+    if (tournamentId) {
+      localStorage.setItem('generals-last-tournament', tournamentId);
+      localStorage.setItem('generals-join', String(join || false));
+    }
 
-    // if (location.href.includes('localhost')) {
-    //   const name = await this.utilService.promptForText();
-    //   if (name) {
-    //     this.handleDidLogin(name);
-    //     setTimeout(() => {
-    //       location.reload();  // reload for dev to mimick the redirect
-    //     });
-    //   }
-    // } else {
-    //   location.href = `${SITE_URLS[server]}/?eventGetUsername=true`;
-    // }
-    location.href = 'http://generals.io/#:~:text=Signup';
+    if (location.href.includes('localhost')) {
+      const name = await this.utilService.promptForText();
+      if (name) {
+        this.handleDidLogin(name);
+        setTimeout(() => {
+          location.reload();  // reload for dev to mimick the redirect
+        });
+      }
+    } else {
+      location.href = `${SITE_URLS[server]}/?eventGetUsername=true`;
+    }
   }
 
   /**

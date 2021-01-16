@@ -24,7 +24,7 @@ export class LoginComponent {
   async checkUserParam() {
     if (location.href.includes('encryptedUser=')) {
       const param = location.href.split('encryptedUser=')[1].split('&')[0];
-      const decoded = decodeURIComponent(param).split(' ').join('+');
+      const decoded = decodeURIComponent(param);
       console.log(`decoded param: ${decoded}`);
       const decrypted = await this.generals.decryptUsername(decoded);
       this.generals.handleDidLogin(decrypted, this.tournamentId);
