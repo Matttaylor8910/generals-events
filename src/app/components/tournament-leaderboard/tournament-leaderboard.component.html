@@ -26,11 +26,11 @@
 
         <!-- right side -->
         <ng-container *ngIf="players">
-          <ion-button size="small" fill="clear" color="dark" (click)="join()" *ngIf="canJoin">
+          <ion-button size="small" fill="clear" color="dark" (click)="join()" *ngIf="canJoin" [disabled]="recentlyJoined">
             <ion-icon name="play"></ion-icon>
             Join
           </ion-button>
-          <ion-button size="small" fill="clear" color="dark" (click)="leave()" *ngIf="canLeave">
+          <ion-button size="small" fill="clear" color="dark" (click)="leave()" *ngIf="canLeave" [disabled]="recentlyJoined">
             <ion-icon name="exit"></ion-icon>
             Withdraw
           </ion-button>

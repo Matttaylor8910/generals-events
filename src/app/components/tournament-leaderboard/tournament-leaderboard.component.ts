@@ -21,6 +21,7 @@ export class TournamentLeaderboardComponent {
   trackingTooltip = 'Automatically change pages to show my username';
 
   inTournament = false;
+  recentlyJoined = false;
 
   constructor(
       public readonly generals: GeneralsService,
@@ -110,10 +111,22 @@ export class TournamentLeaderboardComponent {
 
   async join() {
     this.tournamentService.addPlayer(this.tournament.id, this.generals.name);
+    this.setRecentlyJoined();
   }
 
   async leave() {
     this.tournamentService.removePlayer(this.tournament.id, this.generals.name);
+    this.setRecentlyJoined();
+  }
+
+  /**
+   * Don't allow players to rapidly join and withdraw, make them wait 5 seconds
+   */
+  setRecentlyJoined() {
+    this.recentlyJoined = true;
+    setTimeout(() => {
+      this.recentlyJoined = false;
+    }, 5000);
   }
 
   determineInTournament() {
