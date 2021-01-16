@@ -15,15 +15,30 @@ let replay_url = null;
 let usernames;
 let chatRoom;
 let started = false;
+let interval;
 
-const tournamentId = args[0];
-const botIndex = args[1] || 0;
+let tournamentId;
+let lobbyId;
+let botIndex = 0;
+
+let last;
+for (const arg of args) {
+  if (last === '--tournament') {
+    tournamentId = arg;
+  } else if (last === '--lobby') {
+    lobbyId = arg;
+  } else if (last === '--bot') {
+    botIndex = Number(arg);
+  }
+  last = arg;
+}
+
+if (args.length < 2) {
+  help();
+}
+
 const {userId, name} = config.bots[botIndex];
 const safeName = encodeURIComponent(name);
-
-if (args.length < 1) {
-  throw 'need to pass the tournamentId';
-}
 if (!userId) {
   throw `no bot for index ${botIndex}`;
 }
@@ -41,7 +56,13 @@ socket.on('connect', function() {
 
   // if there is a lobby to join, joinCustomGameQueue();
   // else join tournament
-  loadTournament();
+  if (lobbyId) {
+    joinCustomGameQueue(lobbyId);
+  } else if (tournamentId) {
+    loadTournament();
+  } else {
+    help();
+  }
 });
 
 socket.on('game_start', function(data) {
@@ -54,6 +75,7 @@ socket.on('game_start', function(data) {
   chatRoom = data.chat_room;
   console.log(name + '\tgame starting! replay: ' + replay_url);
   socket.emit('chat_message', chatRoom, 'glhf');
+  clearInterval(interval);
 });
 
 socket.on('game_update', function(data) {
@@ -71,7 +93,7 @@ socket.on('game_won', gameOver.bind(this));
 
 function joinCustomGameQueue(lobbyId) {
   socket.emit('join_private', lobbyId, userId);
-  setTimeout(() => {
+  interval = setInterval(() => {
     socket.emit('set_force_start', lobbyId, true);
   }, 5000);
   console.log(
@@ -83,7 +105,11 @@ function gameOver() {
   socket.emit('chat_message', chatRoom, 'gg');
   socket.emit('leave_game');
 
-  joinTournamentQueue();
+  if (lobbyId) {
+    joinCustomGameQueue(lobbyId);
+  } else if (tournamentId) {
+    joinTournamentQueue();
+  }
 }
 
 function loadTournament() {
@@ -162,5 +188,15 @@ function pollLobby() {
 
 function tournamentOver() {
   console.log('tournament is over');
+  process.exit();
+}
+
+function help() {
+  console.log(`
+    Error, please run like:\n
+    node app.js --lobby [lobby_id]
+    node app.js --tournament [tournament_id]
+    node app.js --tournament [tournament_id] --bot [bot_index]
+  `);
   process.exit();
 }

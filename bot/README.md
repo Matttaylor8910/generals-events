@@ -2,10 +2,6 @@
 
 Ai for the online strategy game http://bot.generals.io/  (See dev doc for reference: http://dev.generals.io/)
 
-The bot is running under the name **[Bot] Flobot** in 1v1 and consistantly sits on rank 2.
-
-Another instance is playing Free For All(**[Bot] FLOBOT9000**) where it reached #1.
-
 ## How to use
 
 You need a **config.js** file in the main directory, that looks like:
@@ -24,10 +20,15 @@ module.exports = {
 };
 ```
 
-Run the bot:
-
+Have the bot join and play in a tournament:
 ```
-node app.js kusWBBYT0oZUEkRmLa4M 0
+node app.js --tournament FFA-Jan-2021 --bot 0
 ```
-
-where the first param is the tournamentId and the second is the index of the bot to use
+Spawn 30 bots from your `config.js` file to play in a tournament:
+```
+for i in {0..29}; do node app.js --tournament FFA-Jan-2021 --bot $i &; done
+```
+Have the first bot from your `config.js` file join a lobby:
+```
+node app.js --lobby HxRA
+```
