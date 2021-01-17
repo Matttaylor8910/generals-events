@@ -15,6 +15,7 @@ export enum TournamentStatus {
 export enum GameStatus {
   STARTED = 'STARTED',
   FINISHED = 'FINISHED',
+  TOO_LATE = 'TOO_LATE',
 }
 
 // the tournament object

@@ -67,7 +67,7 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
           replay,
           snapshot,
           tournamentSnap.ref,
-          tournament.server,
+          tournament,
       );
     } else {
       // otherwise, gotta keep looking, start in 10 seconds
@@ -144,7 +144,7 @@ async function saveReplayToGame(
     replay: IGeneralsReplay,
     gameSnapshot: DocumentSnapshot,
     tournamentRef: admin.firestore.DocumentReference,
-    server = GeneralsServer.NA,
+    tournament: ITournament,
     ): Promise<void> {
   const batch = db.batch();
   batch.update(tournamentRef, {
@@ -155,7 +155,7 @@ async function saveReplayToGame(
 
   // pull down the replay and save it to the game doc
   const {scores, summary, turns} =
-      await simulator.getReplayStats(replay.id, server);
+      await simulator.getReplayStats(replay.id, tournament.server);
 
   // determine if the winner is on a streak
   const winner = scores[0];
@@ -172,39 +172,44 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
+  const finished = replay.started + (turns * 1000);
+  const tooLate = tournament.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
     started: replay.started,
-    finished: replay.started + (turns * 1000),
+    finished: finished,
     replay: {scores, summary, turns},
-    status: GameStatus.FINISHED,
+    status: tooLate ? GameStatus.TOO_LATE : GameStatus.FINISHED,
   });
 
-  // update each of the player's leaderboard item
-  for (const player of scores) {
-    // determine if this player is in the tournament
-    const playerRef = tournamentRef.collection('players').doc(player.name);
-    const playerDoc = await playerRef.get();
-    if (!playerDoc.exists) continue;
+  // update each of the player's leaderboard item if the game finished before
+  // the clock ran out
+  if (!tooLate) {
+    for (const player of scores) {
+      // determine if this player is in the tournament
+      const playerRef = tournamentRef.collection('players').doc(player.name);
+      const playerDoc = await playerRef.get();
+      if (!playerDoc.exists) continue;
 
-    const recordId = `${replay.id}_${player.name}`;
-    // determine finished for this player based on their last turn
-    const record = {
-      replayId: replay.id,
-      finished: replay.started + (player.lastTurn * 1000),
-      ...player,
-    };
+      const recordId = `${replay.id}_${player.name}`;
+      // determine finished for this player based on their last turn
+      const record = {
+        replayId: replay.id,
+        finished: replay.started + (player.lastTurn * 1000),
+        ...player,
+      };
 
-    // save the record in case we ever build features around this
-    batch.create(tournamentRef.collection('records').doc(recordId), record);
+      // save the record in case we ever build features around this
+      batch.create(tournamentRef.collection('records').doc(recordId), record);
 
-    // update the player's points, streak, and record on the leaderboard
-    batch.update(playerRef, {
-      points: admin.firestore.FieldValue.increment(player.points),
-      currentStreak:
-          player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
-      record: admin.firestore.FieldValue.arrayUnion(record),
-    });
+      // update the player's points, streak, and record on the leaderboard
+      batch.update(playerRef, {
+        points: admin.firestore.FieldValue.increment(player.points),
+        currentStreak:
+            player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
+        record: admin.firestore.FieldValue.arrayUnion(record),
+      });
+    }
   }
 
   await batch.commit();
