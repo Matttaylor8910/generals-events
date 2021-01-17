@@ -2,6 +2,9 @@ import * as express from 'express';
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
+import {GeneralsServer} from '../../../../constants';
+import * as simulator from '../../util/simulator';
+
 try {
   admin.initializeApp();
 } catch (e) {
@@ -24,6 +27,21 @@ app.get('/', async (request, response) => {
     a generals.io tournament. Feel free to ping @googleman in the generals.io
     discord for more information.
   `);
+});
+
+app.get('/replays/:replayId', async (request, response) => {
+  const {replayId} = request.params;
+  const server = (request.query.server || GeneralsServer.NA) as string;
+
+  try {
+    if (!replayId) throw new Error('replayId is blank');
+    const replay = await simulator.getReplay(replayId, server);
+    response.json(replay);
+  } catch (error) {
+    response.status(500).send({
+      error: `could not retrieve replay (${replayId}) from ${server} server`,
+    });
+  }
 });
 
 /**

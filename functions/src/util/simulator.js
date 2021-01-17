@@ -5,15 +5,16 @@ const Game = require('./Game');
 function getReplay(replayId, server = 'na') {
   const BASE_URL = `https://generalsio-replays-${server}.s3.amazonaws.com`;
   return http.get(`${BASE_URL}/${replayId}.gior`, {responseType: 'arraybuffer'})
-      .then(response => simulate(response.data));
+      .then(response => deserialize(response.data));
+}
+
+function getReplayStats(replayId, server = 'na') {
+  return getReplay(replayId, server).then(replay => simulate(replay));
 }
 
 // TODO: handle team games (#7)
 // TODO: maybe recognize players that turtle, give 0 points (#8)
-function simulate(gior) {
-  // Read in the replay file.
-  var replay = deserialize(gior);
-
+function simulate(replay) {
   // Create a game from the replay.
   var game = Game.createFromReplay(replay);
 
@@ -161,5 +162,6 @@ function deserializeAFK(serialized) {
 }
 
 module.exports = {
-  getReplay: getReplay
+  getReplay: getReplay,
+  getReplayStats: getReplayStats
 };

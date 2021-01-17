@@ -151,7 +151,7 @@ async function saveReplayToGame(
   console.log(`committing ${replayId}`);
 
   // pull down the replay and save it to the game doc
-  const replay = await simulator.getReplay(replayId, server);
+  const replay = await simulator.getReplayStats(replayId, server);
 
   // determine if the winner is on a streak
   const winner = replay.scores[0];
