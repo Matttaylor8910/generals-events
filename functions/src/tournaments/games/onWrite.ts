@@ -151,10 +151,11 @@ async function saveReplayToGame(
   console.log(`committing ${replayId}`);
 
   // pull down the replay and save it to the game doc
-  const replay = await simulator.getReplayStats(replayId, server);
+  const {scores, summary, turns} =
+      await simulator.getReplayStats(replayId, server);
 
   // determine if the winner is on a streak
-  const winner = replay.scores[0];
+  const winner = scores[0];
   const snapshot =
       await tournamentRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
@@ -168,29 +169,21 @@ async function saveReplayToGame(
   // save the replay to the game doc
   const finished = Date.now();
   batch.update(gameSnapshot.ref, {
-    replay,
     replayId,
-    finished,
+    finished,  // TODO: this should come from the replay API
+    replay: {scores, summary, turns},
     status: GameStatus.FINISHED,
   });
 
   // update each of the player's leaderboard item
-  for (const player of replay.scores) {
+  for (const player of scores) {
     // determine if this player is in the tournament
     const playerRef = tournamentRef.collection('players').doc(player.name);
     const playerDoc = await playerRef.get();
     if (!playerDoc.exists) continue;
 
     const recordId = `${replayId}_${player.name}`;
-    const record = {
-      replayId,
-      finished,
-      name: player.name,
-      points: player.points,
-      rank: player.rank,
-      kills: player.kills,
-      streak: player.streak,
-    };
+    const record = {replayId, finished, ...player};
 
     // save the record in case we ever build features around this
     batch.create(tournamentRef.collection('records').doc(recordId), record);

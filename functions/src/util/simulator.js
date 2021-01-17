@@ -8,6 +8,13 @@ function getReplay(replayId, server = 'na') {
       .then(response => deserialize(response.data));
 }
 
+/**
+ * Returns a promise of an object looking like:
+ * {
+ *   scores: IGamePlayerStats[],
+ *   summary: string[]
+ * }
+ */
 function getReplayStats(replayId, server = 'na') {
   return getReplay(replayId, server).then(replay => simulate(replay));
 }
@@ -55,15 +62,16 @@ function simulate(replay) {
   let {afks, usernames} = replay;
   let currentAFK = new Set();
   let players = replay.usernames.map(name => {
-    return {name, kills: 0};
+    return {name, kills: 0, lastTurn: 0};
   });
+  let turn = 0;
 
   // Simulate the game!
   while (!game.isOver() && game.turn < 2000) {
     nextTurn();
 
     const alive = game.generals.filter(g => g >= 0).length;
-    const turn = Math.floor(game.turn / 2);
+    turn = Math.floor(game.turn / 2);
 
     // print when players are eliminated
     if (alive < lastAlive) {
@@ -74,6 +82,7 @@ function simulate(replay) {
           if (killer !== undefined) {
             summary.push(`${killer} killed ${usernames[i]} on turn ${turn}`);
             players[killerIndex].kills++;
+            players[i].lastTurn = turn;
           }
         }
       }
@@ -89,6 +98,7 @@ function simulate(replay) {
               name} before they turned into a city on turn ${turn}`);
         } else {
           summary.push(`${name} quit on turn ${turn}`);
+          players[afk.index].lastTurn = turn;
           currentAFK.add(afk.index);
         }
       }
@@ -99,23 +109,26 @@ function simulate(replay) {
     lastAlive = alive;
   }
 
-  summary.push(`${usernames[game.scores[0].i]} wins!`);
+  // the last player alive made it to the final turn, they win
+  const winnerIndex = game.scores[0].i;
+  players[winnerIndex].lastTurn = turn;
+  summary.push(`${usernames[winnerIndex]} wins!`);
 
   // if the player that came in second quit or surrendered, give that kill to
-  // the player who got first
+  // the player who won
   if (afks.find(afk => afk.index === game.scores[1].i)) {
-    players[game.scores[0].i].kills++;
+    players[winnerIndex].kills++;
   }
 
   // scoring right now is a combination of rank + # of kills
   const scores = game.scores.map((score, index) => {
-    const {name, kills} = players[score.i];
+    const {name, kills, lastTurn} = players[score.i];
     const rank = index + 1;
     const points = game.generals.length - rank + kills;
-    return {name, kills, rank, points, streak: false};
+    return {name, kills, rank, points, lastTurn, streak: false};
   });
 
-  return {scores, summary};
+  return {scores, summary, turns: turn};
 }
 
 // Returns an object that represents the replay.
