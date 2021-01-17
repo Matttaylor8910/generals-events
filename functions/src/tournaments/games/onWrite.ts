@@ -170,11 +170,10 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const finished = replay.started + (turns * 1000);
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
     started: replay.started,
-    finished: finished,
+    finished: replay.started + (turns * 1000),
     replay: {scores, summary, turns},
     status: GameStatus.FINISHED,
   });
@@ -190,7 +189,7 @@ async function saveReplayToGame(
     // determine finished for this player based on their last turn
     const record = {
       replayId: replay.id,
-      finished: finished - ((turns - player.lastTurn) * 1000),
+      finished: replay.started + (player.lastTurn * 1000),
       ...player,
     };
 
