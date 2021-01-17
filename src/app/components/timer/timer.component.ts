@@ -49,7 +49,7 @@ export class TimerComponent {
     // if this tournament is more than a day away, show a relative time
     // like "in 2 days"
     if (hrs >= 24) {
-      return moment.unix(this.stopAt / 1000).fromNow();
+      return moment.unix(this.stopAt / 1000).fromNow().replace('in ', '');
     }
 
     // Output like '1:01' or '4:03:59' or '123:03:59'
