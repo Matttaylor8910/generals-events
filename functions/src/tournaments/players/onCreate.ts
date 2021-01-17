@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
+import {recordSanityCheck} from './onUpdate';
 
 try {
   admin.initializeApp();
@@ -21,20 +22,16 @@ export const onCreatePlayer =
                                       .where('name', '==', name)
                                       .get();
 
-          const record = (recordSnapshots.docs.map(snap => snap.data()) ||
-                          []) as IPlayerHistoryRecord[];
-          record.sort((a, b) => a.finished - b.finished);
+          const existing = (recordSnapshots.docs.map(snap => snap.data()) ||
+                            []) as IPlayerHistoryRecord[];
 
-          // TODO: look at rank to fix up streak if necessary
-          // TODO: add an onWrite function that shares this sanity check logic
+          const {record, currentStreak, points} = recordSanityCheck(existing);
 
           // if you already had records or points, give them back to you
           const batch = db.batch();
-          batch.update(doc.ref, {
-            record,
-            points: record.map(r => r.points).reduce((a, b) => a + b, 0),
-          });
+          batch.update(doc.ref, {record, points, currentStreak});
 
+          // update the player count for this tournament
           batch.update(tournamentRef, {
             playerCount: admin.firestore.FieldValue.increment(1),
           });

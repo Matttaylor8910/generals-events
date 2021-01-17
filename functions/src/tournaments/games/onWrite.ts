@@ -164,6 +164,8 @@ async function saveReplayToGame(
   const {currentStreak} = snapshot.data() || {};
 
   // double points from the 3rd win in a row onward
+  // we use the number 2 here because currentStreak is about to be updated to
+  // 3+, but could currently be 2 in the database prior to this game
   if (currentStreak >= 2) {
     winner.streak = true;
     winner.points *= 2;
