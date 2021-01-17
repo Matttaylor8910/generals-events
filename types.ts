@@ -59,34 +59,31 @@ export interface IGame {
                           // checked to see if there was a replay
   finished?: number;      // unix timestamp of the end of the game
   replayId?: string;      // replay id from generals api response
-  replay?: IGameReplay;   // replay summary and scores
+  replay?: IReplayStats;  // replay scores, summary, stats, etc
   id?: string;            // client field
 }
 
-export interface IGameReplay {
-  scores: IGamePlayer[];
+export interface IReplayStats {
+  scores: IGamePlayerStats[];
   summary: string[];
+  turns: number;
 }
 
-export interface IGamePlayer {
+export interface IGamePlayerStats {
   name: string;
   kills: number;
   rank: number;
   points: number;
+  lastTurn: number;
   streak: boolean;
 }
 
 // a record of a player's stats for this tournament at a given point in time
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
-export interface IPlayerHistoryRecord {
-  name: string;
+export interface IPlayerHistoryRecord extends IGamePlayerStats {
   finished: number;
   replayId: string;
-  points: number;
-  kills: number;
-  rank: number;
-  streak: boolean;
 }
 
 // the replay object from the generals.io api

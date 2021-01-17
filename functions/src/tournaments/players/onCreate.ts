@@ -25,6 +25,9 @@ export const onCreatePlayer =
                           []) as IPlayerHistoryRecord[];
           record.sort((a, b) => a.finished - b.finished);
 
+          // TODO: look at rank to fix up streak if necessary
+          // TODO: add an onWrite function that shares this sanity check logic
+
           // if you already had records or points, give them back to you
           const batch = db.batch();
           batch.update(doc.ref, {

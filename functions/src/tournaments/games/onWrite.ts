@@ -47,22 +47,24 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
 
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
-    const replayIds = await getReplayIdsForPlayers(
+    const replays = await getReplaysForPlayers(
         players,
         tournament.replays,
         game.started,
         tournament.server,
     );
 
-    const {count, replayId} = getMostPrevalentReplay(replayIds);
-    console.log(
-        `${replayId} is shared by ${count} of the ${players.length} players`);
+    const {count, replay} = getMostPrevalentReplay(replays);
+    if (replay) {
+      console.log(`${replay.id} is shared by ${count} of the ${
+          players.length} players`);
+    }
 
     if (count > players.length / 2) {
       // if over half (but not exactly half) of the og players were in this
       // game, and we have not tracked it already, count the game
       await saveReplayToGame(
-          replayId,
+          replay,
           snapshot,
           tournamentSnap.ref,
           tournament.server,
@@ -76,7 +78,7 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
 
 /**
  * Given the list of usernames, get the last 10 replays for each of them, and
- * then return a list of the replayIds for the replays that:
+ * then return a list of the replays that:
  * 1) aren't already tracked on this tournament
  * 2) started after this lobby was created
  * 3) the replay has <= the # of usernames in this game
@@ -86,12 +88,12 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
  * @param gameStarted
  * @param server
  */
-async function getReplayIdsForPlayers(
+async function getReplaysForPlayers(
     usernames: string[],
     trackedReplays: string[],
     gameStarted: number,
     server = GeneralsServer.NA,
-    ): Promise<string[]> {
+    ): Promise<IGeneralsReplay[]> {
   // for each player, request their latest 10 replays
   const replayPromises: Promise<IGeneralsReplay[]>[] =
       usernames.map(name => getReplaysForUsername(name, 0, 10, server));
@@ -99,38 +101,39 @@ async function getReplayIdsForPlayers(
   // wait for all requests to come back
   const replays = await Promise.all(replayPromises);
 
-  return flatten(replays)
-      .filter(replay => {
-        // replays must exist, not already be tracked, and have to start
-        // after this game was created in the database
-        return replay && !trackedReplays.includes(replay.id) &&
-            replay.started > gameStarted &&
-            replay.ranking.length <= usernames.length;
-      })
-      .map(replay => replay.id);
+  return flatten(replays).filter(replay => {
+    // replays must exist, not already be tracked, and have to start
+    // after this game was created in the database
+    return replay && !trackedReplays.includes(replay.id) &&
+        replay.started > gameStarted &&
+        replay.ranking.length <= usernames.length;
+  });
 }
 
 /**
- * Given a list of ids for replays for the players in this game, return the
- * replayId that is most prevalent in this list, along with the number of times
- * it is seen
- * @param replayIds
+ * Given a list of replays for the players in this game, return the replay that
+ * is most prevalent in this list, along with the number of times it is seen
+ * @param replays
  */
-function getMostPrevalentReplay(replayIds: string[]):
-    {count: number, replayId: string} {
-  // build up a map of the present replayIds and their counts
-  const replayCounts = new Map<string, number>();
-  console.log(`loaded ${replayIds.length} replays`);
-  replayIds.forEach(replayId => {
-    replayCounts.set(replayId, (replayCounts.get(replayId) || 0) + 1);
+function getMostPrevalentReplay(replays: IGeneralsReplay[]):
+    {count: number, replay: IGeneralsReplay} {
+  // build up a map of the present replays and their counts
+  const replayCounts = new Map<string, {
+    replay: IGeneralsReplay,
+    count: number,
+  }>();
+  console.log(`loaded ${replays.length} replays`);
+  replays.forEach(replay => {
+    const {count} = (replayCounts.get(replay.id) || {count: 0});
+    replayCounts.set(replay.id, {replay, count: count + 1});
   });
 
   // determine which replay has the most shared players
-  let most = {count: 0, replayId: ''};
-  for (const entry of replayCounts.entries()) {
-    const [replayId, count] = entry;
+  let most = {count: 0, replay: replays[0]};
+  for (const entry of replayCounts.values()) {
+    const {count, replay} = entry;
     if (count > most.count) {
-      most = {count, replayId};
+      most = {count, replay};
     }
   }
 
@@ -138,23 +141,24 @@ function getMostPrevalentReplay(replayIds: string[]):
 }
 
 async function saveReplayToGame(
-    replayId: string,
+    replay: IGeneralsReplay,
     gameSnapshot: DocumentSnapshot,
     tournamentRef: admin.firestore.DocumentReference,
     server = GeneralsServer.NA,
     ): Promise<void> {
   const batch = db.batch();
   batch.update(tournamentRef, {
-    replays: admin.firestore.FieldValue.arrayUnion(replayId),
+    replays: admin.firestore.FieldValue.arrayUnion(replay.id),
   });
 
-  console.log(`committing ${replayId}`);
+  console.log(`committing ${replay.id}`);
 
   // pull down the replay and save it to the game doc
-  const replay = await simulator.getReplayStats(replayId, server);
+  const {scores, summary, turns} =
+      await simulator.getReplayStats(replay.id, server);
 
   // determine if the winner is on a streak
-  const winner = replay.scores[0];
+  const winner = scores[0];
   const snapshot =
       await tournamentRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
@@ -166,30 +170,27 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const finished = Date.now();
   batch.update(gameSnapshot.ref, {
-    replay,
-    replayId,
-    finished,
+    replayId: replay.id,
+    started: replay.started,
+    finished: replay.started + (turns * 1000),
+    replay: {scores, summary, turns},
     status: GameStatus.FINISHED,
   });
 
   // update each of the player's leaderboard item
-  for (const player of replay.scores) {
+  for (const player of scores) {
     // determine if this player is in the tournament
     const playerRef = tournamentRef.collection('players').doc(player.name);
     const playerDoc = await playerRef.get();
     if (!playerDoc.exists) continue;
 
-    const recordId = `${replayId}_${player.name}`;
+    const recordId = `${replay.id}_${player.name}`;
+    // determine finished for this player based on their last turn
     const record = {
-      replayId,
-      finished,
-      name: player.name,
-      points: player.points,
-      rank: player.rank,
-      kills: player.kills,
-      streak: player.streak,
+      replayId: replay.id,
+      finished: replay.started + (player.lastTurn * 1000),
+      ...player,
     };
 
     // save the record in case we ever build features around this
