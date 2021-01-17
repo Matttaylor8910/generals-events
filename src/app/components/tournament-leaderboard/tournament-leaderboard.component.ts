@@ -70,8 +70,7 @@ export class TournamentLeaderboardComponent {
   }
 
   get canJoin() {
-    return !this.inTournament && this.generals.name &&
-        this.status === TournamentStatus.UPCOMING;
+    return !this.inTournament && this.status === TournamentStatus.UPCOMING;
   }
 
   get canLeave() {
@@ -110,7 +109,11 @@ export class TournamentLeaderboardComponent {
   }
 
   async join() {
-    this.tournamentService.addPlayer(this.tournament.id, this.generals.name);
+    if (this.generals.name) {
+      this.tournamentService.addPlayer(this.tournament.id, this.generals.name);
+    } else {
+      this.generals.login(this.tournament.id, true);
+    }
     this.setRecentlyJoined();
   }
 
