@@ -120,8 +120,7 @@ export class TournamentService {
             player.rank = rank;
             lastPoints = player.points;
 
-            // TODO: this should be taken care of when we do #32, we'll make the
-            // initial sort on the server be most recent games first
+            // sort the records in reverse for the leaderboard UI
             player.record.sort((a, b) => b.finished - a.finished);
           }
 
