@@ -42,12 +42,18 @@ export class TournamentLeaderboardComponent {
   }
 
   get showTimer(): boolean {
-    return this.status === TournamentStatus.ONGOING;
+    return [
+      TournamentStatus.ONGOING,
+      TournamentStatus.ALMOST_DONE,
+    ].includes(this.status);
   }
 
   get showQueue(): boolean {
-    return [TournamentStatus.UPCOMING, TournamentStatus.ONGOING].includes(
-        this.status);
+    return [
+      TournamentStatus.UPCOMING,
+      TournamentStatus.ONGOING,
+      TournamentStatus.ALMOST_DONE,
+    ].includes(this.status);
   }
 
   get pageControlText(): string {

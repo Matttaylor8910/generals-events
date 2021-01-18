@@ -28,12 +28,17 @@ export class TournamentQueueComponent implements OnDestroy {
     this.checkRedirect();
   }
 
+  get showTimer(): boolean {
+    return this.status === TournamentStatus.UPCOMING;
+  }
+
   get showQueueButton(): boolean {
     return this.status === TournamentStatus.ONGOING;
   }
 
   get inQueue(): boolean {
-    return this.tournament?.queue?.includes(this.generals.name);
+    return this.status !== TournamentStatus.ALMOST_DONE &&
+        this.tournament?.queue?.includes(this.generals.name);
   }
 
   get message(): string {
@@ -42,6 +47,9 @@ export class TournamentQueueComponent implements OnDestroy {
         return 'Join the event!';
       }
       return 'Welcome! This event has not started yet.';
+    }
+    if (this.status === TournamentStatus.ALMOST_DONE) {
+      return 'This event is almost over, so no more games will be started. The winner will be announced soon!';
     }
 
     if (this.inQueue) {

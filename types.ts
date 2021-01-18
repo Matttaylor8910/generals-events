@@ -14,6 +14,7 @@ export enum TournamentStatus {
   UNKNOWN = 'UNKNOWN',
   UPCOMING = 'UPCOMING',
   ONGOING = 'ONGOING',
+  ALMOST_DONE = 'ALMOST_DONE',
   FINISHED = 'FINISHED',
 }
 
