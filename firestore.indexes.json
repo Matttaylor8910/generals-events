@@ -15,6 +15,14 @@
         {"fieldPath": "status", "order": "ASCENDING"},
         {"fieldPath": "finished", "order": "DESCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "tournaments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "visibility", "order": "ASCENDING"},
+        {"fieldPath": "endTime", "order": "ASCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []
