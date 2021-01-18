@@ -96,12 +96,12 @@ export class TournamentQueueComponent implements OnDestroy {
         this.redirect$ =
             this.tournamentService
                 .getRedirect(this.tournament.id, this.generals.name)
-                .subscribe(redirect => {
+                .subscribe(async redirect => {
                   if (redirect) {
                     const {id, lobby} = redirect;
-                    this.generals.joinLobby(lobby, this.tournament.server);
-                    this.tournamentService.clearRedirect(
+                    await this.tournamentService.clearRedirect(
                         this.tournament.id, id, this.generals.name);
+                    this.generals.joinLobby(lobby, this.tournament.server);
                   }
                 });
       }
