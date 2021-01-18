@@ -46,7 +46,7 @@ export class TournamentPage implements OnDestroy {
     if (this.tournament) {
       const now = Date.now();
 
-      if (this.tournament.finished || this.tournament.endTime < now) {
+      if (this.tournament.endTime < now) {
         return TournamentStatus.FINISHED;
       } else {
         if (this.tournament.startTime > now) {

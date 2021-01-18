@@ -2,7 +2,6 @@ import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
 import {GeneralsServer, SITE_URLS} from '../../../constants';
-import {TournamentService} from './tournament.service';
 import {UtilService} from './util.service';
 
 const GENERALS_NAME = 'generals-name';
@@ -12,7 +11,6 @@ export class GeneralsService {
   nameChanged$ = new EventEmitter();
 
   constructor(
-      private readonly tournamentService: TournamentService,
       private readonly aff: AngularFireFunctions,
       private readonly router: Router,
       private readonly utilService: UtilService,
@@ -101,11 +99,7 @@ export class GeneralsService {
     }
   }
 
-  logout(tournamentId?: string) {
-    if (tournamentId && this.name) {
-      this.tournamentService.removePlayer(tournamentId, this.name);
-    }
-
+  logout() {
     localStorage.removeItem(GENERALS_NAME);
     delete this.name;
     this.nameChanged$.emit();

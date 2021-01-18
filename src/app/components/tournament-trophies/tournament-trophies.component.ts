@@ -1,7 +1,8 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {GeneralsServer} from 'constants';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {ILeaderboardPlayer, TournamentStatus} from 'types';
+
+import {GeneralsServer} from '../../../../constants';
+import {ILeaderboardPlayer, TournamentStatus} from '../../../../types';
 
 @Component({
   selector: 'app-tournament-trophies',

@@ -105,12 +105,18 @@ export class UtilService {
     });
   }
 
-  getDurationString(minutes: number): string {
-    if (minutes) {
-      const hours = Math.floor(minutes / 60);
-      const rem = Math.ceil(minutes % 60);
-      return `${hours ? hours + 'h ' : ''}${rem ? rem + 'm' : ''}`;
-    }
-    return '';
+  getDurationString(startTime: number, endTime: number): string {
+    // short circuit when we fdon't have the info we need
+    if (!startTime || !endTime) return '';
+
+    const minutes = (endTime - startTime) / 1000 / 60;
+    const days = Math.floor(minutes / (60 * 12));
+    const hours = Math.floor(minutes / 60);
+    const rem = Math.ceil(minutes % 60);
+    return `
+      ${days ? days + 'd ' : ''}
+      ${hours ? hours + 'h ' : ''}
+      ${rem ? rem + 'm' : ''}
+    `;
   }
 }

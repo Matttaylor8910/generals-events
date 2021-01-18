@@ -19,11 +19,11 @@ export const onUpdateTournament =
         });
 
 async function checkQueue(snapshot: DocumentSnapshot, tournamentId: string) {
-  const {finished, queue, playersPerGame} = snapshot.data() as ITournament;
+  const {endTime, queue, playersPerGame} = snapshot.data() as ITournament;
 
   // if the tournament isn't over, start a new game if there are enough players
   // in the queue to do so
-  if (!finished && queue.length >= playersPerGame) {
+  if (endTime > Date.now() && queue.length >= playersPerGame) {
     const players = queue.slice(0, playersPerGame);
     players.sort((a, b) => a.localeCompare(b));
     const started = Date.now();

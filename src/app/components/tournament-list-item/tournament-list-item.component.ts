@@ -17,7 +17,12 @@ export class TournamentListItemComponent {
   ) {}
 
   get duration(): string {
-    return this.utilService.getDurationString(this.tournament?.durationMinutes);
+    return this.utilService.getDurationString(
+        this.tournament?.startTime, this.tournament?.endTime);
+  }
+
+  get finished(): boolean {
+    return this.tournament?.endTime < Date.now();
   }
 
   navToTournament() {

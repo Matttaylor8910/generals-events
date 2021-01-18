@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {GeneralsServer} from 'constants';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {TournamentService} from 'src/app/services/tournament.service';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginComponent {
 
   constructor(
       public readonly generals: GeneralsService,
+      private readonly tournamentService: TournamentService,
   ) {
     this.checkUserParam();
     this.ngOnChanges();
@@ -31,9 +33,16 @@ export class LoginComponent {
     }
   }
 
+  logout() {
+    const {tournamentId, generals: {name}} = this;
+    if (tournamentId && name) {
+      this.tournamentService.removePlayer(tournamentId, name);
+      this.tournamentService.leaveQueue(tournamentId, name);
+    }
+    this.generals.logout();
+  }
+
   ngOnChanges() {
-    this.actions = [
-      {label: 'Logout', onClick: () => this.generals.logout(this.tournamentId)}
-    ];
+    this.actions = [{label: 'Logout', onClick: () => this.logout()}];
   }
 }

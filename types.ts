@@ -5,6 +5,11 @@ export enum TournamentType {
   ONE_VS_ONE = '1v1',
 }
 
+export enum Visibility {
+  PUBLIC = 'Public',
+  PRIVATE = 'Private',
+}
+
 export enum TournamentStatus {
   UNKNOWN = 'UNKNOWN',
   UPCOMING = 'UPCOMING',
@@ -24,10 +29,9 @@ export enum GameStatus {
 export interface ITournament {
   name: string;
   type: TournamentType;
-  finished: boolean;
-  startTime: number;        // unix timestamp of start of tournament
-  endTime: number;          // unix timestamp of end of tournament
-  durationMinutes: number;  // # of minutes the tournament should go
+  visibility: Visibility;
+  startTime: number;  // unix timestamp of start of tournament
+  endTime: number;    // unix timestamp of end of tournament
   playersPerGame:
       number;           // number of players to wait for before starting a game
   queue: string[];      // player names in the queue, server will start games

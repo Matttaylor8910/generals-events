@@ -6,16 +6,20 @@
 
 <ion-content>
   <div class="create-tournament">
-    <label>Type</label>
-    <select [(ngModel)]="type" name="type">
-      <option [value]="option" *ngFor="let option of types">{{option}}</option>
-    </select>
     <label>Name</label>
     <input
       [(ngModel)]="name"
       type="text"
       placeholder="{{namePlaceholder}}"
     >
+    <label>Type</label>
+    <select [(ngModel)]="type" name="type">
+      <option [value]="option" *ngFor="let option of types">{{option}}</option>
+    </select>
+    <label>Visibility</label>
+    <select [(ngModel)]="visibility" name="visibility">
+      <option [value]="option" *ngFor="let option of visibilities">{{option}}</option>
+    </select>
     <label>Date</label>
     <input
       [ngModel]="date"

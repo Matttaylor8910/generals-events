@@ -3,32 +3,27 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import * as firebase from 'firebase';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {GameStatus, IGame, ILeaderboardPlayer, ITournament} from 'types';
+
+import {ADMINS} from '../../../constants';
+import {GameStatus, IGame, ILeaderboardPlayer, ITournament, Visibility} from '../../../types';
+import {GeneralsService} from './generals.service';
 
 @Injectable({providedIn: 'root'})
 export class TournamentService {
   private db: firebase.default.firestore.Firestore;
   constructor(
       private readonly afs: AngularFirestore,
+      private readonly generals: GeneralsService,
   ) {
     this.db = firebase.default.firestore();
   }
 
   async createTournament(tournament: Partial<ITournament>) {
-    const {startTime, durationMinutes} = tournament;
-    if (startTime && durationMinutes) {
-      const endDate = new Date(startTime + (durationMinutes * 60 * 1000));
-      tournament.endTime = endDate.getTime();
-    }
-
     tournament = {
-      name: 'New Event',
       queue: [],
       replays: [],
-      finished: false,
-      startTime: null,
-      endTime: null,
       playerCount: 0,
+      visibility: Visibility.PUBLIC,
       ...tournament,
     };
 
@@ -51,11 +46,19 @@ export class TournamentService {
   }
 
   getTournaments(finished: boolean): Observable<ITournament[]> {
+    // admins can see private tournaments too
+    const visibilities = [Visibility.PUBLIC];
+    if (ADMINS.includes(this.generals.name)) {
+      visibilities.push(Visibility.PRIVATE);
+    }
+
     return this.afs
         .collection<ITournament>(
             'tournaments',
             ref => {
-              return ref.where('finished', '==', finished).limit(10);
+              return ref.where('endTime', finished ? '<' : '>=', Date.now())
+                  .where('visibility', 'in', visibilities)
+                  .limit(10);
             })
         .snapshotChanges()
         .pipe(map(actions => {

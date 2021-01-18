@@ -2,15 +2,13 @@ import {DatePipe} from '@angular/common';
 import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {TournamentType} from 'types';
+import {TournamentType, Visibility} from 'types';
 
 const tournamentTypes = {
   [TournamentType.FFA]: {
-    name: 'FFA',
     playersPerGame: 8,
   },
   [TournamentType.ONE_VS_ONE]: {
-    name: '1v1',
     playersPerGame: 2,
   },
 }
@@ -26,7 +24,10 @@ const months = [
   styleUrls: ['./create-tournament.page.scss'],
 })
 export class CreateTournamentPage {
-  types = Object.keys(tournamentTypes);
+  visibilities = Object.values(Visibility);
+  visibility = this.visibilities[0];
+
+  types = Object.values(TournamentType);
   type = this.types[0];
 
   date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
@@ -64,12 +65,19 @@ export class CreateTournamentPage {
 
   async create() {
     this.saving = true;
+
+    // determine the endDate from the tournament duration
+    const duration = Number(this.duration);
+    const startTime = this.getDate().getTime();
+    const endDate = new Date(startTime + (duration * 60 * 1000));
+
     await this.tournamentService.createTournament({
       name: this.name || this.namePlaceholder,
-      type: this.type as TournamentType,
-      startTime: this.getDate().getTime(),
+      type: this.type,
+      visibility: this.visibility,
+      startTime: startTime,
+      endTime: endDate.getTime(),
       playersPerGame: tournamentTypes[this.type].playersPerGame,
-      durationMinutes: Number(this.duration),
     });
     this.modalController.dismiss();
   }
