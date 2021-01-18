@@ -1,5 +1,5 @@
 .tournament-queue {
-  height: 56px;
+  min-height: 56px;
   margin: 10px 0 20px;
   background: #333;
   padding: 0 12px 0 18px;
@@ -7,6 +7,10 @@
 
   &.joined {
     border-color: purple;
+  }
+
+  .message {
+    padding: 6px 0;
   }
 
   .generals-button {
