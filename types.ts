@@ -51,7 +51,15 @@ export interface ILeaderboardPlayer {
   currentStreak: number;  // start at 0, used to determine being on a streak
   record:
       IPlayerHistoryRecord[];  // a list of the point values earned in each game
-                               // played in the tournament and some metadata
+  // played in the tournament and some metadata
+  stats?: ILeaderboardPlayerStats;
+}
+
+export interface ILeaderboardPlayerStats {
+  totalGames: number;         // count
+  winRate: number;            // wins / totalGames
+  quickestWin: number|null;   // number of turns for quickest win
+  averageKills: number|null;  // averge number of kills per game
 }
 
 // a game that was played during a tournament
@@ -69,12 +77,12 @@ export interface IGame {
 }
 
 export interface IReplayStats {
-  scores: IGamePlayerStats[];
+  scores: IGamePlayerRecord[];
   summary: string[];
   turns: number;
 }
 
-export interface IGamePlayerStats {
+export interface IGamePlayerRecord {
   name: string;
   kills: number;
   rank: number;
@@ -86,7 +94,7 @@ export interface IGamePlayerStats {
 // a record of a player's stats for this tournament at a given point in time
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
-export interface IPlayerHistoryRecord extends IGamePlayerStats {
+export interface IPlayerHistoryRecord extends IGamePlayerRecord {
   finished: number;
   replayId: string;
 }

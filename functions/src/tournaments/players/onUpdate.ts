@@ -1,7 +1,8 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {cloneDeep} from 'lodash';
-import {ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
+
+import {ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
 
 try {
   admin.initializeApp();
@@ -17,11 +18,17 @@ export const onUpdatePlayer =
           const {updated, record, currentStreak, points} =
               recordSanityCheck(player.record);
 
+          const updates: Partial<ILeaderboardPlayer> = {
+            stats: getStats(record),
+          };
+
           if (updated) {
-            await doc.after.ref.update({record, points, currentStreak});
+            updates.record = record;
+            updates.currentStreak = currentStreak;
+            updates.points = points;
           }
 
-          return 'Done';
+          return doc.after.ref.update(updates);
         });
 
 export function recordSanityCheck(record: IPlayerHistoryRecord[]): {
@@ -75,4 +82,23 @@ export function recordSanityCheck(record: IPlayerHistoryRecord[]): {
     currentStreak,
     points: record.map(r => r.points).reduce((a, b) => a + b, 0),
   };
+}
+
+function getStats(record: IPlayerHistoryRecord[]): ILeaderboardPlayerStats {
+  const totalGames = record.length;
+  const wins = record.filter(r => r.rank === 1);
+
+  // wins / totalGames
+  const winRate = totalGames > 0 ? wins.length / totalGames : 0;
+
+  // find the quickest win (fewest turns), or null
+  wins.sort((a, b) => a.lastTurn - b.lastTurn);
+  const quickestWin = wins[0]?.lastTurn || null;
+
+  // sum of all kills / totalGames, or null
+  const averageKills = totalGames > 0 ?
+      record.map(r => r.kills).reduce((a, b) => a + b, 0) / totalGames :
+      null;
+
+  return {totalGames, winRate, quickestWin, averageKills};
 }
