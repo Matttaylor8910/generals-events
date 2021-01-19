@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {ITournament, TournamentStatus} from 'types';
+import {ITournament, TournamentStatus, TournamentType} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -16,6 +16,14 @@ export class RulesComponent {
 
   get showRules() {
     return this._showRules || this.status === TournamentStatus.UPCOMING;
+  }
+
+  get hasStreaks(): boolean {
+    return this.tournament?.type !== TournamentType.FFA;
+  }
+
+  get firstPlaceBonus(): boolean {
+    return this.tournament?.type === TournamentType.FFA;
   }
 
   toggleShowRules() {

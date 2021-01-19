@@ -62,7 +62,7 @@
         </div>
       </td>
       <td class="points">
-        <span *ngIf="player.currentStreak > 2">🔥</span>
+        <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
         {{ player.points }}
       </td>
     </tr>

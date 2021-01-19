@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {cloneDeep} from 'lodash';
 
-import {ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
+import {ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord, ITournament, TournamentType} from '../../../../types';
 
 try {
   admin.initializeApp();
@@ -15,8 +15,11 @@ export const onUpdatePlayer =
         .document('tournaments/{tournamentId}/players/{playerId}')
         .onUpdate(async (doc, context) => {
           const player = doc.after.data() as ILeaderboardPlayer;
+          const tournamentSnap = await doc.after.ref.parent.parent!.get();
+          const tournament = (tournamentSnap.data() || {}) as ITournament;
+
           const {updated, record, currentStreak, points} =
-              recordSanityCheck(player.record);
+              recordSanityCheck(player.record, tournament);
 
           const updates: Partial<ILeaderboardPlayer> = {
             stats: getStats(record),
@@ -31,7 +34,8 @@ export const onUpdatePlayer =
           return doc.after.ref.update(updates);
         });
 
-export function recordSanityCheck(record: IPlayerHistoryRecord[]): {
+export function recordSanityCheck(
+    record: IPlayerHistoryRecord[], tournament: ITournament): {
   updated: boolean,
   record: IPlayerHistoryRecord[],
   currentStreak: number,
@@ -56,9 +60,13 @@ export function recordSanityCheck(record: IPlayerHistoryRecord[]): {
     // if the game in this position differs, mark the updated flag to true
     if (original[i].replayId !== record[i].replayId) updated = true;
 
+    // FFA doesn't do streaks right now
+    if (tournament.type === TournamentType.FFA) {
+      // do nothing
+    }
     // if this player should be on a streak, but their record indicates they are
     // not, fix the streak and double their points
-    if (currentStreak >= 3 && !record[i].streak) {
+    else if (currentStreak >= 3 && !record[i].streak) {
       record[i].streak = true;
       record[i].points *= 2;
       updated = true;

@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {GameStatus, IGame, IGeneralsReplay, ITournament} from '../../../../types';
+import {GameStatus, IGame, IGeneralsReplay, ITournament, TournamentType} from '../../../../types';
 import {getReplaysForUsername} from '../../util/api';
 import * as simulator from '../../util/simulator';
 
@@ -163,10 +163,14 @@ async function saveReplayToGame(
       await tournamentRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
 
-  // double points from the 3rd win in a row onward
+  // don't do streaks for FFA, instead just give a 5 point bonus for 1st
+  if (tournament.type === TournamentType.FFA) {
+    winner.points += 5;
+  }
+  // all other types, double points from the 3rd win in a row onward
   // we use the number 2 here because currentStreak is about to be updated to
   // 3+, but could currently be 2 in the database prior to this game
-  if (currentStreak >= 2) {
+  else if (currentStreak >= 2) {
     winner.streak = true;
     winner.points *= 2;
   }

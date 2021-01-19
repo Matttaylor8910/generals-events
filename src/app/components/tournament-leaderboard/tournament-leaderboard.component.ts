@@ -1,7 +1,7 @@
 import {Component, Input, SimpleChanges} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
+import {ILeaderboardPlayer, ITournament, TournamentStatus, TournamentType} from 'types';
 
 @Component({
   selector: 'app-tournament-leaderboard',
@@ -35,6 +35,10 @@ export class TournamentLeaderboardComponent {
       this.determineInTournament();
       this.setVisible();
     }
+  }
+
+  get showStreaks(): boolean {
+    return this.tournament?.type !== TournamentType.FFA;
   }
 
   get showTracker(): boolean {

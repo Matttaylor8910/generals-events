@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import {ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
+import {ILeaderboardPlayer, IPlayerHistoryRecord, ITournament} from '../../../../types';
 import {recordSanityCheck} from './onUpdate';
 
 try {
@@ -16,6 +16,9 @@ export const onCreatePlayer =
         .onCreate(async (doc, context) => {
           const tournamentId = context.params.tournamentId;
           const tournamentRef = db.collection('tournaments').doc(tournamentId);
+          const tournamentSnap = await tournamentRef.get();
+          const tournament = (tournamentSnap.data() || {}) as ITournament;
+
           const {name} = doc.data() as ILeaderboardPlayer;
 
           const recordSnapshots = await tournamentRef.collection('records')
@@ -25,7 +28,8 @@ export const onCreatePlayer =
           const existing = (recordSnapshots.docs.map(snap => snap.data()) ||
                             []) as IPlayerHistoryRecord[];
 
-          const {record, currentStreak, points} = recordSanityCheck(existing);
+          const {record, currentStreak, points} =
+              recordSanityCheck(existing, tournament);
 
           // if you already had records or points, give them back to you
           const batch = db.batch();
