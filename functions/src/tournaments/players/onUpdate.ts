@@ -87,18 +87,36 @@ export function recordSanityCheck(record: IPlayerHistoryRecord[]): {
 function getStats(record: IPlayerHistoryRecord[]): ILeaderboardPlayerStats {
   const totalGames = record.length;
   const wins = record.filter(r => r.rank === 1);
+  const totalWins = wins.length;
 
   // wins / totalGames
-  const winRate = totalGames > 0 ? wins.length / totalGames : 0;
+  const winRate = totalGames > 0 ? totalWins / totalGames : 0;
 
   // find the quickest win (fewest turns), or null
   wins.sort((a, b) => a.lastTurn - b.lastTurn);
   const quickestWin = wins[0]?.lastTurn || null;
+  const totalWinTurns = wins.map(w => w.lastTurn).reduce((a, b) => a + b, 0);
 
-  // sum of all kills / totalGames, or null
-  const averageKills = totalGames > 0 ?
-      record.map(r => r.kills).reduce((a, b) => a + b, 0) / totalGames :
-      null;
+  // calculate some additional stats
+  let totalKills = 0;
+  let totalTurns = 0;
+  let longestStreak = 0;
+  let currentStreak = 0;
+  for (const game of record) {
+    totalKills += game.kills;
+    totalTurns += game.lastTurn;
+    currentStreak = game.rank === 1 ? currentStreak + 1 : 0;
+    if (currentStreak > longestStreak) longestStreak = currentStreak;
+  }
 
-  return {totalGames, winRate, quickestWin, averageKills};
+  return {
+    totalGames,
+    totalWins,
+    winRate,
+    longestStreak,
+    quickestWin,
+    averageWin: totalWins > 0 ? totalWinTurns / totalWins : null,
+    averageKills: totalGames > 0 ? totalKills / totalGames : null,
+    averageTurns: totalGames > 0 ? totalTurns / totalGames : null,
+  };
 }

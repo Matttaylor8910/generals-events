@@ -32,7 +32,9 @@ export class MessageService {
         .pipe(map(actions => {
           return actions.map(action => {
             const message = action.payload.doc.data();
-            message.timestamp = message.timestamp.toDate().getTime();
+            message.timestamp = message.timestamp ?
+                message.timestamp.toDate().getTime() :
+                Date.now();
             return message as IChatMessage;
           });
         }));

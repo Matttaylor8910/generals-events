@@ -57,9 +57,13 @@ export interface ILeaderboardPlayer {
 
 export interface ILeaderboardPlayerStats {
   totalGames: number;         // count
+  totalWins: number;          // count
   winRate: number;            // wins / totalGames
+  longestStreak: number;      // longest win streak
   quickestWin: number|null;   // number of turns for quickest win
-  averageKills: number|null;  // averge number of kills per game
+  averageWin: number|null;    // average number of turns per win
+  averageKills: number|null;  // average number of kills per game
+  averageTurns: number|null;  // average turns they were alive per game
 }
 
 // a game that was played during a tournament
