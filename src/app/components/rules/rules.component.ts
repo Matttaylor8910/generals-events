@@ -19,7 +19,7 @@ export class RulesComponent {
   }
 
   get hasStreaks(): boolean {
-    return this.tournament?.type !== TournamentType.FFA;
+    return this.tournament && this.tournament.type !== TournamentType.FFA;
   }
 
   get firstPlaceBonus(): boolean {

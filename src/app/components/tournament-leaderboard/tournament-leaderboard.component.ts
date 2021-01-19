@@ -38,7 +38,7 @@ export class TournamentLeaderboardComponent {
   }
 
   get showStreaks(): boolean {
-    return this.tournament?.type !== TournamentType.FFA;
+    return this.tournament && this.tournament.type !== TournamentType.FFA;
   }
 
   get showTracker(): boolean {
