@@ -96,6 +96,7 @@ function getStats(record: IPlayerHistoryRecord[]): ILeaderboardPlayerStats {
   const totalGames = record.length;
   const wins = record.filter(r => r.rank === 1);
   const totalWins = wins.length;
+  const totalDeaths = totalGames - totalWins;
 
   // wins / totalGames
   const winRate = totalGames > 0 ? totalWins / totalGames : 0;
@@ -126,5 +127,6 @@ function getStats(record: IPlayerHistoryRecord[]): ILeaderboardPlayerStats {
     averageWin: totalWins > 0 ? totalWinTurns / totalWins : null,
     averageKills: totalGames > 0 ? totalKills / totalGames : null,
     averageTurns: totalGames > 0 ? totalTurns / totalGames : null,
+    killDeathRatio: totalGames > 0 ? totalKills / totalDeaths : null,
   };
 }
