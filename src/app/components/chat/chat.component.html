@@ -1,0 +1,15 @@
+<ion-card id="chat-box" #chatBox>
+  <ion-card-content>
+    <div class="messages" [style.height.px]="messagesHeight">
+      <p *ngFor="let message of messages$ | async">
+        <b>{{ message.sender }}</b>: {{ message.text }}
+      </p>
+    </div>
+    <input
+      [(ngModel)]="text"
+      [placeholder]="placeholder"
+      (keyup.enter)="submit()"
+      [disabled]="disableChat"
+    >
+  </ion-card-content>
+</ion-card>

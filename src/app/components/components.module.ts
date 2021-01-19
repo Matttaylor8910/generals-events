@@ -6,6 +6,7 @@ import {TooltipModule} from 'ng2-tooltip-directive';
 
 import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-page.component';
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
+import {ChatComponent} from './chat/chat.component';
 import {GameListComponent} from './game-list/game-list.component';
 import {GameSummaryComponent} from './game-summary/game-summary.component';
 import {LoginComponent} from './login/login.component';
@@ -23,6 +24,7 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
   declarations: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
+    ChatComponent,
     GameListComponent,
     GameSummaryComponent,
     LoginComponent,
@@ -49,6 +51,7 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
   exports: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
+    ChatComponent,
     GameListComponent,
     GameSummaryComponent,
     LoginComponent,

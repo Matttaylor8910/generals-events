@@ -91,6 +91,12 @@ export interface IPlayerHistoryRecord extends IGamePlayerStats {
   replayId: string;
 }
 
+export interface IChatMessage {
+  sender: string;
+  text: string;
+  timestamp: firestore.FieldValue;  // unix timestamp
+}
+
 // the replay object from the generals.io api
 export interface IGeneralsReplay {
   type: '1v1'|'2v2'|'classic'|'custom';

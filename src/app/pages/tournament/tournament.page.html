@@ -22,6 +22,9 @@
         <app-tournament-player-summary
           *ngIf="selectedPlayer">
         </app-tournament-player-summary>
+        <app-chat
+          [tournament]="tournament">
+        </app-chat>
       </div>
     </div>
 
