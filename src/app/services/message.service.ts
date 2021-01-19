@@ -27,11 +27,14 @@ export class MessageService {
   getTournamentMessages(tournamentId: string): Observable<IChatMessage[]> {
     return this.afs.collection('tournaments')
         .doc(tournamentId)
-        .collection<IChatMessage>(
-            'messages', ref => ref.orderBy('timestamp', 'desc'))
+        .collection('messages', ref => ref.orderBy('timestamp', 'desc'))
         .snapshotChanges()
         .pipe(map(actions => {
-          return actions.map(action => action.payload.doc.data());
+          return actions.map(action => {
+            const message = action.payload.doc.data();
+            message.timestamp = message.timestamp.toDate().getTime();
+            return message as IChatMessage;
+          });
         }));
   }
 }
