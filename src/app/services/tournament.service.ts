@@ -65,7 +65,7 @@ export class TournamentService {
           return actions
               .map(action => {
                 const {doc} = action.payload;
-                return {...doc.data(), id: doc.id};
+                return {...doc.data(), id: doc.id, exists: doc.exists};
               })
               .sort((a, b) => {
                 return finished ? b.endTime - a.endTime :
@@ -79,7 +79,11 @@ export class TournamentService {
         .doc<ITournament>(tournamentId)
         .snapshotChanges()
         .pipe(map(tournament => {
-          return {...tournament.payload.data(), id: tournament.payload.id};
+          return {
+            ...tournament.payload.data(),
+            id: tournament.payload.id,
+            exists: tournament.payload.exists,
+          };
         }));
   }
 

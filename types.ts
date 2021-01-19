@@ -39,7 +39,9 @@ export interface ITournament {
   playerCount: number;  // total players in the tournament
   replays: string[];    // a list of all replays that are tracked so far
   server?: GeneralsServer;  // optional server override
-  id?: string;              // client field
+
+  id?: string;       // client field
+  exists?: boolean;  // client field
 }
 
 // the items to be shown in the leaderboard list

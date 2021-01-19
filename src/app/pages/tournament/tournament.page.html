@@ -14,46 +14,54 @@
 
 <ion-content>
   <div class="page-container" *ngIf="tournament; else loading">
-    <div class="left-panel">
-      <div class="panel-container">
-        <app-tournament-summary
-          [tournament]="tournament">
-        </app-tournament-summary>
-        <app-tournament-player-summary
-          *ngIf="selectedPlayer">
-        </app-tournament-player-summary>
-        <app-chat
-          [tournament]="tournament">
-        </app-chat>
+    <ng-container *ngIf="tournament.exists; else empty">
+      <div class="left-panel">
+        <div class="panel-container">
+          <app-tournament-summary
+            [tournament]="tournament">
+          </app-tournament-summary>
+          <app-tournament-player-summary
+            *ngIf="selectedPlayer">
+          </app-tournament-player-summary>
+          <app-chat
+            [tournament]="tournament">
+          </app-chat>
+        </div>
       </div>
-    </div>
 
-    <div class="main-panel">
-      <ng-container *ngIf="players$ | async as players">
-        <app-tournament-trophies
-          [server]="tournament.server"
-          [players]="players"
-          [status]="status">
-        </app-tournament-trophies>
-        <app-tournament-leaderboard
-          [tournament]="tournament"
-          [players]="players"
-          [status]="status">
-        </app-tournament-leaderboard>
-        <app-rules
-          [tournament]="tournament"
-          [status]="status">
-        </app-rules>
-      </ng-container>
-    </div>
-
-    <div class="right-panel">
-      <div class="panel-container">
-        <app-game-list [tournament]="tournament"></app-game-list>
+      <div class="main-panel">
+        <ng-container *ngIf="players$ | async as players">
+          <app-tournament-trophies
+            [server]="tournament.server"
+            [players]="players"
+            [status]="status">
+          </app-tournament-trophies>
+          <app-tournament-leaderboard
+            [tournament]="tournament"
+            [players]="players"
+            [status]="status">
+          </app-tournament-leaderboard>
+          <app-rules
+            [tournament]="tournament"
+            [status]="status">
+          </app-rules>
+        </ng-container>
       </div>
-    </div>
+
+      <div class="right-panel">
+        <div class="panel-container">
+          <app-game-list [tournament]="tournament"></app-game-list>
+        </div>
+      </div>
+    </ng-container>
   </div>
 </ion-content>
+
+<ng-template #empty>
+  <div class="empty-container">
+    <h1>This tournament doesn't seem to exist 🤔</h1>
+  </div>
+</ng-template>
 
 <ng-template #loading>
   <div class="spinner-container">
