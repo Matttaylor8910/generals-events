@@ -14,3 +14,15 @@
     width: 33%;
   }
 }
+
+@media(max-width: 600px) {
+  .trophies-container {
+    app-tournament-trophy-player {
+      width: 80%;
+
+      &.other-players {
+        display: none;
+      }
+    }
+  }
+}

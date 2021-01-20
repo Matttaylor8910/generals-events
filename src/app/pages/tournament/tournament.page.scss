@@ -47,7 +47,7 @@
   }
 }
 
-@media(max-width: 1000px) {
+@media(max-width: 1160px) {
   .page-container {
     flex-direction: column;
     height: initial;
@@ -58,6 +58,7 @@
     .main-panel {
       flex: 1;
       width: 100%;
+      max-width: 100%;
       overflow: initial;
 
       .panel-container {

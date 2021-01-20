@@ -1,6 +1,7 @@
 <div class="trophies-container" [class.shown]="showTrophies">
   <ng-container *ngIf="first; else noWinner">
     <app-tournament-trophy-player
+      class="other-players"
       [player]="second"
       place="second"
       *ngIf="showOtherPlaces">
@@ -10,6 +11,7 @@
       place="first">
     </app-tournament-trophy-player>
     <app-tournament-trophy-player
+      class="other-players"
       [player]="third"
       place="third"
       *ngIf="showOtherPlaces">
