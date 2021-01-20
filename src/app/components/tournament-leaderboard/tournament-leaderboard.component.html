@@ -64,7 +64,7 @@
       <td class="points">
         <div class="stars" *ngIf="showStars">
           <ion-icon name="star" color="warning"></ion-icon>
-          <span>{{ player.stats?.currentStars || 0 | number:'1.1-1' }}</span>
+          <span>{{ player.stats?.currentStars || 0 | number:'1.0-0' }}</span>
         </div>
         <ng-container *ngIf="!showStars">
           <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
