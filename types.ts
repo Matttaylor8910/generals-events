@@ -58,6 +58,7 @@ export interface ILeaderboardPlayer {
 }
 
 export interface ILeaderboardPlayerStats {
+  currentStars: number;         // stars for tournament type on generals.io
   totalGames: number;           // count
   totalWins: number;            // count
   winRate: number;              // wins / totalGames

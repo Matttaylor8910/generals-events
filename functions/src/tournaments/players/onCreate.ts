@@ -1,6 +1,9 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+
 import {ILeaderboardPlayer, IPlayerHistoryRecord, ITournament} from '../../../../types';
+import {getCurrentStars} from '../../util/generals';
+
 import {recordSanityCheck} from './onUpdate';
 
 try {
@@ -31,9 +34,17 @@ export const onCreatePlayer =
           const {record, currentStreak, points} =
               recordSanityCheck(existing, tournament);
 
+          const currentStars =
+              await getCurrentStars(name, tournament.type, tournament.server);
+
           // if you already had records or points, give them back to you
           const batch = db.batch();
-          batch.update(doc.ref, {record, points, currentStreak});
+          batch.update(doc.ref, {
+            record,
+            points,
+            currentStreak,
+            'stats.currentStars': currentStars,
+          });
 
           // update the player count for this tournament
           batch.update(tournamentRef, {

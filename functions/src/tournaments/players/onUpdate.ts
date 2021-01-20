@@ -3,6 +3,7 @@ import * as functions from 'firebase-functions';
 import {cloneDeep} from 'lodash';
 
 import {ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord, ITournament, TournamentType} from '../../../../types';
+import {getCurrentStars} from '../../util/generals';
 
 try {
   admin.initializeApp();
@@ -21,8 +22,17 @@ export const onUpdatePlayer =
           const {updated, record, currentStreak, points} =
               recordSanityCheck(player.record, tournament);
 
+          const currentStars = await getCurrentStars(
+              player.name,
+              tournament.type,
+              tournament.server,
+          );
+
           const updates: Partial<ILeaderboardPlayer> = {
-            stats: getStats(record),
+            stats: {
+              currentStars,
+              ...getStats(record),
+            } as ILeaderboardPlayerStats,
           };
 
           if (updated) {
@@ -92,7 +102,8 @@ export function recordSanityCheck(
   };
 }
 
-function getStats(record: IPlayerHistoryRecord[]): ILeaderboardPlayerStats {
+function getStats(record: IPlayerHistoryRecord[]):
+    Partial<ILeaderboardPlayerStats> {
   const totalGames = record.length;
   const wins = record.filter(r => r.rank === 1);
   const totalWins = wins.length;

@@ -5,7 +5,7 @@ import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
 import {GameStatus, IGame, IGeneralsReplay, ITournament, TournamentType} from '../../../../types';
-import {getReplaysForUsername} from '../../util/api';
+import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 
 try {

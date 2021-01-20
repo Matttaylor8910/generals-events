@@ -1,7 +1,7 @@
 import {default as http} from 'axios';
 
 import {GeneralsServer, SITE_URLS} from '../../../constants';
-import {IGeneralsReplay} from '../../../types';
+import {IGeneralsReplay, TournamentType} from '../../../types';
 
 export function getLastReplayForUsername(
     name: string,
@@ -20,5 +20,21 @@ export function getReplaysForUsername(
       encodeURIComponent(name)}&offset=${offset}&count=${count}`;
   return http.get(url).then((response: {data: IGeneralsReplay[]}) => {
     return response.data;
+  });
+}
+
+const typesMap = {
+  [TournamentType.FFA]: 'ffa',
+  [TournamentType.ONE_VS_ONE]: 'duel',
+};
+export function getCurrentStars(
+    name: string,
+    type: TournamentType,
+    server = GeneralsServer.NA,
+    ): Promise<number> {
+  const url =
+      `${SITE_URLS[server]}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
+  return http.get(url).then((response) => {
+    return Number(response.data.stars[typesMap[type]]);
   });
 }
