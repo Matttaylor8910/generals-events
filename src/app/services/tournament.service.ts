@@ -117,10 +117,10 @@ export class TournamentService {
           // sort players by points, then win rate, then total games, then
           // quickest win, then fallback to name
           players.sort((a, b) => {
-            if (a.points === b.points) {
-              if (a.stats?.winRate === b.stats?.winRate) {
-                if (a.stats?.totalGames === b.stats?.totalGames) {
-                  if (a.stats?.quickestWin === b.stats?.quickestWin) {
+            if (this.equal(a.points, b.points)) {
+              if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
+                if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
+                  if (this.equal(a.stats?.quickestWin, b.stats?.quickestWin)) {
                     // fallback to name
                     return a.name.localeCompare(b.name);
                   } else {
@@ -221,6 +221,12 @@ export class TournamentService {
         }));
   }
 
+  /**
+   * Return an id with spaces converted to hyphens and non-alphanumeric
+   * characters removed, optional counter appended to the end
+   * @param name
+   * @param counter
+   */
   private getId(name: string, counter?: number) {
     let id = name.replace(/[^a-zA-Z0-9 \-]/g, '')  // remove illegal values
                  .trim()                           // remove trailing whitespace
@@ -230,5 +236,14 @@ export class TournamentService {
       id += `-${counter}`;
     }
     return id;
+  }
+
+  /**
+   * Return true if two values are equal or both are falsey
+   * @param a
+   * @param b
+   */
+  private equal(a?: number|null, b?: number|null): boolean {
+    return a === b || (!a && !b);
   }
 }
