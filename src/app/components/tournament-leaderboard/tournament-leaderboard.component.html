@@ -62,8 +62,14 @@
         </div>
       </td>
       <td class="points">
-        <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
-        {{ player.points }}
+        <div class="stars" *ngIf="showStars">
+          <ion-icon name="star" color="warning"></ion-icon>
+          <span>{{ player.stats?.currentStars || 0 | number:'1.1-1' }}</span>
+        </div>
+        <ng-container *ngIf="!showStars">
+          <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
+          {{ player.points }}
+        </ng-container>
       </td>
     </tr>
     <tr [class.even]="i % 2 === 0" class="small-devices" *ngIf="player.record.length">

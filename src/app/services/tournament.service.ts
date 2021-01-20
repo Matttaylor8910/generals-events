@@ -115,14 +115,21 @@ export class TournamentService {
           });
 
           // sort players by points, then win rate, then total games, then
-          // quickest win, then fallback to name
+          // quickest win, then stars, then fallback to name
           players.sort((a, b) => {
             if (this.equal(a.points, b.points)) {
               if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
                 if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
                   if (this.equal(a.stats?.quickestWin, b.stats?.quickestWin)) {
-                    // fallback to name
-                    return a.name.localeCompare(b.name);
+                    if (this.equal(
+                            a.stats?.currentStars, b.stats?.currentStars)) {
+                      // fallback to name
+                      return a.name.localeCompare(b.name);
+                    } else {
+                      // current stars descending (b - a)
+                      return (b.stats?.currentStars || 0) -
+                          (a.stats?.currentStars || 0);
+                    }
                   } else {
                     // quickest win ascending (a - b)
                     return (a.stats?.quickestWin || 999) -

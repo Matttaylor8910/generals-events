@@ -37,6 +37,11 @@ export class TournamentLeaderboardComponent {
     }
   }
 
+  // before the tournament starts, show the stars for the players
+  get showStars(): boolean {
+    return this.status === TournamentStatus.UPCOMING;
+  }
+
   get showStreaks(): boolean {
     return this.tournament && this.tournament.type !== TournamentType.FFA;
   }

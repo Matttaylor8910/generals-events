@@ -95,6 +95,18 @@ table {
       font-size: 16px;
       padding-right: 16px;
       white-space: nowrap;
+
+      .stars {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        span {
+          margin-left: 5px;
+          width: 30px;
+          text-align: left;
+        }
+      }
     }
 
     &.small-devices {
