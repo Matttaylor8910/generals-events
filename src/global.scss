@@ -34,6 +34,16 @@
 ion-header {
   ion-toolbar {
     height: 65px;
+    display: flex;
+    position: relative;
+
+    ion-title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 0 200px;
+    }
   }
 }
 
@@ -125,4 +135,21 @@ ion-button.generals-button {
 a {
   color: #fff;
   cursor: pointer;
+}
+
+@media(max-width: 700px) {
+  :not(ion-modal) {
+    ion-header {
+      ion-toolbar {
+        ion-title {
+          position: initial;
+          top: initial;
+          left: initial;
+          width: 100%;
+          padding: 20px;
+          text-align: left;
+        }
+      }
+    }
+  }
 }

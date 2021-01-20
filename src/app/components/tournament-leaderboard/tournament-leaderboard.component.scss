@@ -35,6 +35,10 @@ table {
   tr {
     background: #333;
 
+    &:not(.table-header) {
+      height: 42px;
+    }
+
     &.even {
       background: #444;
     }
@@ -102,9 +106,9 @@ table {
         justify-content: flex-end;
 
         span {
+          width: 18px;
           margin-left: 5px;
-          width: 16px;
-          text-align: left;
+          text-align: center;
         }
       }
     }

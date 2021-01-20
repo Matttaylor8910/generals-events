@@ -2,7 +2,7 @@
   <ng-container *ngIf="generals.name">
     <app-actions-popover [actions]="actions"></app-actions-popover>
     <ion-button
-      class="generals-button color-secondary"
+      class="generals-button color-secondary generals-name"
       (click)="generals.goToProfile(generals.name, server)"
     >
       {{ generals.name }}

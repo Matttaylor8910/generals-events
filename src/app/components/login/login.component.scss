@@ -2,3 +2,9 @@
   display: flex;
   align-items: center;
 }
+
+@media(max-width: 550px) {
+  ion-button.generals-name {
+    display: none;
+  }
+}
