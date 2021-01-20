@@ -19,6 +19,7 @@ import {TournamentPlayerSummaryComponent} from './tournament-player-summary/tour
 import {TournamentQueueComponent} from './tournament-queue/tournament-queue.component';
 import {TournamentSummaryComponent} from './tournament-summary/tournament-summary.component';
 import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trophies.component';
+import {TournamentTrophyPlayerComponent} from './tournament-trophy-player/tournament-trophy-player.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
     TournamentQueueComponent,
     TournamentSummaryComponent,
     TournamentTrophiesComponent,
+    TournamentTrophyPlayerComponent,
   ],
   imports: [
     IonicModule,
@@ -64,6 +66,7 @@ import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trop
     TournamentQueueComponent,
     TournamentSummaryComponent,
     TournamentTrophiesComponent,
+    TournamentTrophyPlayerComponent,
   ]
 })
 export class ComponentsModule {

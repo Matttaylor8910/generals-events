@@ -1,0 +1,90 @@
+.winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .trophy {
+    position: relative;
+    text-align: center;
+    height: 220px;
+
+    .rank {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-weight: bold;
+      color: rgba(0,0,0,.4);
+    }
+
+    ion-icon {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  .name {
+    color: #fff;
+  }
+
+  .stats {
+    margin: 10px 0;
+    div {
+      display: flex;
+      justify-content: space-between;
+
+      b {
+        width: 70px;
+        text-align: right;
+      }
+    }
+  }
+
+  &.first {
+    ion-icon {
+      color: gold;
+      font-size: 220px;
+    }
+    .rank {
+      bottom: 102px;
+      font-size: 70px;
+    }
+    .name {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  }
+  &.second {
+    ion-icon {
+      color: silver;
+      font-size: 150px;
+    }
+    .rank {
+      bottom: 76px;
+      font-size: 30px;
+    }
+    .name {
+      font-size: 18px;
+    }
+    .stats {
+      font-size: 14px;
+    }
+  }
+  &.third {
+    ion-icon {
+      color: #c55c31;
+      font-size: 120px;
+    }
+    .rank {
+      bottom: 60px;
+      font-size: 26px;
+    }
+    .name {
+      font-size: 16px;
+    }
+    .stats {
+      font-size: 14px;
+    }
+  }
+}
