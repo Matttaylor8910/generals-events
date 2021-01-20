@@ -64,7 +64,9 @@
       <td class="points">
         <div class="stars" *ngIf="showStars">
           <ion-icon name="star" color="warning"></ion-icon>
-          <span>{{ player.stats?.currentStars || 0 | number:'1.0-0' }}</span>
+          <span *ngIf="player.stats && player.stats.currentStars !== undefined; else spinner">
+            {{ player.stats?.currentStars | number:'1.0-0' }}
+          </span>
         </div>
         <ng-container *ngIf="!showStars">
           <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
@@ -94,3 +96,7 @@
     <td colspan="5">No players to show</td>
   </tr>
 </table>
+
+<ng-template #spinner>
+  <ion-spinner></ion-spinner>
+</ng-template>

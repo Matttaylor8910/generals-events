@@ -105,7 +105,8 @@ table {
         align-items: center;
         justify-content: flex-end;
 
-        span {
+        span,
+        ion-spinner {
           width: 18px;
           margin-left: 5px;
           text-align: center;
