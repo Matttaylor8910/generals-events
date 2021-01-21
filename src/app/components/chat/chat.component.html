@@ -1,8 +1,9 @@
 <ion-card id="chat-box" #chatBox>
   <ion-card-content>
     <div class="messages" [style.height.px]="messagesHeight">
-      <p [title]="message.timestamp | date:'M/d/yyyy h:mm a'" *ngFor="let message of messages$ | async">
-        <b>{{ message.sender }}</b>: {{ message.text }}
+      <p *ngFor="let message of messages$ | async" [class.admin]="isAdmin(message.sender)">
+        <app-crown tooltip="Tournament Organizer"></app-crown>
+        <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'">{{ message.sender }}</b>: {{ message.text }}
       </p>
     </div>
     <input

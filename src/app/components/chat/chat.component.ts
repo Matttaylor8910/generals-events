@@ -1,9 +1,10 @@
 import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
-import {uniqueId} from 'lodash';
 import {Observable} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
-import {IChatMessage, ITournament} from 'types';
+
+import {ADMINS} from '../../../../constants';
+import {IChatMessage, ITournament} from '../../../../types';
 
 @Component({
   selector: 'app-chat',
@@ -43,6 +44,10 @@ export class ChatComponent implements OnInit {
       this.messages$ =
           this.messageService.getTournamentMessages(this.tournament.id);
     }
+  }
+
+  isAdmin(sender: string): boolean {
+    return ADMINS.includes(sender);
   }
 
   submit() {
