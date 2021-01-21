@@ -2,7 +2,7 @@
   <ion-card-content>
     <div class="messages" [style.height.px]="messagesHeight">
       <p *ngFor="let message of messages$ | async" [class.admin]="isAdmin(message.sender)">
-        <app-crown tooltip="Tournament Organizer"></app-crown>
+        <app-crown tooltip="Event Organizer"></app-crown>
         <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'">{{ message.sender }}</b>: {{ message.text }}
       </p>
     </div>
