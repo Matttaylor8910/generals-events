@@ -1,9 +1,10 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Observable, Subject} from 'rxjs';
-import {takeUntil, tap} from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
+import {UtilService} from 'src/app/services/util.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
 @Component({
@@ -18,27 +19,30 @@ export class TournamentPage implements OnDestroy {
 
   tournamentId: string;
   tournament: ITournament;
-  players$: Observable<ILeaderboardPlayer[]>;
-
-  // TODO: show the player summary when a player is selected
-  selectedPlayer: ILeaderboardPlayer;
+  players: ILeaderboardPlayer[];
+  selectedPlayer: ILeaderboardPlayer|Partial<ILeaderboardPlayer>;
 
   constructor(
       public readonly generals: GeneralsService,
       private readonly route: ActivatedRoute,
       private readonly router: Router,
       private readonly tournamentService: TournamentService,
+      private readonly utilService: UtilService,
   ) {
     this.tournamentId = this.route.snapshot.params.id;
-    this.players$ = this.tournamentService.getPlayers(this.tournamentId)
-                        .pipe(tap(players => {
-                          this.checkJoinQueue(players);
-                        }));
+    this.tournamentService.getPlayers(this.tournamentId)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe(players => {
+          this.players = players;
+          this.checkJoinQueue(players);
+          this.determineSelectPlayer(true);
+        });
 
     this.tournamentService.getTournament(this.tournamentId)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(tournament => {
           this.tournament = tournament;
+          this.determineSelectPlayer();
         });
   }
 
@@ -84,6 +88,38 @@ export class TournamentPage implements OnDestroy {
     // remove the join url param
     if (location.href.includes('join=')) {
       this.router.navigate(['/', this.tournamentId]);
+    }
+  }
+
+  determineSelectPlayer(playersUpdated = false) {
+    if (this.players?.length && this.tournament) {
+      if (this.selectedPlayer) {
+        if (playersUpdated) {
+          this.selectedPlayer = this.findPlayer(this.selectedPlayer.name);
+        }
+      } else {
+        if (this.status === TournamentStatus.UPCOMING && this.generals.name) {
+          this.selectedPlayer = this.findPlayer(this.generals.name);
+        }
+      }
+    }
+  }
+
+  findPlayer(name: string): ILeaderboardPlayer|undefined {
+    return this.players?.length ?
+        this.players.find(player => player.name === name) :
+        undefined;
+  }
+
+  selectPlayer(player?: ILeaderboardPlayer|string) {
+    if (typeof player === 'string') {
+      this.selectedPlayer = this.findPlayer(player);
+      if (this.selectedPlayer === undefined) {
+        this.utilService.showToast(`${player} hasn't joined this event!`);
+        this.selectedPlayer = {name: player};
+      }
+    } else {
+      this.selectedPlayer = player;
     }
   }
 

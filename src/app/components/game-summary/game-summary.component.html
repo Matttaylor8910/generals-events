@@ -13,7 +13,7 @@
       <div class="left">
         <div class="rank">#{{ player.rank }}</div>
         <ion-label>
-          <h2 class="name" (click)="generals.goToProfile(player.name, server)">
+          <h2 class="name" (click)="nameClicked.emit(player.name)">
             {{ player.name }}
             <span *ngIf="player.streak">🔥</span>
           </h2>

@@ -1,4 +1,4 @@
-import {Component, Input, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus, TournamentType} from 'types';
@@ -12,6 +12,8 @@ export class TournamentLeaderboardComponent {
   @Input() tournament: ITournament;
   @Input() status: TournamentStatus;
   @Input() players: ILeaderboardPlayer[];
+
+  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   visible: ILeaderboardPlayer[];
   offset = 0;

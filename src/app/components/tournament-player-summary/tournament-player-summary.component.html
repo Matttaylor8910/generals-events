@@ -1,3 +1,98 @@
-<p>
-  tournament-player-summary works!
-</p>
+<ion-card class="player-summary" *ngIf="player">
+  <ion-card-header class="space-between">
+    <ion-card-title (click)="generals.goToProfile(player.name, tournament.server)">
+      <span *ngIf="player.rank">{{ player.rank}}.</span> {{ player.name }}
+      <ion-icon name="link"></ion-icon>
+    </ion-card-title>
+    <ion-icon name="close" (click)="close.emit()"></ion-icon>
+  </ion-card-header>
+  <ion-card-content>
+    <p *ngIf="!player.rank">
+      {{ player.name }} has not joined this event!
+    </p>
+
+    <!-- some stats -->
+    <div class="stats" *ngIf="player.stats as stats">
+      <h2>Stats</h2>
+      <div class="stat-line">
+        <span>Current Stars</span>
+        <b>
+          <ion-icon name="star" color="warning"></ion-icon>
+          {{ stats.currentStars | number:'1.0-1' || 0 }}
+        </b>
+      </div>
+      <div class="stat-line">
+        <span>Games Played</span>
+        <b>{{ stats.totalGames || 0 }}</b>
+      </div>
+      <ng-container *ngIf="stats.totalGames > 0">
+        <div class="stat-line">
+          <span>Games Won</span>
+          <b>{{ stats.totalWins }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Win Rate</span>
+          <b>{{ stats.winRate | percent:'1.0-1' }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Current Streak</span>
+          <b *ngIf="player.currentStreak; else NA">
+            {{ player.currentStreak }}
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Longest Streak</span>
+          <b *ngIf="stats.longestStreak; else NA">
+            {{ stats.longestStreak }}
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Quickest Win</span>
+          <b *ngIf="stats.quickestWin; else NA">
+            {{ stats.quickestWin }} turns
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Win</span>
+          <b *ngIf="stats.averageWin; else NA">
+            {{ stats.averageWin | number:'1.0-0' }} turns
+          </b>
+        </div>
+        <div class="stat-line" *ngIf="stats.averageKills !== stats.killDeathRatio">
+          <span>Average Kills Per Game</span>
+          <b>{{ stats.averageKills | number:'1.0-1' }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Kill-Death Ratio</span>
+          <b *ngIf="stats.totalGames > 0; else NA">
+            {{ stats.killDeathRatio | number:'1.0-1' }}
+          </b>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- games played -->
+    <ng-container *ngIf="player.record?.length > 0">
+      <h2>Games</h2>
+      <div class="games" *ngIf="player.record as games">
+        <div class="game space-between" *ngFor="let game of games">
+          <div class="left-side">
+            <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
+            <span class="time">{{ game.finished | date:'h:mm a' }}</span>
+            <span class="summary">
+              Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} kills.
+            </span>
+          </div>
+          <ion-button size="small" fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, tournament.server)">
+            <ion-icon name="eye"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </ng-container>
+
+  </ion-card-content>
+</ion-card>
+
+<ng-template #NA>
+  <b>N/A</b>
+</ng-template>

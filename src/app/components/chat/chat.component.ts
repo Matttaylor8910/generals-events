@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Observable} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
@@ -15,6 +15,8 @@ export class ChatComponent implements OnInit {
   @ViewChild('chatBox', {read: ElementRef, static: false}) chatBox: ElementRef;
 
   @Input() tournament: ITournament;
+
+  @Output() nameClicked = new EventEmitter<string>();
 
   // more recent messages at the beginning
   messages$: Observable<IChatMessage[]>;

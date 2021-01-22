@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Observable} from 'rxjs';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {IGame, ITournament} from 'types';
@@ -10,6 +10,8 @@ import {IGame, ITournament} from 'types';
 })
 export class GameListComponent {
   @Input() tournament: ITournament;
+
+  @Output() nameClicked = new EventEmitter<string>();
 
   games$: Observable<IGame[]>;
 

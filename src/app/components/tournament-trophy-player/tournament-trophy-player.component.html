@@ -6,11 +6,11 @@
   <div class="name">{{ player.name }}</div>
   <div class="stats" *ngIf="player.stats as stats">
     <div>
-      <span>Games played</span>
+      <span>Games Played</span>
       <b>{{ stats.totalGames }}</b>
     </div>
     <div>
-      <span>Win rate</span>
+      <span>Win Rate</span>
       <b>{{ stats.winRate | percent:'1.0-1' }}</b>
     </div>
     <div>
@@ -18,7 +18,7 @@
       <b>{{ stats.quickestWin }} turns</b>
     </div>
     <div>
-      <span>KDR</span>
+      <span>Kill-Death Ratio</span>
       <b>{{ stats.killDeathRatio | number:'1.1-1' }}</b>
     </div>
   </div>

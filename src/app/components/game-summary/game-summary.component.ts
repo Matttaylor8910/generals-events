@@ -1,7 +1,8 @@
-import {Component, Input} from '@angular/core';
-import {GeneralsServer} from 'constants';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {IGame} from 'types';
+
+import {GeneralsServer} from '../../../../constants';
+import {IGame} from '../../../../types';
 
 @Component({
   selector: 'app-game-summary',
@@ -11,6 +12,8 @@ import {IGame} from 'types';
 export class GameSummaryComponent {
   @Input() server = GeneralsServer.NA;
   @Input() game: IGame;
+
+  @Output() nameClicked = new EventEmitter<string>();
 
   expanded = false;
 

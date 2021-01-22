@@ -1,0 +1,92 @@
+.player-summary {
+  ion-card-title {
+    ion-icon {
+      opacity: 0;
+      top: 3px;
+      position: relative;
+      color: #949494;
+    }
+
+    &:hover {
+      cursor: pointer;
+      color: teal;
+
+      ion-icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  ion-icon[name="close"] {
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, .05);
+    }
+  }
+
+  .generals-button {
+    margin: 0 auto 16px;
+  }
+
+  h2 {
+    color: #fff;
+  }
+
+  .stats b ion-icon {
+    position: relative;
+    top: 1.5px;
+  }
+
+  .stat-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    &:not(:last-of-type) {
+      border-bottom: 1px solid #333;
+    }
+  }
+
+  .games {
+    max-height: 295px;
+    overflow: auto;
+
+    .game {
+      padding: 4px 0;
+      border-bottom: 1px solid #333;
+
+      .left-side {
+        display: flex;
+        flex-wrap: wrap;
+
+        .win {
+          color: var(--ion-color-warning);
+          font-weight: bold;
+        }
+
+        .points {
+          width: 25px;
+          font-weight: bold;
+          white-space: nowrap;
+        }
+
+        .points,
+        .time {
+          margin-right: 5px;
+        }
+
+        .summary {
+          color: #fff;
+        }
+      }
+
+      ion-button {
+        margin: 0;
+      }
+    }
+  }
+}

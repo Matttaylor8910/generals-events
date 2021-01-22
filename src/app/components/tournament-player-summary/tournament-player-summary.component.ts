@@ -1,14 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {GeneralsService} from 'src/app/services/generals.service';
+import {ILeaderboardPlayer, ITournament} from 'types';
 
 @Component({
   selector: 'app-tournament-player-summary',
   templateUrl: './tournament-player-summary.component.html',
   styleUrls: ['./tournament-player-summary.component.scss'],
 })
-export class TournamentPlayerSummaryComponent implements OnInit {
+export class TournamentPlayerSummaryComponent {
+  @Input() player: ILeaderboardPlayer;
+  @Input() tournament: ITournament;
 
-  constructor() { }
+  @Output() close = new EventEmitter<void>();
 
-  ngOnInit() {}
-
+  constructor(
+      public readonly generals: GeneralsService,
+  ) {}
 }

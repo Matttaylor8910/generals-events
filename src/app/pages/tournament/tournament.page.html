@@ -20,17 +20,15 @@
           <app-tournament-summary
             [tournament]="tournament">
           </app-tournament-summary>
-          <app-tournament-player-summary
-            *ngIf="selectedPlayer">
-          </app-tournament-player-summary>
           <app-chat
-            [tournament]="tournament">
+            [tournament]="tournament"
+            (nameClicked)="selectPlayer($event)">
           </app-chat>
         </div>
       </div>
 
       <div class="main-panel">
-        <ng-container *ngIf="players$ | async as players">
+        <ng-container *ngIf="players">
           <app-tournament-trophies
             [server]="tournament.server"
             [players]="players"
@@ -39,7 +37,8 @@
           <app-tournament-leaderboard
             [tournament]="tournament"
             [players]="players"
-            [status]="status">
+            [status]="status"
+            (playerClicked)="selectPlayer($event)">
           </app-tournament-leaderboard>
           <app-rules
             [tournament]="tournament"
@@ -50,7 +49,17 @@
 
       <div class="right-panel">
         <div class="panel-container">
-          <app-game-list [tournament]="tournament"></app-game-list>
+          <app-tournament-player-summary
+            [player]="selectedPlayer"
+            [tournament]="tournament"
+            (close)="selectPlayer()"
+            *ngIf="selectedPlayer">
+          </app-tournament-player-summary>
+          <app-game-list
+            [class.hidden]="selectedPlayer"
+            [tournament]="tournament"
+            (nameClicked)="selectPlayer($event)">
+          </app-game-list>
         </div>
       </div>
     </ng-container>
