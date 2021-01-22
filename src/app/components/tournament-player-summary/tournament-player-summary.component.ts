@@ -21,4 +21,8 @@ export class TournamentPlayerSummaryComponent {
   get upcoming(): boolean {
     return this.status === TournamentStatus.UPCOMING;
   }
+
+  get notFinished(): boolean {
+    return this.status !== TournamentStatus.FINISHED;
+  }
 }

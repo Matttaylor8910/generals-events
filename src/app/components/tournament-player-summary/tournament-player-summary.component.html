@@ -11,7 +11,10 @@
     <div class="stats" *ngIf="player.stats as stats">
       <h2>Stats</h2>
       <div class="stat-line">
-        <span>Current Stars</span>
+        <span>
+          <span *ngIf="notFinished">Current</span>
+          {{ tournament?.type }} Stars
+        </span>
         <b>
           <ion-icon name="star" color="warning"></ion-icon>
           {{ (stats.currentStars | number:'1.0-1') || 0 }}
