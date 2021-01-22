@@ -1,4 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {kill} from 'process';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
@@ -24,5 +25,15 @@ export class TournamentPlayerSummaryComponent {
 
   get notFinished(): boolean {
     return this.status !== TournamentStatus.FINISHED;
+  }
+
+  /**
+   * Only show KDR if it differs from average kills and only after this player
+   * has died at least once
+   */
+  get showKDR(): boolean {
+    const {averageKills, killDeathRatio, totalGames, totalWins} =
+        this.player?.stats || {};
+    return averageKills !== killDeathRatio && totalGames > totalWins;
   }
 }

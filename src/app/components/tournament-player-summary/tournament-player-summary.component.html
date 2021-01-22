@@ -57,15 +57,15 @@
             {{ stats.averageWin | number:'1.0-0' }} turns
           </b>
         </div>
-        <div class="stat-line" *ngIf="stats.averageKills !== stats.killDeathRatio">
+        <div class="stat-line">
           <span>Average Kills Per Game</span>
-          <b>{{ stats.averageKills | number:'1.0-1' }}</b>
-        </div>
-        <div class="stat-line" *ngIf="stats.totalGames !== stats.totalWins">
-          <span>Kill-Death Ratio</span>
           <b *ngIf="stats.totalGames > 0; else NA">
-            {{ stats.killDeathRatio | number:'1.0-1' }}
+            {{ stats.averageKills | number:'1.0-2' }}
           </b>
+        </div>
+        <div class="stat-line" *ngIf="showKDR">
+          <span>Kill-Death Ratio</span>
+          <b>{{ stats.killDeathRatio | number:'1.0-2' }}</b>
         </div>
       </ng-container>
     </div>
