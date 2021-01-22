@@ -17,7 +17,7 @@
           {{ (stats.currentStars | number:'1.0-1') || 0 }}
         </b>
       </div>
-      <ng-container *ngIf="!upcoming">
+      <ng-container *ngIf="!upcoming && stats.totalGames > 0">
         <div class="stat-line">
           <span>Games Played</span>
           <b>{{ stats.totalGames || 0 }}</b>
@@ -58,7 +58,7 @@
           <span>Average Kills Per Game</span>
           <b>{{ stats.averageKills | number:'1.0-1' }}</b>
         </div>
-        <div class="stat-line">
+        <div class="stat-line" *ngIf="stats.totalGames !== stats.totalWins">
           <span>Kill-Death Ratio</span>
           <b *ngIf="stats.totalGames > 0; else NA">
             {{ stats.killDeathRatio | number:'1.0-1' }}
@@ -92,8 +92,8 @@
     </p>
 
     <!-- the event hasn't started -->
-    <p class="disclaimer" *ngIf="player.rank && upcoming">
-      This event hasn't started yet!
+    <p class="disclaimer" *ngIf="player.rank && (!player.stats?.totalGames || upcoming)">
+      More stats will be available after {{ player.name }} has played some games.
     </p>
 
   </ion-card-content>

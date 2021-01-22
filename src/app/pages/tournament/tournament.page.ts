@@ -95,9 +95,17 @@ export class TournamentPage implements OnDestroy {
     if (this.players?.length && this.tournament) {
       if (this.selectedPlayer) {
         if (playersUpdated) {
-          this.selectedPlayer = this.findPlayer(this.selectedPlayer.name);
+          const updated = this.findPlayer(this.selectedPlayer.name);
+          const previousGames = updated.stats?.totalGames || 0;
+
+          // if the selected player has played another game, update their stats
+          if (previousGames < updated.stats?.totalGames) {
+            this.selectedPlayer = updated;
+          }
         }
       } else {
+        // before the event starts, if there is no selected player show the
+        // player summary for the logged in player
         if (this.status === TournamentStatus.UPCOMING && this.generals.name) {
           this.selectedPlayer = this.findPlayer(this.generals.name);
         }
