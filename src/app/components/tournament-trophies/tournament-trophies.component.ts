@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 
 import {GeneralsServer} from '../../../../constants';
@@ -9,16 +9,16 @@ import {ILeaderboardPlayer, TournamentStatus} from '../../../../types';
   templateUrl: './tournament-trophies.component.html',
   styleUrls: ['./tournament-trophies.component.scss'],
 })
-export class TournamentTrophiesComponent implements OnInit {
+export class TournamentTrophiesComponent {
   @Input() server = GeneralsServer.NA;
   @Input() players: ILeaderboardPlayer[];
   @Input() status: TournamentStatus;
 
+  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+
   constructor(
       public readonly generals: GeneralsService,
   ) {}
-
-  ngOnInit() {}
 
   get showTrophies() {
     return this.status === TournamentStatus.FINISHED;

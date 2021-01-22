@@ -4,16 +4,19 @@
       class="other-players"
       [player]="second"
       place="second"
+      (playerClicked)="playerClicked.emit(second)"
       *ngIf="showOtherPlaces">
     </app-tournament-trophy-player>
     <app-tournament-trophy-player
       [player]="first"
+      (playerClicked)="playerClicked.emit(first)"
       place="first">
     </app-tournament-trophy-player>
     <app-tournament-trophy-player
       class="other-players"
       [player]="third"
       place="third"
+      (playerClicked)="playerClicked.emit(third)"
       *ngIf="showOtherPlaces">
     </app-tournament-trophy-player>
   </ng-container>

@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ILeaderboardPlayer} from 'types';
 
 enum Place {
@@ -17,13 +17,13 @@ const RANKS = {
   selector: 'app-tournament-trophy-player',
   templateUrl: './tournament-trophy-player.component.html',
   styleUrls: ['./tournament-trophy-player.component.scss'],
-}) export class TournamentTrophyPlayerComponent implements OnInit {
+}) export class TournamentTrophyPlayerComponent {
   @Input() player: ILeaderboardPlayer;
   @Input() place: Place;
 
-  constructor() {}
+  @Output() playerClicked = new EventEmitter<void>();
 
-  ngOnInit() {}
+  constructor() {}
 
   get rank(): string {
     return RANKS[this.place];

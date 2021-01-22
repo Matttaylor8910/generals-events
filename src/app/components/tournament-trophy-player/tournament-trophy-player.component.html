@@ -3,7 +3,7 @@
     <ion-icon name="trophy"></ion-icon>
     <div class="rank">{{ rank }}</div>
   </div>
-  <div class="name">{{ player.name }}</div>
+  <div class="name" (click)="playerClicked.emit()">{{ player.name }}</div>
   <div class="stats" *ngIf="player.stats as stats">
     <div>
       <span>Games Played</span>

@@ -26,6 +26,11 @@
 
   .name {
     color: #fff;
+
+    &:hover {
+      cursor: pointer;
+      color: teal;
+    }
   }
 
   .stats {

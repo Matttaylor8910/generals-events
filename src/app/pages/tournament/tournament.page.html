@@ -32,7 +32,8 @@
           <app-tournament-trophies
             [server]="tournament.server"
             [players]="players"
-            [status]="status">
+            [status]="status"
+            (playerClicked)="selectPlayer($event)">
           </app-tournament-trophies>
           <app-tournament-leaderboard
             [tournament]="tournament"
