@@ -152,7 +152,8 @@ export class TournamentService {
 
           let rank = 1;
           for (const player of players) {
-            // sort the records in reverse for the leaderboard UI
+            // sort the records in descending order for the leaderboard UI:
+            // the games that happened most recently at the beginning
             player.record.sort((a, b) => b.finished - a.finished);
             player.rank = rank++;
           }
