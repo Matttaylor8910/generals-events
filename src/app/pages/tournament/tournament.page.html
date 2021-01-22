@@ -53,6 +53,7 @@
           <app-tournament-player-summary
             [player]="selectedPlayer"
             [tournament]="tournament"
+            [status]="status"
             (close)="selectPlayer()"
             *ngIf="selectedPlayer">
           </app-tournament-player-summary>

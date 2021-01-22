@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {ILeaderboardPlayer, ITournament} from 'types';
+import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-tournament-player-summary',
@@ -10,10 +10,15 @@ import {ILeaderboardPlayer, ITournament} from 'types';
 export class TournamentPlayerSummaryComponent {
   @Input() player: ILeaderboardPlayer;
   @Input() tournament: ITournament;
+  @Input() status: TournamentStatus;
 
   @Output() close = new EventEmitter<void>();
 
   constructor(
       public readonly generals: GeneralsService,
   ) {}
+
+  get upcoming(): boolean {
+    return this.status === TournamentStatus.UPCOMING;
+  }
 }

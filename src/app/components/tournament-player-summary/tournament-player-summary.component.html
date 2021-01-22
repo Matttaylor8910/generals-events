@@ -7,10 +7,6 @@
     <ion-icon name="close" (click)="close.emit()"></ion-icon>
   </ion-card-header>
   <ion-card-content>
-    <p *ngIf="!player.rank">
-      {{ player.name }} has not joined this event!
-    </p>
-
     <!-- some stats -->
     <div class="stats" *ngIf="player.stats as stats">
       <h2>Stats</h2>
@@ -21,11 +17,11 @@
           {{ (stats.currentStars | number:'1.0-1') || 0 }}
         </b>
       </div>
-      <div class="stat-line">
-        <span>Games Played</span>
-        <b>{{ stats.totalGames || 0 }}</b>
-      </div>
-      <ng-container *ngIf="stats.totalGames > 0">
+      <ng-container *ngIf="!upcoming">
+        <div class="stat-line">
+          <span>Games Played</span>
+          <b>{{ stats.totalGames || 0 }}</b>
+        </div>
         <div class="stat-line">
           <span>Games Won</span>
           <b>{{ stats.totalWins }}</b>
@@ -89,6 +85,16 @@
         </div>
       </div>
     </ng-container>
+
+    <!-- player isn't in the tournament -->
+    <p class="disclaimer" *ngIf="!player.rank">
+      {{ player.name }} has not joined this event!
+    </p>
+
+    <!-- the event hasn't started -->
+    <p class="disclaimer" *ngIf="player.rank && upcoming">
+      This event hasn't started yet!
+    </p>
 
   </ion-card-content>
 </ion-card>

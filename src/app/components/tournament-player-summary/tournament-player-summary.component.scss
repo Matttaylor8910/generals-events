@@ -57,7 +57,10 @@
 
     .game {
       padding: 4px 0;
-      border-bottom: 1px solid #333;
+
+      &:not(:last-of-type) {
+        border-bottom: 1px solid #333;
+      }
 
       .left-side {
         display: flex;
@@ -88,5 +91,10 @@
         margin: 0;
       }
     }
+  }
+
+  .disclaimer {
+    border-top: 1px solid #333;
+    padding-top: 8px;
   }
 }
