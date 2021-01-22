@@ -96,7 +96,7 @@ export class TournamentPage implements OnDestroy {
       if (this.selectedPlayer) {
         if (playersUpdated) {
           const updated = this.findPlayer(this.selectedPlayer.name);
-          const previousGames = updated.stats?.totalGames || 0;
+          const previousGames = this.selectedPlayer.stats?.totalGames || 0;
 
           // if the selected player has played another game, update their stats
           if (previousGames < updated.stats?.totalGames) {
