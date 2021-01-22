@@ -19,7 +19,12 @@ export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
           if (gameDoc.after.exists) {
-            await lookForFinishedGame(gameDoc.after);
+            try {
+              await lookForFinishedGame(gameDoc.after);
+            } catch (error) {
+              console.log(gameDoc.after.id, error);
+              await keepLookingIn10Seconds(gameDoc.after);
+            }
           }
           return 'Done';
         });
@@ -30,8 +35,11 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
   const timesChecked = game.timesChecked || 0;
   const TWENTY_MINUTES = 120;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
 
+  console.log(`looking for finished game ${snapshot.id}`);
+
   // if we still haven't found a replay within 20 minutes, pull the plug
   if (timesChecked >= TWENTY_MINUTES) {
+    console.log('it has been 20 minutes')
     return await snapshot.ref.delete();
   }
 
@@ -43,16 +51,19 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
     const tournament = (tournamentSnap.data() || {}) as ITournament;
     const trackedReplays = tournament.replays || [];
 
-    console.log(`tracked replays for ${tournamentSnap.id}:`, trackedReplays);
+    console.log(
+        `${trackedReplays.length} tracked replays for ${tournamentSnap.id}`);
 
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
     const replays = await getReplaysForPlayers(
         players,
-        tournament.replays,
+        trackedReplays,
         game.started,
         tournament.server,
     );
+
+    console.log('got all replays for players')
 
     const {count, replay} = getMostPrevalentReplay(replays);
     if (replay) {
@@ -98,8 +109,11 @@ async function getReplaysForPlayers(
   const replayPromises: Promise<IGeneralsReplay[]>[] =
       usernames.map(name => getReplaysForUsername(name, 0, 10, server));
 
-  // wait for all requests to come back
-  const replays = await Promise.all(replayPromises);
+  // wait for all requests to come back or timeout after 10 seconds
+  const replays = await Promise.race([
+    Promise.all(replayPromises),
+    timeoutAfter(1000),
+  ]);
 
   return flatten(replays).filter(replay => {
     // replays must exist, not already be tracked, and have to start
@@ -151,7 +165,7 @@ async function saveReplayToGame(
     replays: admin.firestore.FieldValue.arrayUnion(replay.id),
   });
 
-  console.log(`committing ${replay.id}`);
+  console.log(`getting replay stats for ${replay.id}`);
 
   // pull down the replay and save it to the game doc
   const {scores, summary, turns} =
@@ -216,7 +230,9 @@ async function saveReplayToGame(
     }
   }
 
+  console.log('committing...');
   await batch.commit();
+  console.log('done!');
 }
 
 function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
@@ -227,5 +243,13 @@ function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
       })
       resolve();
     }, 10000);
+  });
+}
+
+function timeoutAfter(ms: number): Promise<[]> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve([]);
+    }, ms);
   });
 }
