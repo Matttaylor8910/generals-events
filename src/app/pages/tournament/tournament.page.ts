@@ -20,7 +20,7 @@ export class TournamentPage implements OnDestroy {
   tournamentId: string;
   tournament: ITournament;
   players: ILeaderboardPlayer[];
-  selectedPlayer: ILeaderboardPlayer|Partial<ILeaderboardPlayer>;
+  selectedPlayer?: Partial<ILeaderboardPlayer>;
 
   constructor(
       public readonly generals: GeneralsService,

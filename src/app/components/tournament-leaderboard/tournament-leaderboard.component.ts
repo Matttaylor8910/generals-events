@@ -12,6 +12,7 @@ export class TournamentLeaderboardComponent {
   @Input() tournament: ITournament;
   @Input() status: TournamentStatus;
   @Input() players: ILeaderboardPlayer[];
+  @Input() selectedPlayer?: ILeaderboardPlayer;
 
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 

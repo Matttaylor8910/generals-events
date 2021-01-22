@@ -47,11 +47,14 @@ table {
       padding: 8px 10px;
     }
 
-    .you-marker {
+    .marker {
       width: 8px;
       padding: 0;
 
-      &.highlight {
+      &.selected {
+        background: teal;
+      }
+      &.you {
         background: purple;
       }
     }

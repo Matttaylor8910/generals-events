@@ -18,7 +18,7 @@
         <span>Current Stars</span>
         <b>
           <ion-icon name="star" color="warning"></ion-icon>
-          {{ stats.currentStars | number:'1.0-1' || 0 }}
+          {{ (stats.currentStars | number:'1.0-1') || 0 }}
         </b>
       </div>
       <div class="stat-line">
