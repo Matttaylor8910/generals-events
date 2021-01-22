@@ -3,6 +3,7 @@ import {GeneralsServer} from 'constants';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
+import {TournamentStatus} from 'types';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +12,7 @@ import {TournamentService} from 'src/app/services/tournament.service';
 })
 export class LoginComponent {
   @Input() tournamentId?: string;
+  @Input() status?: TournamentStatus;
   @Input() server = GeneralsServer.NA;
 
   actions: IPopoverAction[];
@@ -34,8 +36,8 @@ export class LoginComponent {
   }
 
   logout() {
-    const {tournamentId, generals: {name}} = this;
-    if (tournamentId && name) {
+    const {tournamentId, status, generals: {name}} = this;
+    if (name && tournamentId && status !== TournamentStatus.FINISHED) {
       this.tournamentService.removePlayer(tournamentId, name);
       this.tournamentService.leaveQueue(tournamentId, name);
     }

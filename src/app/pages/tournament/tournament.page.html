@@ -7,7 +7,10 @@
     </ion-buttons>
     <ion-title>{{ tournament?.name }}</ion-title>
     <ion-buttons slot="end">
-      <app-login [tournamentId]="tournamentId"></app-login>
+      <app-login
+        [tournamentId]="tournamentId"
+        [status]="status">
+      </app-login>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
