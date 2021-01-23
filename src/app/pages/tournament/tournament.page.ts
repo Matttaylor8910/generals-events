@@ -23,7 +23,7 @@ export class TournamentPage implements OnDestroy {
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
 
-  disqualified = Boolean(localStorage.getItem('generals-dq'));
+  disqualified = localStorage.getItem('generals-dq') === 'true';
 
   constructor(
       public readonly generals: GeneralsService,
