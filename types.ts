@@ -37,8 +37,10 @@ export interface ITournament {
       number;           // number of players to wait for before starting a game
   queue: string[];      // player names in the queue, server will start games
   playerCount: number;  // total players in the tournament
-  replays: string[];    // a list of all replays that are tracked so far
-  server?: GeneralsServer;  // optional server override
+  completedGameCount: number;  // total completed games
+  ongoingGameCount: number;    // total games currently in progress
+  replays: string[];           // a list of all replays that are tracked so far
+  server?: GeneralsServer;     // optional server override
 
   id?: string;       // client field
   exists?: boolean;  // client field

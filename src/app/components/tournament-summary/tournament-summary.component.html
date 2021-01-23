@@ -31,5 +31,12 @@
         <p>Using <b>{{ tournament.server }}</b> server</p>
       </ion-label>
     </ion-item>
+    <ion-item *ngIf="showGames">
+      <ion-icon slot="start" name="pulse"></ion-icon>
+      <ion-label>
+        <h2>{{ boldText }}</h2>
+        <p *ngIf="extraText">{{ extraText }}</p>
+      </ion-label>
+    </ion-item>
   </ion-card>
 </div>

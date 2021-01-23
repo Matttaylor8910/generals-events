@@ -1,9 +1,10 @@
 import {Component, Input} from '@angular/core';
-import {GeneralsServer} from 'constants';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {TournamentStatus} from 'types';
+
+import {GeneralsServer} from '../../../../constants';
+import {TournamentStatus} from '../../../../types';
 
 @Component({
   selector: 'app-login',

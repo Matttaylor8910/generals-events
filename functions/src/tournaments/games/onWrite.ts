@@ -19,8 +19,17 @@ export const onWriteGame =
     functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
           if (gameDoc.after.exists) {
+            const tournamentRef = gameDoc.after.ref.parent.parent!;
+
+            // on create, increment the amount on ongoing games
+            if (!gameDoc.before.exists) {
+              await tournamentRef.update({
+                ongoingGameCount: admin.firestore.FieldValue.increment(1),
+              });
+            }
+
             try {
-              await lookForFinishedGame(gameDoc.after);
+              await lookForFinishedGame(gameDoc.after, tournamentRef);
             } catch (error) {
               console.log(gameDoc.after.id, error);
               await keepLookingIn10Seconds(gameDoc.after);
@@ -29,7 +38,10 @@ export const onWriteGame =
           return 'Done';
         });
 
-async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
+async function lookForFinishedGame(
+    snapshot: DocumentSnapshot,
+    tournamentRef: admin.firestore.DocumentReference,
+    ): Promise<any> {
   const game = (snapshot.data() || {}) as IGame;
   const {players} = game;
   const timesChecked = game.timesChecked || 0;
@@ -39,7 +51,10 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
 
   // if we still haven't found a replay within 20 minutes, pull the plug
   if (timesChecked >= TWENTY_MINUTES) {
-    console.log('it has been 20 minutes')
+    console.log('it has been 20 minutes');
+    await tournamentRef.update({
+      ongoingGameCount: admin.firestore.FieldValue.increment(-1),
+    });
     return await snapshot.ref.delete();
   }
 
@@ -47,7 +62,7 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
   // find games for these players
   if (!game.replayId && players?.length) {
     // get list of tracked replays for a tournament
-    const tournamentSnap = await snapshot.ref.parent.parent!.get();
+    const tournamentSnap = await tournamentRef.get();
     const tournament = (tournamentSnap.data() || {}) as ITournament;
     const trackedReplays = tournament.replays || [];
 
@@ -77,7 +92,7 @@ async function lookForFinishedGame(snapshot: DocumentSnapshot): Promise<any> {
       await saveReplayToGame(
           replay,
           snapshot,
-          tournamentSnap.ref,
+          tournamentRef,
           tournament,
       );
     } else {
@@ -163,6 +178,8 @@ async function saveReplayToGame(
   const batch = db.batch();
   batch.update(tournamentRef, {
     replays: admin.firestore.FieldValue.arrayUnion(replay.id),
+    completedGameCount: admin.firestore.FieldValue.increment(1),
+    ongoingGameCount: admin.firestore.FieldValue.increment(-1),
   });
 
   console.log(`getting replay stats for ${replay.id}`);
