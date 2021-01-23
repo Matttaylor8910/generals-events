@@ -1,7 +1,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {Observable, Subject} from 'rxjs';
+import {takeUntil, tap} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
 import {UtilService} from 'src/app/services/util.service';
@@ -20,6 +20,7 @@ export class TournamentPage implements OnDestroy {
   tournamentId: string;
   tournament: ITournament;
   players: ILeaderboardPlayer[];
+  players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
 
   constructor(
@@ -30,13 +31,12 @@ export class TournamentPage implements OnDestroy {
       private readonly utilService: UtilService,
   ) {
     this.tournamentId = this.route.snapshot.params.id;
-    this.tournamentService.getPlayers(this.tournamentId)
-        .pipe(takeUntil(this.destroyed$))
-        .subscribe(players => {
-          this.players = players;
-          this.checkJoinQueue(players);
-          this.determineSelectPlayer(true);
-        });
+    this.players$ = this.tournamentService.getPlayers(this.tournamentId)
+                        .pipe(tap(players => {
+                          this.players = players;
+                          this.checkJoinQueue(players);
+                          this.determineSelectPlayer(true);
+                        }));
 
     this.tournamentService.getTournament(this.tournamentId)
         .pipe(takeUntil(this.destroyed$))
@@ -75,6 +75,7 @@ export class TournamentPage implements OnDestroy {
     if (location.href.includes('join=true')) {
       const {name} = this.generals;
       if (name && this.status !== TournamentStatus.FINISHED) {
+        // join the tournament if you haven't already
         if (!players.some(p => p.name === name)) {
           await this.tournamentService.addPlayer(this.tournamentId, name);
         }

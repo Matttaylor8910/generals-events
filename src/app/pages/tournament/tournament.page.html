@@ -31,7 +31,7 @@
       </div>
 
       <div class="main-panel">
-        <ng-container *ngIf="players">
+        <ng-container *ngIf="players$ | async as players">
           <app-tournament-trophies
             [server]="tournament.server"
             [players]="players"
