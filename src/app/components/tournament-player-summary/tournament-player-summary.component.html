@@ -79,7 +79,7 @@
             <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
             <span class="time">{{ game.finished | date:'h:mm a' }}</span>
             <span class="summary">
-              Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} kills.
+              Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}.
             </span>
           </div>
           <ion-button size="small" fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, tournament.server)">
