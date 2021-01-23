@@ -15,6 +15,7 @@ export class LoginComponent {
   @Input() tournamentId?: string;
   @Input() status?: TournamentStatus;
   @Input() server = GeneralsServer.NA;
+  @Input() disqualified = false;
 
   actions: IPopoverAction[];
 
@@ -38,7 +39,8 @@ export class LoginComponent {
 
   logout() {
     const {tournamentId, status, generals: {name}} = this;
-    if (name && tournamentId && status !== TournamentStatus.FINISHED) {
+    if (name && tournamentId && status !== TournamentStatus.FINISHED &&
+        !this.disqualified) {
       this.tournamentService.removePlayer(tournamentId, name);
       this.tournamentService.leaveQueue(tournamentId, name);
     }

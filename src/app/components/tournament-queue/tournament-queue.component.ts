@@ -13,6 +13,7 @@ export class TournamentQueueComponent implements OnDestroy {
   @Input() tournament: ITournament;
   @Input() inTournament: boolean;
   @Input() status: TournamentStatus;
+  @Input() disqualified: boolean;
 
   currentSubscription: string;
   redirect$: Subscription;
@@ -42,6 +43,10 @@ export class TournamentQueueComponent implements OnDestroy {
   }
 
   get message(): string {
+    if (this.disqualified) {
+      return 'You have been disqualified for ruining the experience for others! Reach out to googleman on discord if you feel this is in error.';
+    }
+
     if (this.status === TournamentStatus.UPCOMING) {
       if (!this.inTournament) {
         return 'Join the event!';

@@ -23,6 +23,8 @@ export class TournamentPage implements OnDestroy {
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
 
+  disqualified = Boolean(localStorage.getItem('generals-dq'));
+
   constructor(
       public readonly generals: GeneralsService,
       private readonly route: ActivatedRoute,
@@ -36,6 +38,7 @@ export class TournamentPage implements OnDestroy {
                           this.players = players;
                           this.checkJoinQueue(players);
                           this.determineSelectPlayer(true);
+                          this.determineDisqualified();
                         }));
 
     this.tournamentService.getTournament(this.tournamentId)
@@ -129,6 +132,21 @@ export class TournamentPage implements OnDestroy {
       }
     } else {
       this.selectedPlayer = player;
+    }
+  }
+
+  determineDisqualified() {
+    if (this.generals.name) {
+      const me = this.findPlayer(this.generals.name);
+      const disqualified = me?.dq || false
+
+      // it just happened, leave the queue
+      if (!this.disqualified && disqualified) {
+        this.tournamentService.leaveQueue(this.tournamentId, me.name);
+      }
+
+      this.disqualified = disqualified;
+      localStorage.setItem('generals-dq', String(this.disqualified));
     }
   }
 

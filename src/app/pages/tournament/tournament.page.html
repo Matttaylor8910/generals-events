@@ -9,7 +9,8 @@
     <ion-buttons slot="end">
       <app-login
         [tournamentId]="tournamentId"
-        [status]="status">
+        [status]="status"
+        [disqualified]="disqualified">
       </app-login>
     </ion-buttons>
   </ion-toolbar>
@@ -26,6 +27,7 @@
           </app-tournament-summary>
           <app-chat
             [tournament]="tournament"
+            [disqualified]="disqualified"
             (nameClicked)="selectPlayer($event)">
           </app-chat>
         </div>
@@ -44,6 +46,7 @@
             [players]="players"
             [status]="status"
             [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
             (playerClicked)="selectPlayer($event)">
           </app-tournament-leaderboard>
           <app-rules

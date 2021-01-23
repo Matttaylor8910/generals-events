@@ -92,7 +92,14 @@ export class TournamentService {
         .doc(tournamentId)
         .collection<ILeaderboardPlayer>('players')
         .doc(name)
-        .set({name, rank: 0, points: 0, currentStreak: 0, record: []});
+        .set({
+          name,
+          rank: 0,
+          points: 0,
+          currentStreak: 0,
+          dq: false,
+          record: [],
+        });
   }
 
   removePlayer(tournamentId: string, name: string) {
@@ -117,36 +124,42 @@ export class TournamentService {
           // sort players by points, then win rate, then total games, then
           // quickest win, then stars, then fallback to name
           players.sort((a, b) => {
-            if (this.equal(a.points, b.points)) {
-              if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
-                if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
-                  if (this.equal(a.stats?.quickestWin, b.stats?.quickestWin)) {
+            if (this.equal(a.dq, b.dq)) {
+              if (this.equal(a.points, b.points)) {
+                if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
+                  if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
                     if (this.equal(
-                            a.stats?.currentStars, b.stats?.currentStars)) {
-                      // fallback to name
-                      return a.name.localeCompare(b.name);
+                            a.stats?.quickestWin, b.stats?.quickestWin)) {
+                      if (this.equal(
+                              a.stats?.currentStars, b.stats?.currentStars)) {
+                        // fallback to name
+                        return a.name.localeCompare(b.name);
+                      } else {
+                        // current stars descending (b - a)
+                        return (b.stats?.currentStars || 0) -
+                            (a.stats?.currentStars || 0);
+                      }
                     } else {
-                      // current stars descending (b - a)
-                      return (b.stats?.currentStars || 0) -
-                          (a.stats?.currentStars || 0);
+                      // quickest win ascending (a - b)
+                      return (a.stats?.quickestWin || 999) -
+                          (b.stats?.quickestWin || 999);
                     }
                   } else {
-                    // quickest win ascending (a - b)
-                    return (a.stats?.quickestWin || 999) -
-                        (b.stats?.quickestWin || 999);
+                    // total games descending (b - a)
+                    return (b.stats?.totalGames || 0) -
+                        (a.stats?.totalGames || 0);
                   }
                 } else {
-                  // total games descending (b - a)
-                  return (b.stats?.totalGames || 0) -
-                      (a.stats?.totalGames || 0);
+                  // win rate descending (b - a)
+                  return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
                 }
               } else {
-                // win rate descending (b - a)
-                return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
+                // points descending (b - a)
+                return b.points - a.points;
               }
             } else {
-              // points descending (b - a)
-              return b.points - a.points;
+              // DQ status ascending, non-DQ'd will be first
+              return Number(a.dq || 0) - Number(b.dq || 0);
             }
           });
 
@@ -251,7 +264,7 @@ export class TournamentService {
    * @param a
    * @param b
    */
-  private equal(a?: number|null, b?: number|null): boolean {
+  private equal(a?: number|boolean|null, b?: number|boolean|null): boolean {
     return a === b || (!a && !b);
   }
 }

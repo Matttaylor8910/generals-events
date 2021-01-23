@@ -2,6 +2,7 @@
   [tournament]="tournament"
   [inTournament]="inTournament"
   [status]="status"
+  [disqualified]="disqualified"
   *ngIf="showQueue">
 </app-tournament-queue>
 
@@ -46,7 +47,10 @@
         [class.you]="player.name === generals.name"
         [class.selected]="player.name === selectedPlayer?.name">
       </td>
-      <td class="rank">{{ player.rank }}</td>
+      <td class="rank">
+        <span *ngIf="!player.dq">{{ player.rank }}</span>
+        <ion-icon name="close" color="danger" tooltip="{{player.name}} has been disqualified" *ngIf="player.dq"></ion-icon>
+      </td>
       <td class="name" (click)="playerClicked.emit(player)">
         {{ player.name }}
       </td>

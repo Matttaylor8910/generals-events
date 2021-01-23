@@ -15,6 +15,7 @@ export class ChatComponent implements OnInit {
   @ViewChild('chatBox', {read: ElementRef, static: false}) chatBox: ElementRef;
 
   @Input() tournament: ITournament;
+  @Input() disqualified: boolean;
 
   @Output() nameClicked = new EventEmitter<string>();
 
@@ -33,12 +34,16 @@ export class ChatComponent implements OnInit {
   }
 
   get disableChat(): boolean {
-    return !this.generals.name;
+    return !this.generals.name || this.disqualified;
   }
 
   get placeholder(): string {
-    return this.generals.name ? 'Please be nice in chat!' :
-                                'You must login to chat';
+    if (this.disqualified) {
+      return 'You have been disqualified';
+    } else if (this.generals.name) {
+      return 'Please be nice in chat!'
+    }
+    return 'You must login to chat';
   }
 
   ngOnInit() {

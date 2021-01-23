@@ -61,6 +61,13 @@ table {
 
     .rank {
       width: 20px;
+
+      ion-icon[name="close"] {
+        font-size: 24px;
+        position: relative;
+        top: 3px;
+        left: -3px;
+      }
     }
 
     .name:hover {

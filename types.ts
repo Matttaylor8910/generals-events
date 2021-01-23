@@ -49,9 +49,10 @@ export interface ITournament {
 // the items to be shown in the leaderboard list
 // located at /tournaments/:id/players
 export interface ILeaderboardPlayer {
-  name: string;           // generals.io username, will also be the id
-  rank: number;           // the person with the most points, show ties
-  points: number;         // start at 0
+  name: string;    // generals.io username, will also be the id
+  dq: boolean;     // can be set to true to ban a player from participating
+  rank: number;    // the person with the most points, show ties
+  points: number;  // start at 0
   currentStreak: number;  // start at 0, used to determine being on a streak
   record:
       IPlayerHistoryRecord[];  // a list of the point values earned in each game
