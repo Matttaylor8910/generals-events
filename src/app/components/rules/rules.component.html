@@ -1,6 +1,14 @@
 <div *ngIf="showRules; else empty">
+  <h1>First, some ground rules:</h1>
+  <div class="space-after"><span class="highlight">Do NOT cheat or seek an unfair advantage.</span> If you have to ask if something is cheating, it probably is. Players are meant to play individually, in only one game at a time. Play to win, but do it fairly.</div>
+  <div class="space-after">If you are found to be cheating or skirting the rules to seek an advantage, you will be disqualified. Please report this behavior if you see it. This includes but is not limited to:</div>
+  <div>1) Joining the queue while in alive in another game</div>
+  <div>2) As the host, changing game settings</div>
+  <div>3) Using more than one account</div>
+  <div>4) Teaming in an FFA event</div>
+
   <h1>How does this work?</h1>
-  <div class="space-after">Welcome! When the event starts, there will be no bracket. Instead, <span class="highlight">players will play as many games as they can in an attempt to score the most points in the set time limit.</span></div>
+  <div class="space-after">Now that that's out of the way, welcome! When the event starts, there will be no bracket. Instead, <span class="highlight">players will play as many games as they can in an attempt to score the most points in the set time limit.</span></div>
   <div>As soon as the event starts, jump in the queue to be sent to a lobby to start your next game. Once the game is over for you, click <span class="highlight">Join Event Queue to immediately jump into your next game.</span></div>
 
   <h1>How are scores calculated?</h1>
@@ -13,8 +21,8 @@
   <div>Scores are calculated automatically within 10 seconds after the replay becomes available.</div>
 
   <h1>How is the winner decided?</h1>
-  <div>The player with the most points at the conclusion of the event's set time limit will be announced winner.</div>
-  <!-- TODO: tie break -->
+  <div class="space-after">The player with the most points at the conclusion of the event's set time limit will be announced winner.</div>
+  <div>If two players have the same number of points, we will break the tiebased on win rate, total games, quickest win, etc</div>
 
   <h1>How does the pairing work?</h1>
   <div>There is currently no matchmaking logic, so the first 8 people in the queue for an FFA event, for example, will be sent to the same lobby, the next 8 to a different lobby, and so on.</div>
