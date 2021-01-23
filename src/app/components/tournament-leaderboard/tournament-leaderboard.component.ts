@@ -1,7 +1,9 @@
 import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TournamentService} from 'src/app/services/tournament.service';
-import {ILeaderboardPlayer, ITournament, TournamentStatus, TournamentType} from 'types';
+
+import {ADMINS} from '../../../../constants';
+import {ILeaderboardPlayer, ITournament, TournamentStatus, TournamentType} from '../../../../types';
 
 @Component({
   selector: 'app-tournament-leaderboard',
@@ -27,6 +29,8 @@ export class TournamentLeaderboardComponent {
   inTournament = false;
   recentlyJoined = false;
 
+  absentPlayers: ILeaderboardPlayer[] = [];
+
   constructor(
       public readonly generals: GeneralsService,
       private readonly tournamentService: TournamentService,
@@ -37,6 +41,7 @@ export class TournamentLeaderboardComponent {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.players) {
       this.determineInTournament();
+      this.determineAbsentPlayers();
       this.setVisible();
     }
   }
@@ -67,6 +72,12 @@ export class TournamentLeaderboardComponent {
       TournamentStatus.ONGOING,
       TournamentStatus.ALMOST_DONE,
     ].includes(this.status);
+  }
+
+  get showPrune(): boolean {
+    return ADMINS.includes(this.generals.name) &&
+        this.status === TournamentStatus.FINISHED &&
+        this.absentPlayers.length > 0;
   }
 
   get pageControlText(): string {
@@ -151,13 +162,25 @@ export class TournamentLeaderboardComponent {
     }, 5000);
   }
 
+  toggleTracking(setTo?: boolean) {
+    this.tracking = setTo === undefined ? !this.tracking : setTo;
+    this.setVisible();
+  }
+
   determineInTournament() {
     this.inTournament =
         this.players && !!this.players.find(p => p.name === this.generals.name);
   }
 
-  toggleTracking(setTo?: boolean) {
-    this.tracking = setTo === undefined ? !this.tracking : setTo;
-    this.setVisible();
+  determineAbsentPlayers() {
+    this.absentPlayers =
+        this.players.filter(player => !player.stats?.totalGames);
+  }
+
+  async prunePlayers() {
+    for (const player of this.absentPlayers) {
+      console.log(`${player.name} didn't play, pruning...`);
+      this.tournamentService.removePlayer(this.tournament.id, player.name);
+    }
   }
 }
