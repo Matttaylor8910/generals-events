@@ -115,6 +115,7 @@ export interface IChatMessage {
   sender: string;
   text: string;
   timestamp: number;  // unix timestamp in client, serverTimestamp in db
+  color?: string;     // if provided, the message will be this color
 }
 
 // the replay object from the generals.io api

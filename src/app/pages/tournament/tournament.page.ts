@@ -140,8 +140,8 @@ export class TournamentPage implements OnDestroy {
       const me = this.findPlayer(this.generals.name);
       const disqualified = me?.dq || false
 
-      // it just happened, leave the queue
-      if (!this.disqualified && disqualified) {
+      // leave the queue
+      if (disqualified) {
         this.tournamentService.leaveQueue(this.tournamentId, me.name);
       }
 

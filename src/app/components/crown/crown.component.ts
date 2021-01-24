@@ -6,5 +6,13 @@ import {Component, Input} from '@angular/core';
   styleUrls: ['./crown.component.scss'],
 })
 export class CrownComponent {
-  @Input() color = 'teal';
+  private _color = 'teal';
+
+  @Input()
+  set color(color: string) {
+    if (color) this._color = color;
+  }
+  get color(): string {
+    return this._color;
+  }
 }

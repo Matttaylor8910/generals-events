@@ -1,9 +1,11 @@
 <ion-card id="chat-box" #chatBox>
   <ion-card-content>
     <div class="messages" [style.height.px]="messagesHeight">
-      <p *ngFor="let message of messages$ | async" [class.admin]="isAdmin(message.sender)">
-        <app-crown tooltip="Event Organizer"></app-crown>
-        <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'" (click)="nameClicked.emit(message.sender)">{{ message.sender }}</b>:
+      <p *ngFor="let message of messages$ | async" [class.admin]="isAdmin(message.sender)" [style.color]="message.color">
+        <app-crown tooltip="Event Organizer" [color]="message.color"></app-crown>
+        <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'" [style.color]="message.color" (click)="nameClicked.emit(message.sender)">
+          {{ message.sender }}:
+        </b>
         {{ message.text }}
       </p>
     </div>
