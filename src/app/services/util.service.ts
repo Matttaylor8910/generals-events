@@ -109,14 +109,16 @@ export class UtilService {
     // short circuit when we fdon't have the info we need
     if (!startTime || !endTime) return '';
 
-    const minutes = (endTime - startTime) / 1000 / 60;
-    const days = Math.floor(minutes / (60 * 12));
-    const hours = Math.floor(minutes / 60);
-    const rem = Math.ceil(minutes % 60);
+    const totalSeconds = (endTime - startTime) / 1000;
+    const days = Math.floor(totalSeconds / (60 * 60 * 12));
+    const hours = Math.floor(totalSeconds / (60 * 60));
+    const mins = Math.floor(totalSeconds / 60 % 60);
+    const secs = Math.ceil(totalSeconds % 60);
     return `
       ${days ? days + 'd ' : ''}
       ${hours ? hours + 'h ' : ''}
-      ${rem ? rem + 'm' : ''}
-    `;
+      ${mins ? mins + 'm' : ''}
+      ${secs ? secs + 's' : ''}
+    `.trim();
   }
 }

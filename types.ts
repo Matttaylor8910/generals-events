@@ -106,6 +106,7 @@ export interface IGamePlayerRecord {
 // this will be used to determine a player's points or streak over time
 // located at /tournaments/:id/records
 export interface IPlayerHistoryRecord extends IGamePlayerRecord {
+  started: number;
   finished: number;
   replayId: string;
 }

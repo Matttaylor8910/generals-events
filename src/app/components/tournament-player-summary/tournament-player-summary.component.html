@@ -74,17 +74,30 @@
     <ng-container *ngIf="player.record?.length > 0">
       <h2>Games</h2>
       <div class="games" *ngIf="player.record as games">
-        <div class="game space-between" *ngFor="let game of games">
-          <div class="left-side">
-            <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
-            <span class="time">{{ game.finished | date:'h:mm a' }}</span>
-            <span class="summary">
-              Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}.
+        <div class="game" *ngFor="let game of games; let i = index">
+          <div class="space-between">
+            <div class="left-side">
+              <div>
+                <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
+                <span class="summary">
+                  Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}.
+                </span>
+              </div>
+              <div>
+                <span class="time" *ngIf="game.started">{{ game.started | date:'h:mm a' }} -</span>
+                <span class="time">{{ game.finished | date:'h:mm a' }}</span>
+                <span class="time">({{ game.lastTurn }} turns)</span>
+              </div>
+            </div>
+            <ion-button size="small" fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, tournament.server)">
+              <ion-icon name="eye"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="divider">
+            <span class="gap" [class.overlap]="game.started < games[i+1]?.finished" *ngIf="game.started && games[i+1]?.finished">
+              {{ getDurationString(games[i+1].finished, game.started) }}
             </span>
           </div>
-          <ion-button size="small" fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, tournament.server)">
-            <ion-icon name="eye"></ion-icon>
-          </ion-button>
         </div>
       </div>
     </ng-container>

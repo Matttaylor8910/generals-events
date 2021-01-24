@@ -72,11 +72,7 @@ async function lookForFinishedGame(
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
     const replays = await getReplaysForPlayers(
-        players,
-        trackedReplays,
-        game.started,
-        tournament.server,
-    );
+        players, trackedReplays, game.started, tournament.server);
 
     console.log('got all replays for players')
 
@@ -89,12 +85,7 @@ async function lookForFinishedGame(
     if (count > players.length / 2) {
       // if over half (but not exactly half) of the og players were in this
       // game, and we have not tracked it already, count the game
-      await saveReplayToGame(
-          replay,
-          snapshot,
-          tournamentRef,
-          tournament,
-      );
+      await saveReplayToGame(replay, snapshot, tournamentRef, tournament);
     } else {
       // otherwise, gotta keep looking, start in 10 seconds
       await keepLookingIn10Seconds(snapshot);
@@ -230,6 +221,7 @@ async function saveReplayToGame(
       // determine finished for this player based on their last turn
       const record = {
         replayId: replay.id,
+        started: replay.started,
         finished: replay.started + (player.lastTurn * 1000),
         ...player,
       };

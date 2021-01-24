@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {kill} from 'process';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {UtilService} from 'src/app/services/util.service';
 import {ILeaderboardPlayer, ITournament, TournamentStatus} from 'types';
 
 @Component({
@@ -17,6 +18,7 @@ export class TournamentPlayerSummaryComponent {
 
   constructor(
       public readonly generals: GeneralsService,
+      private readonly utilService: UtilService,
   ) {}
 
   get upcoming(): boolean {
@@ -35,5 +37,14 @@ export class TournamentPlayerSummaryComponent {
     const {averageKills, killDeathRatio, totalGames, totalWins} =
         this.player?.stats || {};
     return averageKills !== killDeathRatio && totalGames > totalWins;
+  }
+
+  getDurationString(prevFinished: number, started: number): string {
+    if (prevFinished > started) {
+      const overlap = this.utilService.getDurationString(started, prevFinished);
+      return `Overlap of ${overlap}!`
+    } else {
+      return this.utilService.getDurationString(prevFinished, started);
+    }
   }
 }
