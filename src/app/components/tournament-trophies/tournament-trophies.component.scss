@@ -10,6 +10,10 @@
     display: flex;
   }
 
+  .generals-title .emoji {
+    text-shadow: none;
+  }
+
   app-tournament-trophy-player {
     width: 33%;
   }
