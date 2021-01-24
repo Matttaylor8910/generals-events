@@ -82,7 +82,14 @@ function simulate(replay) {
           if (killer !== undefined) {
             summary.push(`${killer} killed ${usernames[i]} on turn ${turn}`);
             players[killerIndex].kills++;
-            players[i].lastTurn = turn;
+
+            // only set lastTurn if it isn't already set, otherwise players who
+            // surrender then immediately jump into a new game will look like
+            // they were in two games at once, even though they already
+            // surrendered and left
+            if (players[i].lastTurn === undefined) {
+              players[i].lastTurn = turn;
+            }
           }
         }
       }
