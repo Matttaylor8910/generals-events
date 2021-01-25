@@ -9,8 +9,7 @@ try {
 }
 
 export const onUpdateRedirect =
-    functions.firestore
-        .document('tournaments/{tournamentId}/redirect/{redirectId}')
+    functions.firestore.document('tournaments/{eventId}/redirect/{redirectId}')
         .onUpdate(async (doc, context) => {
           await checkQueue(doc.after);
           return 'Done';

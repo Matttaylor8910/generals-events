@@ -10,26 +10,26 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="create-tournament-button" (click)="createTournament()" *ngIf="canCreateEvent">
+  <div class="create-event-button" (click)="createEvent()" *ngIf="canCreateEvent">
     <ion-icon name="add"></ion-icon>
   </div>
   <div class="home-container">
     <!-- in progress or upcoming events -->
-    <ng-container *ngIf="unfinishedTournaments$ | async as unfinished">
+    <ng-container *ngIf="unfinishedEvents$ | async as unfinished">
       <h2 *ngIf="unfinished.length">Join an event:</h2>
-      <app-tournament-overview
-        *ngFor="let tournament of unfinished"
-        [tournament]="tournament">
-      </app-tournament-overview>
+      <app-event-overview
+        *ngFor="let event of unfinished"
+        [event]="event">
+      </app-event-overview>
     </ng-container>
 
     <!-- finished games -->
-    <ng-container *ngIf="finishedTournaments$ | async as finished">
+    <ng-container *ngIf="finishedEvents$ | async as finished">
       <h3 *ngIf="finished.length">Finished Events</h3>
-      <app-tournament-list-item
-        *ngFor="let tournament of finished"
-        [tournament]="tournament">
-      </app-tournament-list-item>
+      <app-event-list-item
+        *ngFor="let event of finished"
+        [event]="event">
+      </app-event-list-item>
     </ng-container>
   </div>
 </ion-content>

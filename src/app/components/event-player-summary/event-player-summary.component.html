@@ -1,0 +1,132 @@
+<ion-card class="player-summary" *ngIf="player">
+  <ion-card-header class="space-between">
+    <ion-card-title (click)="generals.goToProfile(player.name, event.server)">
+      <span *ngIf="player.rank">{{ player.rank}}.</span> {{ player.name }}
+      <ion-icon name="link"></ion-icon>
+    </ion-card-title>
+    <ion-icon name="close" (click)="close.emit()"></ion-icon>
+  </ion-card-header>
+  <ion-card-content>
+    <!-- some stats -->
+    <div class="stats" *ngIf="player.stats as stats">
+      <h2>Stats</h2>
+      <div class="stat-line">
+        <span>
+          <span *ngIf="notFinished">Current</span>
+          {{ event?.type }} Stars
+        </span>
+        <b>
+          <ion-icon name="star" color="warning"></ion-icon>
+          {{ (stats.currentStars | number:'1.0-1') || 0 }}
+        </b>
+      </div>
+      <ng-container *ngIf="!upcoming && stats.totalGames > 0">
+        <div class="stat-line">
+          <span>Games Played</span>
+          <b>{{ stats.totalGames || 0 }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Games Won</span>
+          <b>{{ stats.totalWins }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Win Rate</span>
+          <b>{{ stats.winRate | percent:'1.0-1' }}</b>
+        </div>
+        <div class="stat-line">
+          <span>Current Streak</span>
+          <b *ngIf="player.currentStreak; else NA">
+            {{ player.currentStreak }}
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Longest Streak</span>
+          <b *ngIf="stats.longestStreak; else NA">
+            {{ stats.longestStreak }}
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Quickest Win</span>
+          <b *ngIf="stats.quickestWin; else NA">
+            {{ stats.quickestWin }} turns
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Win</span>
+          <b *ngIf="stats.averageWin; else NA">
+            {{ stats.averageWin | number:'1.0-0' }} turns
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Turns</span>
+          <b *ngIf="stats.averageTurns; else NA">
+            {{ stats.averageTurns | number:'1.0-0' }} turns
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Rank</span>
+          <b *ngIf="stats.averageRank; else NA">
+            {{ stats.averageRank | number:'1.0-1' }}
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Kills Per Game</span>
+          <b *ngIf="stats.totalGames > 0; else NA">
+            {{ stats.averageKills | number:'1.0-2' }}
+          </b>
+        </div>
+        <div class="stat-line" *ngIf="showKDR">
+          <span>Kill-Death Ratio</span>
+          <b>{{ stats.killDeathRatio | number:'1.0-2' }}</b>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- games played -->
+    <ng-container *ngIf="player.record?.length > 0">
+      <h2>Games</h2>
+      <div class="games" *ngIf="player.record as games">
+        <div class="game" *ngFor="let game of games; let i = index">
+          <div class="space-between">
+            <div class="left-side">
+              <div>
+                <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
+                <span class="summary">
+                  Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}.
+                </span>
+              </div>
+              <div>
+                <span class="time" *ngIf="game.started">{{ game.started | date:'h:mm a' }} -</span>
+                <span class="time">{{ game.finished | date:'h:mm a' }}</span>
+                <span class="time">({{ game.lastTurn }} turns)</span>
+              </div>
+            </div>
+            <ion-button size="small" fill="clear" color="dark" (click)="generals.goToReplay(game.replayId, event.server)">
+              <ion-icon name="eye"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="divider">
+            <span class="gap" [class.overlap]="game.started < games[i+1]?.finished" *ngIf="game.started && games[i+1]?.finished">
+              {{ getDurationString(games[i+1].finished, game.started) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- player isn't in the event -->
+    <p class="disclaimer" *ngIf="!player.rank">
+      {{ player.name }} has not joined this event!
+    </p>
+
+    <!-- the event hasn't started -->
+    <p class="disclaimer" *ngIf="player.rank && (!player.stats?.totalGames || upcoming)">
+      More stats will be available after {{ player.name }} has played some games.
+    </p>
+
+  </ion-card-content>
+</ion-card>
+
+<ng-template #NA>
+  <b>N/A</b>
+</ng-template>

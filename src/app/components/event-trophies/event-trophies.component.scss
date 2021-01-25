@@ -1,0 +1,32 @@
+.trophies-container {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0 20px;
+  background: #242424;
+  padding: 8px;
+
+  &.shown {
+    display: flex;
+  }
+
+  .generals-title .emoji {
+    text-shadow: none;
+  }
+
+  app-event-trophy-player {
+    width: 33%;
+  }
+}
+
+@media(max-width: 600px) {
+  .trophies-container {
+    app-event-trophy-player {
+      width: 80%;
+
+      &.other-players {
+        display: none;
+      }
+    }
+  }
+}

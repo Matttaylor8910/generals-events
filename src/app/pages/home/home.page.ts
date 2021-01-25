@@ -1,13 +1,13 @@
 import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {Observable} from 'rxjs';
+import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {TournamentService} from 'src/app/services/tournament.service';
-import {ITournament} from 'types';
+import {IEvent} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
-import {CreateTournamentPage} from './create-tournament/create-tournament.page';
+import {CreateEventPage} from './create-event/create-event.page';
 
 @Component({
   selector: 'app-home',
@@ -15,25 +15,25 @@ import {CreateTournamentPage} from './create-tournament/create-tournament.page';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  unfinishedTournaments$: Observable<ITournament[]>;
-  finishedTournaments$: Observable<ITournament[]>;
+  unfinishedEvents$: Observable<IEvent[]>;
+  finishedEvents$: Observable<IEvent[]>;
 
   constructor(
-      private readonly tournamentService: TournamentService,
+      private readonly eventService: EventService,
       private readonly modalController: ModalController,
       private readonly generals: GeneralsService,
   ) {
-    this.unfinishedTournaments$ = this.tournamentService.getTournaments(false);
-    this.finishedTournaments$ = this.tournamentService.getTournaments(true);
+    this.unfinishedEvents$ = this.eventService.getEvents(false);
+    this.finishedEvents$ = this.eventService.getEvents(true);
   }
 
   get canCreateEvent() {
     return ADMINS.includes(this.generals.name);
   }
 
-  async createTournament() {
+  async createEvent() {
     const modal = await this.modalController.create({
-      component: CreateTournamentPage,
+      component: CreateEventPage,
       cssClass: 'my-custom-class',
       componentProps: {
         'firstName': 'Douglas',

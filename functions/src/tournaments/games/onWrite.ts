@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {GameStatus, IGame, IGeneralsReplay, ITournament, TournamentType} from '../../../../types';
+import {EventType, GameStatus, IEvent, IGame, IGeneralsReplay} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 import {timeoutAfter} from '../../util/util';
@@ -17,20 +17,20 @@ try {
 const db = admin.firestore();
 
 export const onWriteGame =
-    functions.firestore.document('tournaments/{tourneyId}/games/{gameId}')
+    functions.firestore.document('tournaments/{eventId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
           if (gameDoc.after.exists) {
-            const tournamentRef = gameDoc.after.ref.parent.parent!;
+            const eventRef = gameDoc.after.ref.parent.parent!;
 
             // on create, increment the amount on ongoing games
             if (!gameDoc.before.exists) {
-              await tournamentRef.update({
+              await eventRef.update({
                 ongoingGameCount: admin.firestore.FieldValue.increment(1),
               });
             }
 
             try {
-              await lookForFinishedGame(gameDoc.after, tournamentRef);
+              await lookForFinishedGame(gameDoc.after, eventRef);
             } catch (error) {
               console.log(gameDoc.after.id, error);
               await keepLookingIn10Seconds(gameDoc.after);
@@ -41,7 +41,7 @@ export const onWriteGame =
 
 async function lookForFinishedGame(
     snapshot: DocumentSnapshot,
-    tournamentRef: admin.firestore.DocumentReference,
+    eventRef: admin.firestore.DocumentReference,
     ): Promise<any> {
   const game = (snapshot.data() || {}) as IGame;
   const {players} = game;
@@ -53,7 +53,7 @@ async function lookForFinishedGame(
   // if we still haven't found a replay within 20 minutes, pull the plug
   if (timesChecked >= TWENTY_MINUTES) {
     console.log('it has been 20 minutes');
-    await tournamentRef.update({
+    await eventRef.update({
       ongoingGameCount: admin.firestore.FieldValue.increment(-1),
     });
     return await snapshot.ref.delete();
@@ -62,18 +62,17 @@ async function lookForFinishedGame(
   // if we have a game with some players, and we haven't set a replayId yet,
   // find games for these players
   if (!game.replayId && players?.length) {
-    // get list of tracked replays for a tournament
-    const tournamentSnap = await tournamentRef.get();
-    const tournament = (tournamentSnap.data() || {}) as ITournament;
-    const trackedReplays = tournament.replays || [];
+    // get list of tracked replays for a event
+    const eventSnap = await eventRef.get();
+    const event = (eventSnap.data() || {}) as IEvent;
+    const trackedReplays = event.replays || [];
 
-    console.log(
-        `${trackedReplays.length} tracked replays for ${tournamentSnap.id}`);
+    console.log(`${trackedReplays.length} tracked replays for ${eventSnap.id}`);
 
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
     const replays = await getReplaysForPlayers(
-        players, trackedReplays, game.started, tournament.server);
+        players, trackedReplays, game.started, event.server);
 
     console.log('got all replays for players')
 
@@ -86,7 +85,7 @@ async function lookForFinishedGame(
     if (count > players.length / 2) {
       // if over half (but not exactly half) of the og players were in this
       // game, and we have not tracked it already, count the game
-      await saveReplayToGame(replay, snapshot, tournamentRef, tournament);
+      await saveReplayToGame(replay, snapshot, eventRef, event);
     } else {
       // otherwise, gotta keep looking, start in 10 seconds
       await keepLookingIn10Seconds(snapshot);
@@ -97,7 +96,7 @@ async function lookForFinishedGame(
 /**
  * Given the list of usernames, get the last 10 replays for each of them, and
  * then return a list of the replays that:
- * 1) aren't already tracked on this tournament
+ * 1) aren't already tracked on this event
  * 2) started after this lobby was created
  * 3) the replay has <= the # of usernames in this game
  *
@@ -164,11 +163,11 @@ function getMostPrevalentReplay(replays: IGeneralsReplay[]):
 async function saveReplayToGame(
     replay: IGeneralsReplay,
     gameSnapshot: DocumentSnapshot,
-    tournamentRef: admin.firestore.DocumentReference,
-    tournament: ITournament,
+    eventRef: admin.firestore.DocumentReference,
+    event: IEvent,
     ): Promise<void> {
   const batch = db.batch();
-  batch.update(tournamentRef, {
+  batch.update(eventRef, {
     replays: admin.firestore.FieldValue.arrayUnion(replay.id),
     completedGameCount: admin.firestore.FieldValue.increment(1),
     ongoingGameCount: admin.firestore.FieldValue.increment(-1),
@@ -178,16 +177,15 @@ async function saveReplayToGame(
 
   // pull down the replay and save it to the game doc
   const {scores, summary, turns} =
-      await simulator.getReplayStats(replay.id, tournament.server);
+      await simulator.getReplayStats(replay.id, event.server);
 
   // determine if the winner is on a streak
   const winner = scores[0];
-  const snapshot =
-      await tournamentRef.collection('players').doc(winner.name).get();
+  const snapshot = await eventRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
 
   // don't do streaks for FFA, instead just give a 5 point bonus for 1st
-  if (tournament.type === TournamentType.FFA) {
+  if (event.type === EventType.FFA) {
     winner.points += 5;
   }
   // all other types, double points from the 3rd win in a row onward
@@ -200,7 +198,7 @@ async function saveReplayToGame(
 
   // save the replay to the game doc
   const finished = replay.started + (turns * 1000);
-  const tooLate = tournament.endTime < finished;
+  const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
     started: replay.started,
@@ -213,8 +211,8 @@ async function saveReplayToGame(
   // the clock ran out
   if (!tooLate) {
     for (const player of scores) {
-      // determine if this player is in the tournament
-      const playerRef = tournamentRef.collection('players').doc(player.name);
+      // determine if this player is in the event
+      const playerRef = eventRef.collection('players').doc(player.name);
       const playerDoc = await playerRef.get();
       if (!playerDoc.exists) continue;
 
@@ -228,7 +226,7 @@ async function saveReplayToGame(
       };
 
       // save the record in case we ever build features around this
-      batch.create(tournamentRef.collection('records').doc(recordId), record);
+      batch.create(eventRef.collection('records').doc(recordId), record);
 
       // update the player's points, streak, and record on the leaderboard
       batch.update(playerRef, {

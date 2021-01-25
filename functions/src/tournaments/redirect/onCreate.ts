@@ -14,14 +14,13 @@ const db = admin.firestore();
  * be responsible for hitting the generals API to determine when this game ends
  */
 export const onCreateRedirect =
-    functions.firestore
-        .document('tournaments/{tournamentId}/redirect/{redirectId}')
+    functions.firestore.document('tournaments/{eventId}/redirect/{redirectId}')
         .onCreate(async (doc, context) => {
-          const tournamentId = context.params.tournamentId;
+          const eventId = context.params.eventId;
           const {players, started} = doc.data();
 
           return db.collection('tournaments')
-              .doc(tournamentId)
+              .doc(eventId)
               .collection('games')
               .add({players, started, status: GameStatus.STARTED});
         });

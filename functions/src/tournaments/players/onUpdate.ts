@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord, ITournament, TournamentType} from '../../../../types';
+import {EventType, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 try {
@@ -11,19 +11,18 @@ try {
 }
 
 export const onUpdatePlayer =
-    functions.firestore
-        .document('tournaments/{tournamentId}/players/{playerId}')
+    functions.firestore.document('tournaments/{eventId}/players/{playerId}')
         .onUpdate(async (doc, context) => {
           console.log(`${doc.after.id} updated`);
           const player = doc.after.data() as ILeaderboardPlayer;
-          const tournamentSnap = await doc.after.ref.parent.parent!.get();
-          const tournament = (tournamentSnap.data() || {}) as ITournament;
+          const eventSnap = await doc.after.ref.parent.parent!.get();
+          const event = (eventSnap.data() || {}) as IEvent;
 
           const updates: Partial<ILeaderboardPlayer> =
-              recordSanityCheck(player.record, tournament);
+              recordSanityCheck(player.record, event);
 
-          const currentStars = await getCurrentStars(
-              player.name, tournament.type, tournament.server);
+          const currentStars =
+              await getCurrentStars(player.name, event.type, event.server);
 
           // generate some stats from the current record
           updates.stats = {
@@ -36,7 +35,7 @@ export const onUpdatePlayer =
           if (updates.dq && !player.dq) {
             // TODO: support dq for multiple reasons
             const reason = 'playing in multiple games at once';
-            await tournamentSnap.ref.collection('messages').add({
+            await eventSnap.ref.collection('messages').add({
               sender: 'Automated Message',
               text: `${player.name} has been disqualified for ${reason}.`,
               timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -49,7 +48,7 @@ export const onUpdatePlayer =
 
 export function recordSanityCheck(
     record: IPlayerHistoryRecord[],
-    tournament: ITournament,
+    event: IEvent,
     ): Partial<ILeaderboardPlayer> {
   record.sort((a, b) => a.finished - b.finished);
   let dq = false;
@@ -71,7 +70,7 @@ export function recordSanityCheck(
     }
 
     // FFA doesn't do streaks right now
-    if (tournament.type === TournamentType.FFA) {
+    if (event.type === EventType.FFA) {
       // do nothing
     }
     // if this player should be on a streak, but their record indicates they are

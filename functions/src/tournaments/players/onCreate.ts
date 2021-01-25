@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {ILeaderboardPlayer, IPlayerHistoryRecord, ITournament} from '../../../../types';
+import {IEvent, ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 import {recordSanityCheck} from './onUpdate';
@@ -14,17 +14,16 @@ try {
 const db = admin.firestore();
 
 export const onCreatePlayer =
-    functions.firestore
-        .document('tournaments/{tournamentId}/players/{playerId}')
+    functions.firestore.document('tournaments/{eventId}/players/{playerId}')
         .onCreate(async (doc, context) => {
-          const tournamentId = context.params.tournamentId;
-          const tournamentRef = db.collection('tournaments').doc(tournamentId);
-          const tournamentSnap = await tournamentRef.get();
-          const tournament = (tournamentSnap.data() || {}) as ITournament;
+          const eventId = context.params.eventId;
+          const eventRef = db.collection('tournaments').doc(eventId);
+          const eventSnap = await eventRef.get();
+          const event = (eventSnap.data() || {}) as IEvent;
 
           const {name} = doc.data() as ILeaderboardPlayer;
 
-          const recordSnapshots = await tournamentRef.collection('records')
+          const recordSnapshots = await eventRef.collection('records')
                                       .where('name', '==', name)
                                       .get();
 
@@ -32,10 +31,10 @@ export const onCreatePlayer =
                             []) as IPlayerHistoryRecord[];
 
           const {record, currentStreak, points} =
-              recordSanityCheck(existing, tournament);
+              recordSanityCheck(existing, event);
 
           const currentStars =
-              await getCurrentStars(name, tournament.type, tournament.server);
+              await getCurrentStars(name, event.type, event.server);
 
           // if you already had records or points, give them back to you
           const batch = db.batch();
@@ -46,8 +45,8 @@ export const onCreatePlayer =
             'stats.currentStars': currentStars,
           });
 
-          // update the player count for this tournament
-          batch.update(tournamentRef, {
+          // update the player count for this event
+          batch.update(eventRef, {
             playerCount: admin.firestore.FieldValue.increment(1),
           });
 

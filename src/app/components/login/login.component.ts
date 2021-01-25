@@ -1,10 +1,10 @@
 import {Component, Input} from '@angular/core';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
+import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {TournamentService} from 'src/app/services/tournament.service';
 
 import {GeneralsServer} from '../../../../constants';
-import {TournamentStatus} from '../../../../types';
+import {EventStatus} from '../../../../types';
 
 @Component({
   selector: 'app-login',
@@ -12,8 +12,8 @@ import {TournamentStatus} from '../../../../types';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  @Input() tournamentId?: string;
-  @Input() status?: TournamentStatus;
+  @Input() eventId?: string;
+  @Input() status?: EventStatus;
   @Input() server = GeneralsServer.NA;
   @Input() disqualified = false;
 
@@ -21,7 +21,7 @@ export class LoginComponent {
 
   constructor(
       public readonly generals: GeneralsService,
-      private readonly tournamentService: TournamentService,
+      private readonly eventService: EventService,
   ) {
     this.checkUserParam();
     this.ngOnChanges();
@@ -33,16 +33,16 @@ export class LoginComponent {
       const decoded = decodeURIComponent(param);
       console.log(`decoded param: ${decoded}`);
       const decrypted = await this.generals.decryptUsername(decoded);
-      this.generals.handleDidLogin(decrypted, this.tournamentId);
+      this.generals.handleDidLogin(decrypted, this.eventId);
     }
   }
 
   logout() {
-    const {tournamentId, status, generals: {name}} = this;
-    if (name && tournamentId && status !== TournamentStatus.FINISHED &&
+    const {eventId, status, generals: {name}} = this;
+    if (name && eventId && status !== EventStatus.FINISHED &&
         !this.disqualified) {
-      this.tournamentService.removePlayer(tournamentId, name);
-      this.tournamentService.leaveQueue(tournamentId, name);
+      this.eventService.removePlayer(eventId, name);
+      this.eventService.leaveQueue(eventId, name);
     }
     this.generals.logout();
   }

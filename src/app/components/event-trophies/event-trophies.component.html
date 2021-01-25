@@ -1,0 +1,29 @@
+<div class="trophies-container" [class.shown]="showTrophies">
+  <ng-container *ngIf="first; else noWinner">
+    <app-event-trophy-player
+      class="other-players"
+      [player]="second"
+      place="second"
+      (playerClicked)="playerClicked.emit(second)"
+      *ngIf="showOtherPlaces">
+    </app-event-trophy-player>
+    <app-event-trophy-player
+      [player]="first"
+      (playerClicked)="playerClicked.emit(first)"
+      place="first">
+    </app-event-trophy-player>
+    <app-event-trophy-player
+      class="other-players"
+      [player]="third"
+      place="third"
+      (playerClicked)="playerClicked.emit(third)"
+      *ngIf="showOtherPlaces">
+    </app-event-trophy-player>
+  </ng-container>
+</div>
+
+<ng-template #noWinner>
+  <div class="generals-title">
+    No one joined this event <span class="emoji">😢</span>
+  </div>
+</ng-template>

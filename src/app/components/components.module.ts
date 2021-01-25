@@ -8,19 +8,19 @@ import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-pag
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
+import {EventLeaderboardComponent} from './event-leaderboard/event-leaderboard.component';
+import {EventListItemComponent} from './event-list-item/event-list-item.component';
+import {EventOverviewComponent} from './event-overview/event-overview.component';
+import {EventPlayerSummaryComponent} from './event-player-summary/event-player-summary.component';
+import {EventQueueComponent} from './event-queue/event-queue.component';
+import {EventSummaryComponent} from './event-summary/event-summary.component';
+import {EventTrophiesComponent} from './event-trophies/event-trophies.component';
+import {EventTrophyPlayerComponent} from './event-trophy-player/event-trophy-player.component';
 import {GameListComponent} from './game-list/game-list.component';
 import {GameSummaryComponent} from './game-summary/game-summary.component';
 import {LoginComponent} from './login/login.component';
 import {RulesComponent} from './rules/rules.component';
 import {TimerComponent} from './timer/timer.component';
-import {TournamentLeaderboardComponent} from './tournament-leaderboard/tournament-leaderboard.component';
-import {TournamentListItemComponent} from './tournament-list-item/tournament-list-item.component';
-import {TournamentOverviewComponent} from './tournament-overview/tournament-overview.component';
-import {TournamentPlayerSummaryComponent} from './tournament-player-summary/tournament-player-summary.component';
-import {TournamentQueueComponent} from './tournament-queue/tournament-queue.component';
-import {TournamentSummaryComponent} from './tournament-summary/tournament-summary.component';
-import {TournamentTrophiesComponent} from './tournament-trophies/tournament-trophies.component';
-import {TournamentTrophyPlayerComponent} from './tournament-trophy-player/tournament-trophy-player.component';
 
 @NgModule({
   declarations: [
@@ -33,14 +33,14 @@ import {TournamentTrophyPlayerComponent} from './tournament-trophy-player/tourna
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    TournamentLeaderboardComponent,
-    TournamentListItemComponent,
-    TournamentOverviewComponent,
-    TournamentPlayerSummaryComponent,
-    TournamentQueueComponent,
-    TournamentSummaryComponent,
-    TournamentTrophiesComponent,
-    TournamentTrophyPlayerComponent,
+    EventLeaderboardComponent,
+    EventListItemComponent,
+    EventOverviewComponent,
+    EventPlayerSummaryComponent,
+    EventQueueComponent,
+    EventSummaryComponent,
+    EventTrophiesComponent,
+    EventTrophyPlayerComponent,
   ],
   imports: [
     IonicModule,
@@ -62,14 +62,14 @@ import {TournamentTrophyPlayerComponent} from './tournament-trophy-player/tourna
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    TournamentLeaderboardComponent,
-    TournamentListItemComponent,
-    TournamentOverviewComponent,
-    TournamentPlayerSummaryComponent,
-    TournamentQueueComponent,
-    TournamentSummaryComponent,
-    TournamentTrophiesComponent,
-    TournamentTrophyPlayerComponent,
+    EventLeaderboardComponent,
+    EventListItemComponent,
+    EventOverviewComponent,
+    EventPlayerSummaryComponent,
+    EventQueueComponent,
+    EventSummaryComponent,
+    EventTrophiesComponent,
+    EventTrophyPlayerComponent,
   ]
 })
 export class ComponentsModule {

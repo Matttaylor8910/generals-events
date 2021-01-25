@@ -1,0 +1,13 @@
+.event-overview {
+  width: calc(100% - 16px);
+  cursor: pointer;
+
+  .player-count {
+    display: flex;
+    align-items: center;
+
+    ion-icon {
+      margin-right: 5px;
+    }
+  }
+}

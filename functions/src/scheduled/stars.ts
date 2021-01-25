@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {ILeaderboardPlayer, ITournament} from '../../../types';
+import {IEvent, ILeaderboardPlayer} from '../../../types';
 import {getCurrentStars} from '../util/generals';
 
 try {
@@ -11,15 +11,15 @@ try {
 }
 const db = admin.firestore();
 
-export const getTournamentStars =
+export const getEventStars =
     functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
-      const tournaments = await db.collection('tournaments')
-                              .where('startTime', '>', Date.now())
-                              .get();
+      const events = await db.collection('tournaments')
+                         .where('startTime', '>', Date.now())
+                         .get();
 
 
-      for (const doc of tournaments.docs) {
-        const {type, server} = (doc.data() || {}) as ITournament;
+      for (const doc of events.docs) {
+        const {type, server} = (doc.data() || {}) as IEvent;
         const players = await doc.ref.collection('players').get();
 
         const batch = db.batch();

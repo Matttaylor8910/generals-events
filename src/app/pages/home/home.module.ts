@@ -3,7 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {IonicModule} from '@ionic/angular';
 import {ComponentsModule} from 'src/app/components/components.module';
-import {CreateTournamentPage} from './create-tournament/create-tournament.page';
+import {CreateEventPage} from './create-event/create-event.page';
 
 import {HomePageRoutingModule} from './home-routing.module';
 import {HomePage} from './home.page';
@@ -19,7 +19,7 @@ import {HomePage} from './home.page';
   ],
   declarations: [
     HomePage,
-    CreateTournamentPage,
+    CreateEventPage,
   ]
 })
 export class HomePageModule {

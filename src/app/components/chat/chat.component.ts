@@ -4,7 +4,7 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
 
 import {ADMINS} from '../../../../constants';
-import {IChatMessage, ITournament} from '../../../../types';
+import {IChatMessage, IEvent} from '../../../../types';
 
 @Component({
   selector: 'app-chat',
@@ -14,7 +14,7 @@ import {IChatMessage, ITournament} from '../../../../types';
 export class ChatComponent implements OnInit {
   @ViewChild('chatBox', {read: ElementRef, static: false}) chatBox: ElementRef;
 
-  @Input() tournament: ITournament;
+  @Input() event: IEvent;
   @Input() disqualified: boolean;
 
   @Output() nameClicked = new EventEmitter<string>();
@@ -47,9 +47,8 @@ export class ChatComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.tournament?.id) {
-      this.messages$ =
-          this.messageService.getTournamentMessages(this.tournament.id);
+    if (this.event?.id) {
+      this.messages$ = this.messageService.getEventMessages(this.event.id);
     }
   }
 
@@ -59,7 +58,7 @@ export class ChatComponent implements OnInit {
 
   submit() {
     if (this.text) {
-      this.messageService.addTournamentMessage(this.tournament.id, this.text);
+      this.messageService.addEventMessage(this.event.id, this.text);
       delete this.text;
     }
   }

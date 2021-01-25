@@ -41,9 +41,9 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
-  async login(tournamentId: string, join: boolean, server = GeneralsServer.NA) {
-    if (tournamentId) {
-      localStorage.setItem('generals-last-tournament', tournamentId);
+  async login(eventId: string, join: boolean, server = GeneralsServer.NA) {
+    if (eventId) {
+      localStorage.setItem('generals-last-event', eventId);
       localStorage.setItem('generals-join', String(join || false));
     }
 
@@ -61,38 +61,37 @@ export class GeneralsService {
   }
 
   /**
-   * Set the given name to be the logged in user. A tournamentId can be passed
-   * as the tournament to redirect to after logging in.
+   * Set the given name to be the logged in user. A eventId can be passed
+   * as the event to redirect to after logging in.
    *
    * Hitting a URL like the following will login as only_human and join the Jan
-   * 2021 FFA tournament for example:
+   * 2021 FFA event for example:
    * https://generals-tournaments.web.app/FFA-Jan-2021?encryptedUser=U2FsdGVkX18mHNxXmZ1WzCEtYugx86GG7AS7jLEBD1Y%3D&join=true
    *
    * @param name
-   * @param currentTournament
+   * @param currentEvent
    */
-  handleDidLogin(name: string, tournamentId?: string) {
+  handleDidLogin(name: string, eventId?: string) {
     this.setName(name);
 
     console.log(`set name to ${name}`);
 
-    // support redirecting to a provided tournament, or the last one saved to
+    // support redirecting to a provided event, or the last one saved to
     // localStorage before redirecting to generals.io
-    // also support auto-joining the tournament when you get there
-    tournamentId =
-        tournamentId || localStorage.getItem('generals-last-tournament');
+    // also support auto-joining the event when you get there
+    eventId = eventId || localStorage.getItem('generals-last-event');
     const join = localStorage.getItem('generals-join') ||
         location.href.includes('join=true');
-    localStorage.removeItem('generals-last-tournament');
+    localStorage.removeItem('generals-last-event');
     localStorage.removeItem('generals-join');
 
-    console.log(`tournamentId: ${tournamentId}, join? ${join}`);
+    console.log(`eventId: ${eventId}, join? ${join}`);
 
-    // redirect to either the tournament or home
-    if (tournamentId) {
+    // redirect to either the event or home
+    if (eventId) {
       const queryParams = join ? {join} : undefined;
-      this.router.navigate(['/', tournamentId], {queryParams});
-      console.log(`redirecting to tournament: ${tournamentId}`, queryParams);
+      this.router.navigate(['/', eventId], {queryParams});
+      console.log(`redirecting to event: ${eventId}`, queryParams);
     } else {
       this.router.navigate(['/']);
       console.log(`going home`);

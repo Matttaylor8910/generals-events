@@ -1,0 +1,115 @@
+<app-event-queue
+  [event]="event"
+  [inEvent]="inEvent"
+  [status]="status"
+  [disqualified]="disqualified"
+  *ngIf="showQueue">
+</app-event-queue>
+
+<table>
+  <tr class="table-header">
+    <th colspan="5">
+      <div class="header-container">
+
+        <!-- left side -->
+        <div class="page-control">
+          <ion-button size="small" fill="clear" color="dark" [class.tracking]="tracking" (click)="toggleTracking()" [tooltip]="trackingTooltip" *ngIf="showTracker">
+            <ion-icon slot="icon-only" name="locate"></ion-icon>
+          </ion-button>
+          <ion-button size="small" fill="clear" color="dark" [disabled]="!canPrev" (click)="prev()">
+            <ion-icon slot="icon-only" name="play-skip-back"></ion-icon>
+          </ion-button>
+          <div class="control-text">{{ pageControlText }}</div>
+          <ion-button size="small" fill="clear" color="dark" [disabled]="!canNext" (click)="next()">
+            <ion-icon slot="icon-only" name="play-skip-forward"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- right side -->
+        <ng-container *ngIf="players">
+          <ion-button size="small" fill="clear" color="dark" (click)="join()" *ngIf="canJoin" [disabled]="recentlyJoined">
+            <ion-icon name="play"></ion-icon>
+            Join
+          </ion-button>
+          <ion-button size="small" fill="clear" color="dark" (click)="leave()" *ngIf="canLeave" [disabled]="recentlyJoined">
+            <ion-icon name="exit"></ion-icon>
+            Withdraw
+          </ion-button>
+          <ion-button size="small" fill="clear" color="dark" (click)="prunePlayers()" *ngIf="showPrune">
+            Prune {{ absentPlayers?.length }} Absent Player(s)
+          </ion-button>
+          <app-timer [stopAt]="event.endTime" *ngIf="showTimer"></app-timer>
+        </ng-container>
+
+      </div>
+    </th>
+  </tr>
+  <ng-container *ngFor="let player of visible; let i = index">
+    <tr [class.even]="i % 2 === 0">
+      <td class="marker"
+        [class.you]="player.name === generals.name"
+        [class.selected]="player.name === selectedPlayer?.name">
+      </td>
+      <td class="rank">
+        <span *ngIf="!player.dq">{{ player.rank }}</span>
+        <ion-icon name="close" color="danger" tooltip="{{player.name}} has been disqualified" *ngIf="player.dq"></ion-icon>
+      </td>
+      <td class="name" (click)="playerClicked.emit(player)">
+        {{ player.name }}
+      </td>
+      <td class="record">
+        <div class="record-container">
+          <span
+            class="game"
+            [class.winner]="game.rank === 1"
+            [class.streak]="game.streak"
+            *ngFor="let game of player.record"
+            (click)="generals.goToReplay(game.replayId, event?.server)"
+            tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
+          >
+            {{ game.points }}
+          </span>
+        </div>
+      </td>
+      <td class="points">
+        <div class="stars" *ngIf="showStars">
+          <ion-icon name="star" color="warning"></ion-icon>
+          <span *ngIf="player.stats && player.stats.currentStars !== undefined; else spinner">
+            {{ player.stats?.currentStars | number:'1.0-0' }}
+          </span>
+        </div>
+        <ng-container *ngIf="!showStars">
+          <span *ngIf="showStreaks && player.currentStreak > 2">🔥</span>
+          {{ player.points }}
+        </ng-container>
+      </td>
+    </tr>
+    <tr [class.even]="i % 2 === 0" class="small-devices" *ngIf="player.record.length">
+      <td class="marker"
+        [class.you]="player.name === generals.name"
+        [class.selected]="player.name === selectedPlayer?.name">
+      </td>
+      <td class="record" colspan="5">
+        <div class="record-container">
+          <span
+            class="game"
+            [class.winner]="game.rank === 1"
+            [class.streak]="game.streak"
+            *ngFor="let game of player.record"
+            (click)="generals.goToReplay(game.replayId, event?.server)"
+            tooltip="Finished #{{ game.rank }} with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}"
+          >
+            {{ game.points }}
+          </span>
+        </div>
+      </td>
+    </tr>
+  </ng-container>
+  <tr *ngIf="!visible?.length">
+    <td colspan="5">No players to show</td>
+  </tr>
+</table>
+
+<ng-template #spinner>
+  <ion-spinner></ion-spinner>
+</ng-template>

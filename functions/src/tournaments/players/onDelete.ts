@@ -9,11 +9,10 @@ try {
 const db = admin.firestore();
 
 export const onDeletePlayer =
-    functions.firestore
-        .document('tournaments/{tournamentId}/players/{playerId}')
+    functions.firestore.document('tournaments/{eventId}/players/{playerId}')
         .onDelete(async (doc, context) => {
-          const tournamentId = context.params.tournamentId;
-          return db.collection('tournaments').doc(tournamentId).update({
+          const eventId = context.params.eventId;
+          return db.collection('tournaments').doc(eventId).update({
             playerCount: admin.firestore.FieldValue.increment(-1)
           });
         });

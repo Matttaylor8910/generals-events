@@ -2,7 +2,7 @@
   <h2 *ngIf="games.length">Recent Games</h2>
   <app-game-summary
     [game]="game"
-    [server]="tournament.server"
+    [server]="event.server"
     (nameClicked)="nameClicked.emit($event)"
     *ngFor="let game of games">
   </app-game-summary>

@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
-import {ITournament} from '../../../types';
+import {IEvent} from '../../../types';
 
 try {
   admin.initializeApp();
@@ -10,18 +10,18 @@ try {
 }
 const db = admin.firestore();
 
-export const onUpdateTournament =
-    functions.firestore.document('tournaments/{tournamentId}')
-        .onUpdate(async (tournamentDoc, context) => {
-          const tournamentId = context.params.tournamentId;
-          await checkQueue(tournamentDoc.after, tournamentId);
+export const onUpdateEvent =
+    functions.firestore.document('tournaments/{eventId}')
+        .onUpdate(async (eventDoc, context) => {
+          const eventId = context.params.eventId;
+          await checkQueue(eventDoc.after, eventId);
           return 'Done';
         });
 
-async function checkQueue(snapshot: DocumentSnapshot, tournamentId: string) {
-  const {endTime, queue, playersPerGame} = snapshot.data() as ITournament;
+async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
+  const {endTime, queue, playersPerGame} = snapshot.data() as IEvent;
 
-  // if the tournament isn't over, start a new game if there are enough players
+  // if the event isn't over, start a new game if there are enough players
   // in the queue to do so
   if (endTime > Date.now() && queue.length >= playersPerGame) {
     const players = queue.slice(0, playersPerGame);
@@ -35,7 +35,7 @@ async function checkQueue(snapshot: DocumentSnapshot, tournamentId: string) {
       queue: admin.firestore.FieldValue.arrayRemove(...players),
     });
     batch.create(snapshot.ref.collection('redirect').doc(id), {
-      lobby: `event_${tournamentId}_${started}`,
+      lobby: `event_${eventId}_${started}`,
       started,
       players,
     });
