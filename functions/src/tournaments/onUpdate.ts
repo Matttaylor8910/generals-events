@@ -35,7 +35,7 @@ async function checkQueue(snapshot: DocumentSnapshot, tournamentId: string) {
       queue: admin.firestore.FieldValue.arrayRemove(...players),
     });
     batch.create(snapshot.ref.collection('redirect').doc(id), {
-      lobby: `tournament_${tournamentId}_${started}`,
+      lobby: `event_${tournamentId}_${started}`,
       started,
       players,
     });
