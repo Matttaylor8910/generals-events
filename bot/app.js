@@ -17,14 +17,14 @@ let chatRoom;
 let started = false;
 let interval;
 
-let tournamentId;
+let eventId;
 let lobbyId;
 let botIndex = 0;
 
 let last;
 for (const arg of args) {
-  if (last === '--tournament') {
-    tournamentId = arg;
+  if (last === '--event') {
+    eventId = arg;
   } else if (last === '--lobby') {
     lobbyId = arg;
   } else if (last === '--bot') {
@@ -46,20 +46,20 @@ if (!userId) {
 socket.on('disconnect', function() {
   console.error('Disconnected from server.');
 
-  // try to join tournament again if we disconnect
-  // if the tournament is over, it will end the process
-  loadTournament();
+  // try to join event again if we disconnect
+  // if the event is over, it will end the process
+  loadEvent();
 });
 
 socket.on('connect', function() {
   console.log('Connected to server.');
 
   // if there is a lobby to join, joinCustomGameQueue();
-  // else join tournament
+  // else join event
   if (lobbyId) {
     joinCustomGameQueue(lobbyId);
-  } else if (tournamentId) {
-    loadTournament();
+  } else if (eventId) {
+    loadEvent();
   } else {
     help();
   }
@@ -107,14 +107,14 @@ function gameOver() {
 
   if (lobbyId) {
     joinCustomGameQueue(lobbyId);
-  } else if (tournamentId) {
-    joinTournamentQueue();
+  } else if (eventId) {
+    joinEventQueue();
   }
 }
 
-function loadTournament() {
-  console.log(`loading tournament ${tournamentId}`);
-  http.get(`${BASE_URL}/tournaments/${tournamentId}`)
+function loadEvent() {
+  console.log(`loading event ${eventId}`);
+  http.get(`${BASE_URL}/tournaments/${eventId}`)
       .then(response => {
         if (response.data) {
           startTime = response.data.startTime;
@@ -122,56 +122,56 @@ function loadTournament() {
 
           // endTime is in the future
           if (endTime > Date.now()) {
-            joinTournament();
+            joinEvent();
           } else {
-            tournamentOver();
+            eventOver();
           }
         }
       })
       .catch(error => {
-        console.log(`${name}\tcouldn't load tournament`);
-        setTimeout(loadTournament.bind(this), 5000);
+        console.log(`${name}\tcouldn't load event`);
+        setTimeout(loadEvent.bind(this), 5000);
       });
 }
 
-function joinTournament() {
-  console.log(`${name}\tjoining tournament ${tournamentId}`);
-  http.post(`${BASE_URL}/tournaments/${tournamentId}/join/${safeName}`)
+function joinEvent() {
+  console.log(`${name}\tjoining event ${eventId}`);
+  http.post(`${BASE_URL}/tournaments/${eventId}/join/${safeName}`)
       .then(() => {
-        joinTournamentQueue();
+        joinEventQueue();
       })
       .catch(error => {
-        console.log(`${name}\tcouldn't join tournament`);
-        setTimeout(joinTournament.bind(this), 5000);
+        console.log(`${name}\tcouldn't join event`);
+        setTimeout(joinEvent.bind(this), 5000);
       });
 }
 
-function joinTournamentQueue() {
+function joinEventQueue() {
   const now = Date.now();
   if (startTime > now) {
     const difference = startTime - now;
-    console.log(`tournament starts in ${difference / 1000} seconds`);
-    setTimeout(joinTournamentQueue.bind(this), difference);
+    console.log(`event starts in ${difference / 1000} seconds`);
+    setTimeout(joinEventQueue.bind(this), difference);
   } else if (endTime < now) {
-    tournamentOver();
+    eventOver();
   } else {
     console.log(`joining queue as ${name}`);
-    http.post(`${BASE_URL}/tournaments/${tournamentId}/queue/${safeName}`)
+    http.post(`${BASE_URL}/tournaments/${eventId}/queue/${safeName}`)
         .then(() => {
           pollLobby();
         })
         .catch(error => {
           console.log(`${name}\tcouldn't join queue`);
-          setTimeout(joinTournamentQueue.bind(this), 3000);
+          setTimeout(joinEventQueue.bind(this), 3000);
         });
   }
 }
 
 function pollLobby() {
   if (endTime < Date.now()) {
-    return tournamentOver();
+    return eventOver();
   }
-  http.get(`${BASE_URL}/tournaments/${tournamentId}/lobby/${safeName}`)
+  http.get(`${BASE_URL}/tournaments/${eventId}/lobby/${safeName}`)
       .then(response => {
         if (response.data.lobby) {
           joinCustomGameQueue(response.data.lobby);
@@ -186,8 +186,8 @@ function pollLobby() {
       });
 }
 
-function tournamentOver() {
-  console.log('tournament is over');
+function eventOver() {
+  console.log('event is over');
   process.exit();
 }
 
@@ -195,8 +195,8 @@ function help() {
   console.log(`
     Error, please run like:\n
     node app.js --lobby [lobby_id]
-    node app.js --tournament [tournament_id]
-    node app.js --tournament [tournament_id] --bot [bot_index]
+    node app.js --event [event_id]
+    node app.js --event [event_id] --bot [bot_index]
   `);
   process.exit();
 }
