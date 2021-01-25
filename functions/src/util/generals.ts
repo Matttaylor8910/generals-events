@@ -2,6 +2,7 @@ import {default as http} from 'axios';
 
 import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {IGeneralsReplay, TournamentType} from '../../../types';
+import {timeoutAfter} from './util';
 
 export function getLastReplayForUsername(
     name: string,
@@ -34,7 +35,9 @@ export function getCurrentStars(
     ): Promise<number> {
   const url =
       `${SITE_URLS[server]}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
-  return http.get(url).then((response) => {
+  const generalsStars = http.get(url).then((response) => {
     return Number(response.data.stars[typesMap[type]]);
   });
+
+  return Promise.race([generalsStars, timeoutAfter(1000, 0)]);
 }

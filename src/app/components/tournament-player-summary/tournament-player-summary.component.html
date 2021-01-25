@@ -58,6 +58,18 @@
           </b>
         </div>
         <div class="stat-line">
+          <span>Average Turns</span>
+          <b *ngIf="stats.averageTurns; else NA">
+            {{ stats.averageTurns | number:'1.0-0' }} turns
+          </b>
+        </div>
+        <div class="stat-line">
+          <span>Average Rank</span>
+          <b *ngIf="stats.averageRank; else NA">
+            {{ stats.averageRank | number:'1.0-1' }}
+          </b>
+        </div>
+        <div class="stat-line">
           <span>Average Kills Per Game</span>
           <b *ngIf="stats.totalGames > 0; else NA">
             {{ stats.averageKills | number:'1.0-2' }}

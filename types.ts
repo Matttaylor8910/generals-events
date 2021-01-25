@@ -70,6 +70,7 @@ export interface ILeaderboardPlayerStats {
   averageWin: number|null;      // average number of turns per win
   averageKills: number|null;    // average number of kills per game
   averageTurns: number|null;    // average turns they were alive per game
+  averageRank: number|null;     // average finishing rank per game
   killDeathRatio: number|null;  // totalKills / (totalGames - totalWins)
 }
 
