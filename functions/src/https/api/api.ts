@@ -15,11 +15,11 @@ const db: admin.firestore.Firestore = admin.firestore();
 // the express server that will live inside the cloud function
 const app = express();
 const main = express();
-main.use('/api/v1', app);
+main.use('/v1', app);
 main.use(express.json());
 
 // the actual cloud function
-export const webApi = functions.https.onRequest(main);
+export const api = functions.https.onRequest(main);
 
 app.get('/', async (request, response) => {
   response.send(`

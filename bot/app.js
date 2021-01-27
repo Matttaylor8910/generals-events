@@ -7,7 +7,7 @@ let socket = io('http://bot.generals.io');
 const args = process.argv.slice(2);
 
 const BASE_URL =
-    'https://us-central1-generals-tournaments.cloudfunctions.net/webApi/api/v1';
+    'https://us-central1-generals-tournaments.cloudfunctions.net/api/v1';
 
 let bot;
 let playerIndex;
