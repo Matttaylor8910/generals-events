@@ -13,9 +13,9 @@ export class MessageService {
       private readonly generals: GeneralsService,
   ) {}
 
-  addTournamentMessage(tournamentId: string, text: string) {
-    return this.afs.collection('tournaments')
-        .doc(tournamentId)
+  addEventMessage(eventId: string, text: string) {
+    return this.afs.collection('events')
+        .doc(eventId)
         .collection('messages')
         .add({
           text,
@@ -24,9 +24,9 @@ export class MessageService {
         });
   }
 
-  getTournamentMessages(tournamentId: string): Observable<IChatMessage[]> {
-    return this.afs.collection('tournaments')
-        .doc(tournamentId)
+  getEventMessages(eventId: string): Observable<IChatMessage[]> {
+    return this.afs.collection('events')
+        .doc(eventId)
         .collection('messages', ref => ref.orderBy('timestamp', 'desc'))
         .snapshotChanges()
         .pipe(map(actions => {

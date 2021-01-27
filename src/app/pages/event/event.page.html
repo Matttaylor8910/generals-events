@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="goHome()">
+        <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ event?.name }}</ion-title>
+    <ion-buttons slot="end">
+      <app-login
+        [eventId]="eventId"
+        [status]="status"
+        [disqualified]="disqualified">
+      </app-login>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page-container" *ngIf="event; else loading">
+    <ng-container *ngIf="event.exists; else empty">
+      <div class="left-panel">
+        <div class="panel-container">
+          <app-event-summary
+            [event]="event"
+            [status]="status">
+          </app-event-summary>
+          <app-chat
+            [event]="event"
+            [disqualified]="disqualified"
+            (nameClicked)="selectPlayer($event)">
+          </app-chat>
+        </div>
+      </div>
+
+      <div class="main-panel">
+        <ng-container *ngIf="players$ | async as players">
+          <app-event-trophies
+            [server]="event.server"
+            [players]="players"
+            [status]="status"
+            (playerClicked)="selectPlayer($event)">
+          </app-event-trophies>
+          <app-event-leaderboard
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
+            (playerClicked)="selectPlayer($event)">
+          </app-event-leaderboard>
+          <app-rules
+            [event]="event"
+            [status]="status">
+          </app-rules>
+        </ng-container>
+      </div>
+
+      <div class="right-panel">
+        <div class="panel-container">
+          <app-event-player-summary
+            [player]="selectedPlayer"
+            [event]="event"
+            [status]="status"
+            (close)="selectPlayer()"
+            *ngIf="selectedPlayer">
+          </app-event-player-summary>
+          <app-game-list
+            [class.hidden]="selectedPlayer"
+            [event]="event"
+            (nameClicked)="selectPlayer($event)">
+          </app-game-list>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>
+
+<ng-template #empty>
+  <div class="empty-container">
+    <h1>This event doesn't seem to exist 🤔</h1>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <div class="spinner-container">
+    <ion-spinner></ion-spinner>
+  </div>
+</ng-template>

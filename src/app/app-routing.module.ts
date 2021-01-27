@@ -14,8 +14,8 @@ const routes: Routes = [
   },
   {
     path: ':id',
-    loadChildren: () => import('./pages/tournament/tournament.module')
-                            .then(m => m.TournamentPageModule),
+    loadChildren: () =>
+        import('./pages/event/event.module').then(m => m.EventPageModule),
   },
 ];
 

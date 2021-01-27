@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Observable} from 'rxjs';
-import {TournamentService} from 'src/app/services/tournament.service';
-import {IGame, ITournament} from 'types';
+import {EventService} from 'src/app/services/event.service';
+import {IEvent, IGame} from 'types';
 
 @Component({
   selector: 'app-game-list',
@@ -9,17 +9,17 @@ import {IGame, ITournament} from 'types';
   styleUrls: ['./game-list.component.scss'],
 })
 export class GameListComponent {
-  @Input() tournament: ITournament;
+  @Input() event: IEvent;
 
   @Output() nameClicked = new EventEmitter<string>();
 
   games$: Observable<IGame[]>;
 
   constructor(
-      private readonly tournamentService: TournamentService,
+      private readonly eventService: EventService,
   ) {}
 
   ngOnInit() {
-    this.games$ = this.tournamentService.getGames(this.tournament.id, 15);
+    this.games$ = this.eventService.getGames(this.event.id, 15);
   }
 }

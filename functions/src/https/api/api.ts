@@ -15,16 +15,16 @@ const db: admin.firestore.Firestore = admin.firestore();
 // the express server that will live inside the cloud function
 const app = express();
 const main = express();
-main.use('/api/v1', app);
+main.use('/v1', app);
 main.use(express.json());
 
 // the actual cloud function
-export const webApi = functions.https.onRequest(main);
+export const api = functions.https.onRequest(main);
 
 app.get('/', async (request, response) => {
   response.send(`
     Welcome! This API is currently intended as a way for bot players to play in
-    a generals.io tournament. Feel free to ping @googleman in the generals.io
+    a generals.io event. Feel free to ping @googleman in the generals.io
     discord for more information.
   `);
 });
@@ -45,14 +45,14 @@ app.get('/replays/:replayId', async (request, response) => {
 });
 
 /**
- * Return the tournament matching the id provided, or return null if not found
+ * Return the event matching the id provided, or return null if not found
  */
-app.get('/tournaments/:tournamentId', async (request, response) => {
+app.get('/events/:eventId', async (request, response) => {
   try {
-    const {tournamentId} = request.params;
-    if (!tournamentId) throw new Error('tournamentId is blank');
+    const {eventId} = request.params;
+    if (!eventId) throw new Error('eventId is blank');
 
-    const snapshot = await db.collection('tournaments').doc(tournamentId).get();
+    const snapshot = await db.collection('events').doc(eventId).get();
     response.json(snapshot.data() || null);
   } catch (error) {
     response.status(500).send(error);
@@ -64,14 +64,14 @@ app.get('/tournaments/:tournamentId', async (request, response) => {
  * Every time this endpoint returns a lobby string, that redirect gets cleared
  * Each redirect can only be read one time
  */
-app.get('/tournaments/:tournamentId/lobby/:name', async (request, response) => {
+app.get('/events/:eventId/lobby/:name', async (request, response) => {
   try {
-    const {tournamentId, name} = request.params;
-    if (!tournamentId) throw new Error('tournamentId is blank');
+    const {eventId, name} = request.params;
+    if (!eventId) throw new Error('eventId is blank');
     if (!name) throw new Error('name is blank');
 
-    const redirects = await db.collection('tournaments')
-                          .doc(tournamentId)
+    const redirects = await db.collection('events')
+                          .doc(eventId)
                           .collection('redirect')
                           .where('players', 'array-contains', name)
                           .get();
@@ -93,34 +93,34 @@ app.get('/tournaments/:tournamentId/lobby/:name', async (request, response) => {
 });
 
 /**
- * Add a given player to a given tournament
+ * Add a given player to a given event
  */
-app.post('/tournaments/:tournamentId/join/:name', async (request, response) => {
+app.post('/events/:eventId/join/:name', async (request, response) => {
   try {
-    const {tournamentId, name} = request.params;
-    if (!tournamentId) throw new Error('tournamentId is blank');
+    const {eventId, name} = request.params;
+    if (!eventId) throw new Error('eventId is blank');
     if (!name) throw new Error('name is blank');
 
-    const tournamentRef = db.collection('tournaments').doc(tournamentId);
+    const eventRef = db.collection('events').doc(eventId);
 
-    // ensure the tournament exists
-    const tournamentSnapshot = await tournamentRef.get();
-    if (!tournamentSnapshot.exists) {
-      response.json({success: false, message: 'tournament doesn\'t exist'});
+    // ensure the eventId exists
+    const eventSnapshot = await eventRef.get();
+    if (!eventSnapshot.exists) {
+      response.json({success: false, message: 'event doesn\'t exist'});
     }
 
     // ensure this user doesn't already exist
-    const player = await tournamentRef.collection('players').doc(name).get();
+    const player = await eventRef.collection('players').doc(name).get();
     if (player.exists) {
       response.json({
         success: false,
-        message: `${name} is already in this tournament`,
+        message: `${name} is already in this event`,
       });
     }
 
-    // add the player to the tournament
+    // add the player to the event
     try {
-      await tournamentSnapshot.ref.collection('players').doc(name).create({
+      await eventSnapshot.ref.collection('players').doc(name).create({
         name,
         rank: 0,
         points: 0,
@@ -138,29 +138,27 @@ app.post('/tournaments/:tournamentId/join/:name', async (request, response) => {
 });
 
 /**
- * Add a given player to the queue in a given tournament
+ * Add a given player to the queue in a given event
  */
-app.post(
-    '/tournaments/:tournamentId/queue/:name', async (request, response) => {
-      try {
-        const {tournamentId, name} = request.params;
-        if (!tournamentId) throw new Error('tournamentId is blank');
-        if (!name) throw new Error('name is blank');
+app.post('/events/:eventId/queue/:name', async (request, response) => {
+  try {
+    const {eventId, name} = request.params;
+    if (!eventId) throw new Error('eventId is blank');
+    if (!name) throw new Error('name is blank');
 
-        // ensure the tournament exists
-        const snapshot =
-            await db.collection('tournaments').doc(tournamentId).get();
-        if (!snapshot.exists) {
-          response.json({success: false, message: 'tournament doesn\'t esist'});
-        }
+    // ensure the event exists
+    const snapshot = await db.collection('events').doc(eventId).get();
+    if (!snapshot.exists) {
+      response.json({success: false, message: 'event doesn\'t esist'});
+    }
 
-        // add the player to the tournament queue
-        await snapshot.ref.update({
-          queue: admin.firestore.FieldValue.arrayUnion(name),
-        });
-
-        response.json({success: true});
-      } catch (error) {
-        response.status(500).send(error);
-      }
+    // add the player to the event queue
+    await snapshot.ref.update({
+      queue: admin.firestore.FieldValue.arrayUnion(name),
     });
+
+    response.json({success: true});
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});

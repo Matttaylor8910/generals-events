@@ -1,6 +1,6 @@
 import {GeneralsServer} from './constants';
 
-export enum TournamentType {
+export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
 }
@@ -10,7 +10,7 @@ export enum Visibility {
   PRIVATE = 'Private',
 }
 
-export enum TournamentStatus {
+export enum EventStatus {
   UNKNOWN = 'UNKNOWN',
   UPCOMING = 'UPCOMING',
   ONGOING = 'ONGOING',
@@ -24,19 +24,19 @@ export enum GameStatus {
   TOO_LATE = 'TOO_LATE',
 }
 
-// the tournament object
-// let's design for the ability to have multiple tournaments happening
-// simultaneously located at /tournaments/:id
-export interface ITournament {
+// the event object
+// let's design for the ability to have multiple events happening
+// simultaneously located at /events/:id
+export interface IEvent {
   name: string;
-  type: TournamentType;
+  type: EventType;
   visibility: Visibility;
-  startTime: number;  // unix timestamp of start of tournament
-  endTime: number;    // unix timestamp of end of tournament
+  startTime: number;  // unix timestamp of start of event
+  endTime: number;    // unix timestamp of end of event
   playersPerGame:
       number;           // number of players to wait for before starting a game
   queue: string[];      // player names in the queue, server will start games
-  playerCount: number;  // total players in the tournament
+  playerCount: number;  // total players in the event
   completedGameCount: number;  // total completed games
   ongoingGameCount: number;    // total games currently in progress
   replays: string[];           // a list of all replays that are tracked so far
@@ -47,21 +47,20 @@ export interface ITournament {
 }
 
 // the items to be shown in the leaderboard list
-// located at /tournaments/:id/players
+// located at /events/:id/players
 export interface ILeaderboardPlayer {
   name: string;    // generals.io username, will also be the id
   dq: boolean;     // can be set to true to ban a player from participating
   rank: number;    // the person with the most points, show ties
   points: number;  // start at 0
   currentStreak: number;  // start at 0, used to determine being on a streak
-  record:
-      IPlayerHistoryRecord[];  // a list of the point values earned in each game
-  // played in the tournament and some metadata
+  record: IPlayerHistoryRecord[];  // a list of the point values earned in each
+                                   // game played in the event and some metadata
   stats?: ILeaderboardPlayerStats;
 }
 
 export interface ILeaderboardPlayerStats {
-  currentStars: number;         // stars for tournament type on generals.io
+  currentStars: number;         // stars for event type on generals.io
   totalGames: number;           // count
   totalWins: number;            // count
   winRate: number;              // wins / totalGames
@@ -74,8 +73,8 @@ export interface ILeaderboardPlayerStats {
   killDeathRatio: number|null;  // totalKills / (totalGames - totalWins)
 }
 
-// a game that was played during a tournament
-// located at /tournaments/:id/games
+// a game that was played during an event
+// located at /events/:id/games
 export interface IGame {
   started: number;        // unix timestamp of start of the game
   players: string[];      // a list of the players in a game, ordered by points
@@ -103,9 +102,9 @@ export interface IGamePlayerRecord {
   streak: boolean;
 }
 
-// a record of a player's stats for this tournament at a given point in time
+// a record of a player's stats for this event at a given point in time
 // this will be used to determine a player's points or streak over time
-// located at /tournaments/:id/records
+// located at /events/:id/records
 export interface IPlayerHistoryRecord extends IGamePlayerRecord {
   started: number;
   finished: number;

@@ -1,0 +1,12 @@
+.event-list-item {
+  cursor: pointer;
+
+  .player-count {
+    display: flex;
+    align-items: center;
+
+    ion-icon {
+      margin-right: 5px;
+    }
+  }
+}

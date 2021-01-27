@@ -1,0 +1,15 @@
+<ion-card class="event-overview" (click)="navToEvent()">
+  <ion-card-header>
+    <ion-card-title class="space-between">
+      <span>{{ event.name }}</span>
+      <span class="player-count">
+        <ion-icon name="people"></ion-icon>
+        {{ event.playerCount }}
+      </span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>{{ event.startTime | date:'M/d/yyyy'}} at {{ event.startTime | date:'h:mm a'}}</p>
+    <p>{{ event.type }} arena for {{ duration }}</p>
+  </ion-card-content>
+</ion-card>

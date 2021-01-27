@@ -1,0 +1,25 @@
+<ion-card class="event-list-item" (click)="navToEvent()">
+  <ion-card-header>
+    <ion-card-title class="space-between">
+      <span>{{ event.name }}</span>
+      <span class="player-count">
+        <ion-icon name="people"></ion-icon>
+        {{ event.playerCount }}
+      </span>
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>
+      <span *ngIf="finished">Started at</span>
+      {{ event.startTime | date:'M/d/yyyy'}} at {{ event.startTime | date:'h:mm a'}}
+    </p>
+    <p *ngIf="finished">
+      <span>Finished at</span>
+      {{ event.endTime | date:'M/d/yyyy'}} at {{ event.endTime | date:'h:mm a'}}
+    </p>
+    <p>
+      {{ event.type }} arena
+      <span *ngIf="!finished">for {{ duration }}</span>
+    </p>
+  </ion-card-content>
+</ion-card>

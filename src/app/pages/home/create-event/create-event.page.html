@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>New Event</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="create-event">
+    <label>Name</label>
+    <input
+      [(ngModel)]="name"
+      type="text"
+      placeholder="{{namePlaceholder}}"
+    >
+    <label>Type</label>
+    <select [(ngModel)]="type" name="type">
+      <option [value]="option" *ngFor="let option of types">{{option}}</option>
+    </select>
+    <label>Visibility</label>
+    <select [(ngModel)]="visibility" name="visibility">
+      <option [value]="option" *ngFor="let option of visibilities">{{option}}</option>
+    </select>
+    <label>Date</label>
+    <input
+      [ngModel]="date"
+      (ngModelChange)="date = $event"
+      class="date-input"
+      type="date"
+      placeholder="yyyy-mm-dd"
+    >
+    <label>Start Time</label>
+    <input
+      [(ngModel)]="time"
+      type="time"
+      placeholder="hh:mm"
+    >
+    <label>Duration</label>
+    <input
+      [(ngModel)]="duration"
+      type="tel"
+      placeholder="# minutes"
+    >
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button class="generals-button color-secondary" (click)="create()" [disabled]="invalid">
+      {{ saving ? 'Creating...' : 'Create Event' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

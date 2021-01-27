@@ -7,7 +7,7 @@ let socket = io('http://bot.generals.io');
 const args = process.argv.slice(2);
 
 const BASE_URL =
-    'https://us-central1-generals-tournaments.cloudfunctions.net/webApi/api/v1';
+    'https://us-central1-generals-tournaments.cloudfunctions.net/api/v1';
 
 let bot;
 let playerIndex;
@@ -114,7 +114,7 @@ function gameOver() {
 
 function loadEvent() {
   console.log(`loading event ${eventId}`);
-  http.get(`${BASE_URL}/tournaments/${eventId}`)
+  http.get(`${BASE_URL}/events/${eventId}`)
       .then(response => {
         if (response.data) {
           startTime = response.data.startTime;
@@ -136,7 +136,7 @@ function loadEvent() {
 
 function joinEvent() {
   console.log(`${name}\tjoining event ${eventId}`);
-  http.post(`${BASE_URL}/tournaments/${eventId}/join/${safeName}`)
+  http.post(`${BASE_URL}/events/${eventId}/join/${safeName}`)
       .then(() => {
         joinEventQueue();
       })
@@ -156,7 +156,7 @@ function joinEventQueue() {
     eventOver();
   } else {
     console.log(`joining queue as ${name}`);
-    http.post(`${BASE_URL}/tournaments/${eventId}/queue/${safeName}`)
+    http.post(`${BASE_URL}/events/${eventId}/queue/${safeName}`)
         .then(() => {
           pollLobby();
         })
@@ -171,7 +171,7 @@ function pollLobby() {
   if (endTime < Date.now()) {
     return eventOver();
   }
-  http.get(`${BASE_URL}/tournaments/${eventId}/lobby/${safeName}`)
+  http.get(`${BASE_URL}/events/${eventId}/lobby/${safeName}`)
       .then(response => {
         if (response.data.lobby) {
           joinCustomGameQueue(response.data.lobby);
