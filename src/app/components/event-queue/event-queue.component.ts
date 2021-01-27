@@ -2,7 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IEvent} from 'types';
+import {EventStatus, EventType, IEvent} from 'types';
 
 @Component({
   selector: 'app-event-queue',
@@ -58,16 +58,20 @@ export class EventQueueComponent implements OnDestroy {
     }
 
     if (this.inQueue) {
-      const count = this.event.queue.length;
-      const max = this.event.playersPerGame;
+      if (this.event?.type === EventType.FFA) {
+        const count = this.event.queue.length;
+        const max = this.event.playersPerGame;
 
-      const current = ((count - 1) % max) + 1;
-      const myPlace = this.event.queue.indexOf(this.generals.name);
+        const current = ((count - 1) % max) + 1;
+        const myPlace = this.event.queue.indexOf(this.generals.name);
 
-      if (count >= max && myPlace < max) {
-        return 'Creating lobby to join!';
+        if (count >= max && myPlace < max) {
+          return 'Creating lobby to join!';
+        } else {
+          return `Waiting for players, ${current} of ${max}. Get ready!`;
+        }
       } else {
-        return `Waiting for players, ${current} of ${max}. Get ready!`;
+        return `Stand by ${this.generals.name}, pairing players, get ready!`;
       }
     }
     return 'Join the queue to get your next game going!';

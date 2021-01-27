@@ -57,6 +57,8 @@ export interface ILeaderboardPlayer {
   record: IPlayerHistoryRecord[];  // a list of the point values earned in each
                                    // game played in the event and some metadata
   stats?: ILeaderboardPlayerStats;
+  lastThreeOpponents?: string[];  // names of last 3 recent opponents, most
+                                  // recent at the beginning
 }
 
 export interface ILeaderboardPlayerStats {
