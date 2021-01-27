@@ -18,11 +18,7 @@ export class RulesComponent {
     return this._showRules || this.status === EventStatus.UPCOMING;
   }
 
-  get hasStreaks(): boolean {
-    return this.event && this.event.type !== EventType.FFA;
-  }
-
-  get firstPlaceBonus(): boolean {
+  get isFFA() {
     return this.event?.type === EventType.FFA;
   }
 
