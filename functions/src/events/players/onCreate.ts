@@ -14,7 +14,7 @@ try {
 const db = admin.firestore();
 
 export const onCreatePlayer =
-    functions.firestore.document('tournaments/{eventId}/players/{playerId}')
+    functions.firestore.document('events/{eventId}/players/{playerId}')
         .onCreate(async (doc, context) => {
           const eventId = context.params.eventId;
           const eventRef = db.collection('events').doc(eventId);

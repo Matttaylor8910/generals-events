@@ -11,7 +11,7 @@ try {
 }
 
 export const onUpdatePlayer =
-    functions.firestore.document('tournaments/{eventId}/players/{playerId}')
+    functions.firestore.document('events/{eventId}/players/{playerId}')
         .onUpdate(async (doc, context) => {
           console.log(`${doc.after.id} updated`);
           const player = doc.after.data() as ILeaderboardPlayer;

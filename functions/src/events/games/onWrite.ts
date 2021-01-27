@@ -17,7 +17,7 @@ try {
 const db = admin.firestore();
 
 export const onWriteGame =
-    functions.firestore.document('tournaments/{eventId}/games/{gameId}')
+    functions.firestore.document('events/{eventId}/games/{gameId}')
         .onWrite(async (gameDoc, context) => {
           if (gameDoc.after.exists) {
             const eventRef = gameDoc.after.ref.parent.parent!;

@@ -10,13 +10,12 @@ try {
 }
 const db = admin.firestore();
 
-export const onUpdateEvent =
-    functions.firestore.document('tournaments/{eventId}')
-        .onUpdate(async (eventDoc, context) => {
-          const eventId = context.params.eventId;
-          await checkQueue(eventDoc.after, eventId);
-          return 'Done';
-        });
+export const onUpdateEvent = functions.firestore.document('events/{eventId}')
+                                 .onUpdate(async (eventDoc, context) => {
+                                   const eventId = context.params.eventId;
+                                   await checkQueue(eventDoc.after, eventId);
+                                   return 'Done';
+                                 });
 
 async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
   const {endTime, queue, playersPerGame} = snapshot.data() as IEvent;
