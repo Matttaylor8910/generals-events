@@ -13,9 +13,9 @@
     <ng-container *ngIf="isFFA">
       <span class="highlight">Try to leave time enough for players with slower internet connections to arrive,</span> but you can start the game if it seems everyone is there.
     </ng-container>
-    <ng-contianer *ngIf="!isFFA">
+    <ng-container *ngIf="!isFFA">
       If your opponent doesn't arrive within a few seconds, feel free to just go back and join the event queue.
-    </ng-contianer>
+    </ng-container>
   </div>
   <div>Once the game {{ isFFA ? 'is over for you' : 'is over' }}, click <span class="highlight">Join Event Queue to immediately jump into your next game.</span></div>
 
@@ -47,9 +47,9 @@
   <ng-container *ngIf="isFFA">
     <div>There is currently no matchmaking logic, so the first 8 people in the queue for an FFA event will be sent to the same lobby, the next 8 to a different lobby, and so on.</div>
   </ng-container>
-  <ng-contianer *ngIf="!isFFA">
+  <ng-container *ngIf="!isFFA">
     <div>Given enough players join the event, you will not be paired against the last few people you have played against. We'll try to mix up who you're playing against so you get to play more people!</div>
-  </ng-contianer>
+  </ng-container>
 
   <h1>How does it end?</h1>
   <div class="space after">The event has a countdown clock. When it reaches zero, the rankings are frozen and the winner is announced.</div>
