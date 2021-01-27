@@ -17,7 +17,7 @@
       ]
     },
     {
-      "collectionGroup": "tournaments",
+      "collectionGroup": "events",
       "queryScope": "COLLECTION",
       "fields": [
         {"fieldPath": "visibility", "order": "ASCENDING"},

@@ -17,7 +17,7 @@ export const onCreatePlayer =
     functions.firestore.document('tournaments/{eventId}/players/{playerId}')
         .onCreate(async (doc, context) => {
           const eventId = context.params.eventId;
-          const eventRef = db.collection('tournaments').doc(eventId);
+          const eventRef = db.collection('events').doc(eventId);
           const eventSnap = await eventRef.get();
           const event = (eventSnap.data() || {}) as IEvent;
 

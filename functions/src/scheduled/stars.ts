@@ -13,7 +13,7 @@ const db = admin.firestore();
 
 export const getEventStars =
     functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
-      const events = await db.collection('tournaments')
+      const events = await db.collection('events')
                          .where('startTime', '>', Date.now())
                          .get();
 

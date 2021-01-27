@@ -5,4 +5,4 @@ export * from './https';
 export * from './scheduled';
 
 // functions reacting to database changes
-export * from './tournaments';
+export * from './events';

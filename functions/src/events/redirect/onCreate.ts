@@ -19,8 +19,6 @@ export const onCreateRedirect =
           const eventId = context.params.eventId;
           const {players, started} = doc.data();
 
-          return db.collection('tournaments')
-              .doc(eventId)
-              .collection('games')
-              .add({players, started, status: GameStatus.STARTED});
+          return db.collection('events').doc(eventId).collection('games').add(
+              {players, started, status: GameStatus.STARTED});
         });

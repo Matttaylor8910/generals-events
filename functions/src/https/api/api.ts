@@ -47,12 +47,12 @@ app.get('/replays/:replayId', async (request, response) => {
 /**
  * Return the event matching the id provided, or return null if not found
  */
-app.get('/tournaments/:eventId', async (request, response) => {
+app.get('/events/:eventId', async (request, response) => {
   try {
     const {eventId} = request.params;
     if (!eventId) throw new Error('eventId is blank');
 
-    const snapshot = await db.collection('tournaments').doc(eventId).get();
+    const snapshot = await db.collection('events').doc(eventId).get();
     response.json(snapshot.data() || null);
   } catch (error) {
     response.status(500).send(error);
@@ -64,13 +64,13 @@ app.get('/tournaments/:eventId', async (request, response) => {
  * Every time this endpoint returns a lobby string, that redirect gets cleared
  * Each redirect can only be read one time
  */
-app.get('/tournaments/:eventId/lobby/:name', async (request, response) => {
+app.get('/events/:eventId/lobby/:name', async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
     if (!name) throw new Error('name is blank');
 
-    const redirects = await db.collection('tournaments')
+    const redirects = await db.collection('events')
                           .doc(eventId)
                           .collection('redirect')
                           .where('players', 'array-contains', name)
@@ -95,13 +95,13 @@ app.get('/tournaments/:eventId/lobby/:name', async (request, response) => {
 /**
  * Add a given player to a given event
  */
-app.post('/tournaments/:eventId/join/:name', async (request, response) => {
+app.post('/events/:eventId/join/:name', async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
     if (!name) throw new Error('name is blank');
 
-    const eventRef = db.collection('tournaments').doc(eventId);
+    const eventRef = db.collection('events').doc(eventId);
 
     // ensure the eventId exists
     const eventSnapshot = await eventRef.get();
@@ -140,14 +140,14 @@ app.post('/tournaments/:eventId/join/:name', async (request, response) => {
 /**
  * Add a given player to the queue in a given event
  */
-app.post('/tournaments/:eventId/queue/:name', async (request, response) => {
+app.post('/events/:eventId/queue/:name', async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
     if (!name) throw new Error('name is blank');
 
     // ensure the event exists
-    const snapshot = await db.collection('tournaments').doc(eventId).get();
+    const snapshot = await db.collection('events').doc(eventId).get();
     if (!snapshot.exists) {
       response.json({success: false, message: 'event doesn\'t esist'});
     }

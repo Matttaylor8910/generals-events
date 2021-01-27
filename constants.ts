@@ -10,4 +10,10 @@ export const SITE_URLS = {
   [GeneralsServer.BOT]: 'http://bot.generals.io',
 };
 
-export const ADMINS = ['Automated Message', 'googleman', 'Lazerpent', 'DavidC'];
+export const ADMINS = [
+  'Automated Message',
+  'only_human',
+  'googleman',
+  'Lazerpent',
+  'DavidC',
+];

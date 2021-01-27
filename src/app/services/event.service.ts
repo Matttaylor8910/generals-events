@@ -34,12 +34,12 @@ export class EventService {
     let value;
     while (!value) {
       let id = this.getId(event.name, counter);
-      const doc = await this.db.collection('tournaments').doc(id).get();
+      const doc = await this.db.collection('events').doc(id).get();
 
       if (doc.exists) {
         counter = (counter || 0) + 1;
       } else {
-        value = this.afs.collection('tournaments').doc(id).set(event);
+        value = this.afs.collection('events').doc(id).set(event);
       }
     }
 
@@ -55,7 +55,7 @@ export class EventService {
 
     return this.afs
         .collection<IEvent>(
-            'tournaments',
+            'events',
             ref => {
               return ref.where('endTime', finished ? '<' : '>=', Date.now())
                   .where('visibility', 'in', visibilities)
@@ -76,7 +76,7 @@ export class EventService {
   }
 
   getEvent(eventId: string): Observable<IEvent> {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc<IEvent>(eventId)
         .snapshotChanges()
         .pipe(map(event => {
@@ -89,7 +89,7 @@ export class EventService {
   }
 
   addPlayer(eventId: string, name: string) {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection<ILeaderboardPlayer>('players')
         .doc(name)
@@ -104,7 +104,7 @@ export class EventService {
   }
 
   removePlayer(eventId: string, name: string) {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection<ILeaderboardPlayer>('players')
         .doc(name)
@@ -112,7 +112,7 @@ export class EventService {
   }
 
   getPlayers(eventId: string): Observable<ILeaderboardPlayer[]> {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection<ILeaderboardPlayer>(
             'players', ref => ref.orderBy('points', 'desc').orderBy('name'))
@@ -177,20 +177,18 @@ export class EventService {
   }
 
   joinQueue(eventId: string, name: string) {
-    return this.afs.collection('tournaments').doc(eventId).update({
-      queue: firebase.default.firestore.FieldValue.arrayUnion(name)
-    });
+    return this.afs.collection('events').doc(eventId).update(
+        {queue: firebase.default.firestore.FieldValue.arrayUnion(name)});
   }
 
   leaveQueue(eventId: string, name: string) {
-    return this.afs.collection('tournaments').doc(eventId).update({
-      queue: firebase.default.firestore.FieldValue.arrayRemove(name)
-    });
+    return this.afs.collection('events').doc(eventId).update(
+        {queue: firebase.default.firestore.FieldValue.arrayRemove(name)});
   }
 
   getRedirect(eventId: string, name: string):
       Observable<{lobby: string, id: string}> {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection(
             'redirect',
@@ -210,7 +208,7 @@ export class EventService {
   }
 
   clearRedirect(eventId: string, redirectId: string, name: string) {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection('redirect')
         .doc(redirectId)
@@ -220,7 +218,7 @@ export class EventService {
   }
 
   getGames(eventId: string, limit?: number): Observable<IGame[]> {
-    return this.afs.collection<IEvent>('tournaments')
+    return this.afs.collection<IEvent>('events')
         .doc(eventId)
         .collection<IGame>(
             'games',

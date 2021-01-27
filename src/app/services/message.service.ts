@@ -14,7 +14,7 @@ export class MessageService {
   ) {}
 
   addEventMessage(eventId: string, text: string) {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection('messages')
         .add({
@@ -25,7 +25,7 @@ export class MessageService {
   }
 
   getEventMessages(eventId: string): Observable<IChatMessage[]> {
-    return this.afs.collection('tournaments')
+    return this.afs.collection('events')
         .doc(eventId)
         .collection('messages', ref => ref.orderBy('timestamp', 'desc'))
         .snapshotChanges()

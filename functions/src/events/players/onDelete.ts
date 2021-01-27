@@ -12,7 +12,6 @@ export const onDeletePlayer =
     functions.firestore.document('tournaments/{eventId}/players/{playerId}')
         .onDelete(async (doc, context) => {
           const eventId = context.params.eventId;
-          return db.collection('tournaments').doc(eventId).update({
-            playerCount: admin.firestore.FieldValue.increment(-1)
-          });
+          return db.collection('events').doc(eventId).update(
+              {playerCount: admin.firestore.FieldValue.increment(-1)});
         });

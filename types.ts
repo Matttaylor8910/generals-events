@@ -26,7 +26,7 @@ export enum GameStatus {
 
 // the event object
 // let's design for the ability to have multiple events happening
-// simultaneously located at /tournaments/:id
+// simultaneously located at /events/:id
 export interface IEvent {
   name: string;
   type: EventType;
@@ -47,7 +47,7 @@ export interface IEvent {
 }
 
 // the items to be shown in the leaderboard list
-// located at /tournaments/:id/players
+// located at /events/:id/players
 export interface ILeaderboardPlayer {
   name: string;    // generals.io username, will also be the id
   dq: boolean;     // can be set to true to ban a player from participating
@@ -74,7 +74,7 @@ export interface ILeaderboardPlayerStats {
 }
 
 // a game that was played during an event
-// located at /tournaments/:id/games
+// located at /events/:id/games
 export interface IGame {
   started: number;        // unix timestamp of start of the game
   players: string[];      // a list of the players in a game, ordered by points
@@ -104,7 +104,7 @@ export interface IGamePlayerRecord {
 
 // a record of a player's stats for this event at a given point in time
 // this will be used to determine a player's points or streak over time
-// located at /tournaments/:id/records
+// located at /events/:id/records
 export interface IPlayerHistoryRecord extends IGamePlayerRecord {
   started: number;
   finished: number;
