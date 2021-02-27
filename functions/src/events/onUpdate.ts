@@ -83,10 +83,28 @@ async function duelMatchmaking(
     const enemy = event.queue.find(p => p !== name && !recent?.includes(p));
     if (enemy) {
       console.log(`${name} can play ${enemy}, go!`);
-      return [name, enemy];
+      const players = [name, enemy];
+      await setLastOpponents(players, eventRef);
+      return players;
     }
   }
 
   // no matches :(
   return [];
+}
+
+async function setLastOpponents(
+    players: string[],
+    eventRef: admin.firestore.DocumentReference,
+) {
+  for (const name of players) {
+    let opponents: string[] = [];
+    const playerDoc = await eventRef.collection('players').doc(name).get();
+    const {lastThreeOpponents = []} = playerDoc.data() as ILeaderboardPlayer;
+    const opponent = players.find(p => p !== name)!;
+    opponents = [opponent, ...lastThreeOpponents.slice(0, 2)];
+    await eventRef.collection('players').doc(name).update({
+      lastThreeOpponents: opponents,
+    });
+  }
 }

@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {EventType, GameStatus, IEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
+import {EventType, GameStatus, IEvent, IGame, IGeneralsReplay} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 import {timeoutAfter} from '../../util/util';
@@ -228,22 +228,12 @@ async function saveReplayToGame(
       // save the record in case we ever build features around this
       batch.create(eventRef.collection('records').doc(recordId), record);
 
-      // set lastThreeOpponents if this is a 1v1 event
-      let opponents: string[] = [];
-      if (event.type === EventType.ONE_VS_ONE) {
-        const {lastThreeOpponents = []} =
-            playerDoc.data() as ILeaderboardPlayer;
-        const opponent = scores.find(p => p.name !== player.name)?.name;
-        opponents = [opponent, ...lastThreeOpponents.slice(0, 2)];
-      }
-
       // update the player's points, streak, and record on the leaderboard
       batch.update(playerRef, {
         points: admin.firestore.FieldValue.increment(player.points),
         currentStreak:
             player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
         record: admin.firestore.FieldValue.arrayUnion(record),
-        lastThreeOpponents: opponents,
       });
     }
   }
