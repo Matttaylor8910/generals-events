@@ -3,7 +3,7 @@ import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
 import {ADMINS} from '../../../../constants';
-import {EventStatus, EventType, IEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-event-leaderboard',
@@ -11,7 +11,7 @@ import {EventStatus, EventType, IEvent, ILeaderboardPlayer} from '../../../../ty
   styleUrls: ['./event-leaderboard.component.scss'],
 })
 export class EventLeaderboardComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
   @Input() selectedPlayer?: ILeaderboardPlayer;

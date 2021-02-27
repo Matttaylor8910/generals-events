@@ -4,7 +4,7 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
 
 import {ADMINS} from '../../../../constants';
-import {IChatMessage, IEvent} from '../../../../types';
+import {IArenaEvent, IChatMessage} from '../../../../types';
 
 @Component({
   selector: 'app-chat',
@@ -14,7 +14,7 @@ import {IChatMessage, IEvent} from '../../../../types';
 export class ChatComponent implements OnInit {
   @ViewChild('chatBox', {read: ElementRef, static: false}) chatBox: ElementRef;
 
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() disqualified: boolean;
 
   @Output() nameClicked = new EventEmitter<string>();

@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {IEvent, ILeaderboardPlayer} from '../../../types';
+import {IArenaEvent, ILeaderboardPlayer} from '../../../types';
 import {getCurrentStars} from '../util/generals';
 
 try {
@@ -19,7 +19,7 @@ export const getEventStars =
 
 
       for (const doc of events.docs) {
-        const {type, server} = (doc.data() || {}) as IEvent;
+        const {type, server} = (doc.data() || {}) as IArenaEvent;
         const players = await doc.ref.collection('players').get();
 
         const batch = db.batch();

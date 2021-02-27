@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {EventType, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
+import {EventType, IArenaEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 try {
@@ -16,7 +16,7 @@ export const onUpdatePlayer =
           console.log(`${doc.after.id} updated`);
           const player = doc.after.data() as ILeaderboardPlayer;
           const eventSnap = await doc.after.ref.parent.parent!.get();
-          const event = (eventSnap.data() || {}) as IEvent;
+          const event = (eventSnap.data() || {}) as IArenaEvent;
 
           const updates: Partial<ILeaderboardPlayer> =
               recordSanityCheck(player.record, event);
@@ -48,7 +48,7 @@ export const onUpdatePlayer =
 
 export function recordSanityCheck(
     record: IPlayerHistoryRecord[],
-    event: IEvent,
+    event: IArenaEvent,
     ): Partial<ILeaderboardPlayer> {
   record.sort((a, b) => a.finished - b.finished);
   let dq = false;

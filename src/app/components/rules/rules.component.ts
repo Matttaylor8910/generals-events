@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {EventStatus, EventType, IEvent} from 'types';
+import {EventStatus, EventType, IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -7,7 +7,7 @@ import {EventStatus, EventType, IEvent} from 'types';
   styleUrls: ['./rules.component.scss'],
 })
 export class RulesComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
 
   private _showRules = false;

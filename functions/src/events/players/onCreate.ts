@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {IEvent, ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
+import {IArenaEvent, ILeaderboardPlayer, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 import {recordSanityCheck} from './onUpdate';
@@ -19,7 +19,7 @@ export const onCreatePlayer =
           const eventId = context.params.eventId;
           const eventRef = db.collection('events').doc(eventId);
           const eventSnap = await eventRef.get();
-          const event = (eventSnap.data() || {}) as IEvent;
+          const event = (eventSnap.data() || {}) as IArenaEvent;
 
           const {name} = doc.data() as ILeaderboardPlayer;
 

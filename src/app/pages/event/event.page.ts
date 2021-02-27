@@ -1,12 +1,11 @@
 import {Component, OnDestroy} from '@angular/core';
-import {AngularFirestore} from '@angular/fire/firestore';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Observable, Subject} from 'rxjs';
-import {take, takeUntil, tap} from 'rxjs/operators';
+import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IChatMessage, IEvent, IGame, ILeaderboardPlayer} from 'types';
+import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event',
@@ -19,7 +18,7 @@ export class EventPage implements OnDestroy {
   EventStatus = EventStatus;
 
   eventId: string;
-  event: IEvent;
+  event: IArenaEvent;
   players: ILeaderboardPlayer[];
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
@@ -32,7 +31,6 @@ export class EventPage implements OnDestroy {
       private readonly router: Router,
       private readonly eventService: EventService,
       private readonly utilService: UtilService,
-      private readonly afs: AngularFirestore,
   ) {
     this.eventId = this.route.snapshot.params.id;
     this.players$ =

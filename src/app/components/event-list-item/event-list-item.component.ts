@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {UtilService} from 'src/app/services/util.service';
-import {IEvent} from 'types';
+import {IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-event-list-item',
@@ -9,7 +9,7 @@ import {IEvent} from 'types';
   styleUrls: ['./event-list-item.component.scss'],
 })
 export class EventListItemComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
 
   constructor(
       private readonly router: Router,

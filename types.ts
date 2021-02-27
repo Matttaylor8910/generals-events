@@ -1,5 +1,10 @@
 import {GeneralsServer} from './constants';
 
+export enum EventFormat {
+  ARENA = 'ARENA',
+  DOUBLE_ELIM = 'DOUBLE_ELIM',
+}
+
 export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
@@ -24,26 +29,28 @@ export enum GameStatus {
   TOO_LATE = 'TOO_LATE',
 }
 
-// the event object
-// let's design for the ability to have multiple events happening
-// simultaneously located at /events/:id
 export interface IEvent {
   name: string;
+  format: EventFormat;
   type: EventType;
   visibility: Visibility;
-  startTime: number;  // unix timestamp of start of event
-  endTime: number;    // unix timestamp of end of event
-  playersPerGame:
-      number;           // number of players to wait for before starting a game
-  queue: string[];      // player names in the queue, server will start games
-  playerCount: number;  // total players in the event
+  startTime: number;           // unix timestamp of start of event
+  playerCount: number;         // total players in the event
   completedGameCount: number;  // total completed games
-  ongoingGameCount: number;    // total games currently in progress
   replays: string[];           // a list of all replays that are tracked so far
   server?: GeneralsServer;     // optional server override
 
   id?: string;       // client field
   exists?: boolean;  // client field
+}
+
+// the arena event object located at /events/:id
+export interface IArenaEvent extends IEvent {
+  endTime: number;  // unix timestamp of end of event
+  playersPerGame:
+      number;       // number of players to wait for before starting a game
+  queue: string[];  // player names in the queue, server will start games
+  ongoingGameCount: number;  // total games currently in progress
 }
 
 // the items to be shown in the leaderboard list

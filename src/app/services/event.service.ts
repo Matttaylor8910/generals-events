@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
+import {GameStatus, IArenaEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -19,7 +19,7 @@ export class EventService {
     this.db = firebase.default.firestore();
   }
 
-  async createEvent(event: Partial<IEvent>) {
+  async createEvent(event: Partial<IArenaEvent>) {
     event = {
       queue: [],
       replays: [],
@@ -46,7 +46,7 @@ export class EventService {
     return value;
   }
 
-  getEvents(finished: boolean): Observable<IEvent[]> {
+  getEvents(finished: boolean): Observable<IArenaEvent[]> {
     // admins can see private events too
     const visibilities = [Visibility.PUBLIC];
     if (ADMINS.includes(this.generals.name)) {
@@ -54,7 +54,7 @@ export class EventService {
     }
 
     return this.afs
-        .collection<IEvent>(
+        .collection<IArenaEvent>(
             'events',
             ref => {
               return ref.where('endTime', finished ? '<' : '>=', Date.now())
@@ -75,9 +75,9 @@ export class EventService {
         }));
   }
 
-  getEvent(eventId: string): Observable<IEvent> {
+  getEvent(eventId: string): Observable<IArenaEvent> {
     return this.afs.collection('events')
-        .doc<IEvent>(eventId)
+        .doc<IArenaEvent>(eventId)
         .snapshotChanges()
         .pipe(map(event => {
           return {
@@ -218,7 +218,7 @@ export class EventService {
   }
 
   getGames(eventId: string, limit?: number): Observable<IGame[]> {
-    return this.afs.collection<IEvent>('events')
+    return this.afs.collection<IArenaEvent>('events')
         .doc(eventId)
         .collection<IGame>(
             'games',
