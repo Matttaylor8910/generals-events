@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {UtilService} from 'src/app/services/util.service';
-import {IArenaEvent} from 'types';
+import {EventFormat, IEvent} from 'types';
 
 @Component({
   selector: 'app-event-overview',
@@ -9,7 +9,7 @@ import {IArenaEvent} from 'types';
   styleUrls: ['./event-overview.component.scss'],
 })
 export class EventOverviewComponent {
-  @Input() event: IArenaEvent;
+  @Input() event: IEvent;
 
   constructor(
       private readonly router: Router,
@@ -17,6 +17,10 @@ export class EventOverviewComponent {
   ) {}
 
   get duration(): string {
+    if (this.event.format === EventFormat.DOUBLE_ELIM) {
+      return '';
+    }
+
     return this.utilService.getDurationString(
         this.event?.startTime, this.event?.endTime);
   }

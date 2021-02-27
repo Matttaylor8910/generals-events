@@ -5,7 +5,7 @@ import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
+import {EventStatus, IEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event',
@@ -18,7 +18,7 @@ export class EventPage implements OnDestroy {
   EventStatus = EventStatus;
 
   eventId: string;
-  event: IArenaEvent;
+  event: IEvent;
   players: ILeaderboardPlayer[];
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;

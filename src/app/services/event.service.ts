@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IArenaEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
+import {GameStatus, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -19,9 +19,8 @@ export class EventService {
     this.db = firebase.default.firestore();
   }
 
-  async createEvent(event: Partial<IArenaEvent>) {
+  async createEvent(event: Partial<IEvent>) {
     event = {
-      queue: [],
       replays: [],
       playerCount: 0,
       visibility: Visibility.PUBLIC,
@@ -46,7 +45,7 @@ export class EventService {
     return value;
   }
 
-  getEvents(finished: boolean): Observable<IArenaEvent[]> {
+  getEvents(finished: boolean): Observable<IEvent[]> {
     // admins can see private events too
     const visibilities = [Visibility.PUBLIC];
     if (ADMINS.includes(this.generals.name)) {
@@ -54,12 +53,10 @@ export class EventService {
     }
 
     return this.afs
-        .collection<IArenaEvent>(
+        .collection<IEvent>(
             'events',
             ref => {
-              return ref.where('endTime', finished ? '<' : '>=', Date.now())
-                  .where('visibility', 'in', visibilities)
-                  .limit(10);
+              return ref.where('visibility', 'in', visibilities).limit(10);
             })
         .snapshotChanges()
         .pipe(map(actions => {
@@ -68,6 +65,10 @@ export class EventService {
                 const {doc} = action.payload;
                 return {...doc.data(), id: doc.id, exists: doc.exists};
               })
+              .filter(event => {
+                return finished ? event.endTime < Date.now() :
+                                  event.endTime > Date.now() || !event.endTime;
+              })
               .sort((a, b) => {
                 return finished ? b.endTime - a.endTime :
                                   a.startTime - b.startTime;
@@ -75,9 +76,9 @@ export class EventService {
         }));
   }
 
-  getEvent(eventId: string): Observable<IArenaEvent> {
+  getEvent(eventId: string): Observable<IEvent> {
     return this.afs.collection('events')
-        .doc<IArenaEvent>(eventId)
+        .doc<IEvent>(eventId)
         .snapshotChanges()
         .pipe(map(event => {
           return {
@@ -218,7 +219,7 @@ export class EventService {
   }
 
   getGames(eventId: string, limit?: number): Observable<IGame[]> {
-    return this.afs.collection<IArenaEvent>('events')
+    return this.afs.collection<IEvent>('events')
         .doc(eventId)
         .collection<IGame>(
             'games',

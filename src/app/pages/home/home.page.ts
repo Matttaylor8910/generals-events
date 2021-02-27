@@ -3,7 +3,7 @@ import {ModalController} from '@ionic/angular';
 import {Observable} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {IArenaEvent} from 'types';
+import {IEvent} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -15,8 +15,8 @@ import {CreateEventPage} from './create-event/create-event.page';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  unfinishedEvents$: Observable<IArenaEvent[]>;
-  finishedEvents$: Observable<IArenaEvent[]>;
+  unfinishedEvents$: Observable<IEvent[]>;
+  finishedEvents$: Observable<IEvent[]>;
 
   constructor(
       private readonly eventService: EventService,

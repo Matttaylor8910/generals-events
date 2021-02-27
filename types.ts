@@ -1,8 +1,8 @@
 import {GeneralsServer} from './constants';
 
 export enum EventFormat {
-  ARENA = 'ARENA',
-  DOUBLE_ELIM = 'DOUBLE_ELIM',
+  DOUBLE_ELIM = 'Double Elimination',
+  ARENA = 'Arena',
 }
 
 export enum EventType {
@@ -29,12 +29,13 @@ export enum GameStatus {
   TOO_LATE = 'TOO_LATE',
 }
 
-export interface IEvent {
+export interface IBaseEvent {
   name: string;
   format: EventFormat;
   type: EventType;
   visibility: Visibility;
   startTime: number;           // unix timestamp of start of event
+  endTime?: number;            // unix timestamp of end of event
   playerCount: number;         // total players in the event
   completedGameCount: number;  // total completed games
   replays: string[];           // a list of all replays that are tracked so far
@@ -44,13 +45,22 @@ export interface IEvent {
   exists?: boolean;  // client field
 }
 
+export type IEvent = IArenaEvent|IDoubleElimEvent;
+
 // the arena event object located at /events/:id
-export interface IArenaEvent extends IEvent {
-  endTime: number;  // unix timestamp of end of event
+export interface IArenaEvent extends IBaseEvent {
   playersPerGame:
       number;       // number of players to wait for before starting a game
   queue: string[];  // player names in the queue, server will start games
   ongoingGameCount: number;  // total games currently in progress
+}
+
+export interface IDoubleElimEvent extends IBaseEvent {
+  winningSets: {
+    winners: number;  // games needed to win to advance in the winners bracket
+    losers: number;   // games needed to win to advance in the losers bracket
+    final: number;    // games needed to win to win the final
+  }
 }
 
 // the items to be shown in the leaderboard list

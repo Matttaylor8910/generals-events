@@ -10,6 +10,9 @@
   </ion-card-header>
   <ion-card-content>
     <p>{{ event.startTime | date:'M/d/yyyy'}} at {{ event.startTime | date:'h:mm a'}}</p>
-    <p>{{ event.type }} arena for {{ duration }}</p>
+    <p>
+      {{ event.type }} {{ event.format }}
+      <span *ngIf="duration">for {{ duration }}</span>
+    </p>
   </ion-card-content>
 </ion-card>
