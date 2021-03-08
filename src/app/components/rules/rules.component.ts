@@ -23,7 +23,11 @@ export class RulesComponent {
   }
 
   get isArena(): boolean {
-    return this.event.format === EventFormat.ARENA;
+    return this.event?.format === EventFormat.ARENA;
+  }
+
+  get isBracket(): boolean {
+    return this.event?.format === EventFormat.DOUBLE_ELIM;
   }
 
   toggleShowRules() {

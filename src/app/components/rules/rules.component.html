@@ -1,7 +1,7 @@
 <ng-container *ngIf="showRules; else empty">
 
   <!-- ARENA RULES -->
-  <ng-container *ngIf="isArena; else bracket">
+  <ng-container *ngIf="isArena">
     <h1>First, some ground rules:</h1>
     <div class="space-after"><span class="highlight">Do NOT cheat or seek an unfair advantage.</span> If you have to ask if something is cheating, it probably is. Players are meant to play individually, in only one game at a time. Play to win, but do it fairly.</div>
     <div class="space-after">If you are found to be cheating or skirting the rules to seek an advantage, you will be disqualified. Please report this behavior if you see it. This includes but is not limited to:</div>
@@ -62,22 +62,23 @@
   </ng-container>
 
   <!-- BRACKET RULES -->
-  <ng-template #bracket>
+  <ng-container *ngIf="isBracket">
     <h1>First, some ground rules:</h1>
     <div class="space-after"><span class="highlight">Do NOT cheat or seek an unfair advantage.</span> If you have to ask if something is cheating, it probably is. We allow other players to spectate matches, so please do not ruin this for everyone.</div>
     <div class="space-after">If you are found to be cheating or skirting the rules to seek an advantage, you will be disqualified. Please report this behavior if you see it. This includes but is not limited to:</div>
     <div>1) Spectating your own matches with a separate account</div>
     <div>2) Giving either player an unfair advantage through chat</div>
     <div>3) Joining the event with more than one account</div>
+    <div>4) Using an extension or similar to modify the game or get an advantage</div>
 
     <h1>How does this work?</h1>
     <div class="space-after"><span class="highlight">This event will be run as a double elimination bracket</span>, meaning you are not knocked out of the event until you lose two matches. When a player loses a match, they are then sent to the losers bracket. If you can progress through the losers bracket without a loss, you will be able to play against winner of the winners bracket in a final.</div>
-    <div class="space-after highlight">Most matches will be best 2 out of 3, the semifinals will be best 3 out of 5, and the final will be best 5 out of 7.</div>
+    <div class="space-after highlight">Most matches will be best 2 out of 3, the semifinals will be best 3 out of 5, and the final will be best 4 out of 7.</div>
     <div>If the loser of the finals match has not lost a match yet, each player will have only had one loss and will then play one more final match to win the event. As the winner of the loser bracket, you must beat the winner of the winners bracket twice!</div>
 
     <h1>How do we record the result?</h1>
     <div>Match results will automatially be updated within 10 seconds of replays becoming available, and the bracket will be updated. Your next match will always be shown towards the top of the event page, so feel free to spectate other matches while you wait.</div>
-  </ng-template>
+  </ng-container>
 </ng-container>
 
 <!-- just the button -->
