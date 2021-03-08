@@ -92,7 +92,9 @@ export class EventPage implements OnDestroy {
         }
 
         // only add to queue if the event is ongoing
-        if (this.status === EventStatus.ONGOING) {
+        // and this event type is arena
+        if (this.status === EventStatus.ONGOING &&
+            this.event.format === EventFormat.ARENA) {
           this.eventService.joinQueue(this.eventId, name);
         }
       }
