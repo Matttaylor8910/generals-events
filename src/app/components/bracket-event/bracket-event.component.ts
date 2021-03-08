@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-bracket-event',
@@ -7,11 +7,13 @@ import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
   styleUrls: ['./bracket-event.component.scss'],
 })
 export class BracketEventComponent {
-  @Input() event: IArenaEvent;
+  @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
   @Input() selectedPlayer?: ILeaderboardPlayer;
   @Input() disqualified: boolean;
+
+  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   constructor() {}
 
