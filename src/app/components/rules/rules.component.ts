@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {EventStatus, EventType, IArenaEvent} from 'types';
+import {EventFormat, EventStatus, EventType, IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -14,12 +14,16 @@ export class RulesComponent {
 
   constructor() {}
 
-  get showRules() {
+  get showRules(): boolean {
     return this._showRules || this.status === EventStatus.UPCOMING;
   }
 
-  get isFFA() {
+  get isFFA(): boolean {
     return this.event?.type === EventType.FFA;
+  }
+
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
   }
 
   toggleShowRules() {
