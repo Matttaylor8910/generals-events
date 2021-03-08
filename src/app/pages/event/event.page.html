@@ -41,14 +41,15 @@
             [status]="status"
             (playerClicked)="selectPlayer($event)">
           </app-event-trophies>
-          <app-event-leaderboard
+          <app-arena-leaderboard
             [event]="event"
             [players]="players"
             [status]="status"
             [selectedPlayer]="selectedPlayer"
             [disqualified]="disqualified"
-            (playerClicked)="selectPlayer($event)">
-          </app-event-leaderboard>
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isArena">
+          </app-arena-leaderboard>
           <app-rules
             [event]="event"
             [status]="status">
@@ -68,7 +69,8 @@
           <app-game-list
             [class.hidden]="selectedPlayer"
             [event]="event"
-            (nameClicked)="selectPlayer($event)">
+            (nameClicked)="selectPlayer($event)"
+            *ngIf="isArena">
           </app-game-list>
         </div>
       </div>

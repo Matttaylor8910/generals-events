@@ -6,11 +6,11 @@ import {ADMINS} from '../../../../constants';
 import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
-  selector: 'app-event-leaderboard',
-  templateUrl: './event-leaderboard.component.html',
-  styleUrls: ['./event-leaderboard.component.scss'],
+  selector: 'app-arena-leaderboard',
+  templateUrl: './arena-leaderboard.component.html',
+  styleUrls: ['./arena-leaderboard.component.scss'],
 })
-export class EventLeaderboardComponent {
+export class ArenaLeaderboardComponent {
   @Input() event: IArenaEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];

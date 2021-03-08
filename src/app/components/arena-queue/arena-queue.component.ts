@@ -5,11 +5,11 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, EventType, IArenaEvent} from 'types';
 
 @Component({
-  selector: 'app-event-queue',
-  templateUrl: './event-queue.component.html',
-  styleUrls: ['./event-queue.component.scss'],
+  selector: 'app-arena-queue',
+  templateUrl: './arena-queue.component.html',
+  styleUrls: ['./arena-queue.component.scss'],
 })
-export class EventQueueComponent implements OnDestroy {
+export class ArenaQueueComponent implements OnDestroy {
   @Input() event: IArenaEvent;
   @Input() inEvent: boolean;
   @Input() status: EventStatus;

@@ -5,7 +5,7 @@ import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IEvent, ILeaderboardPlayer} from 'types';
+import {EventFormat, EventStatus, IEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event',
@@ -70,6 +70,14 @@ export class EventPage implements OnDestroy {
       }
     }
     return EventStatus.UNKNOWN;
+  }
+
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
+  }
+
+  get isBracket(): boolean {
+    return this.event.format === EventFormat.DOUBLE_ELIM;
   }
 
   async checkJoinQueue(players: ILeaderboardPlayer[]) {
