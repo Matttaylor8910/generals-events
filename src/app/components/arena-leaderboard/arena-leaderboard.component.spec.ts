@@ -1,21 +1,21 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {IonicModule} from '@ionic/angular';
 
-import {EventLeaderboardComponent} from './event-leaderboard.component';
+import {ArenaLeaderboardComponent} from './arena-leaderboard.component';
 
-describe('EventLeaderboardComponent', () => {
-  let component: EventLeaderboardComponent;
-  let fixture: ComponentFixture<EventLeaderboardComponent>;
+describe('ArenaLeaderboardComponent', () => {
+  let component: ArenaLeaderboardComponent;
+  let fixture: ComponentFixture<ArenaLeaderboardComponent>;
 
   beforeEach(async(() => {
     TestBed
         .configureTestingModule({
-          declarations: [EventLeaderboardComponent],
+          declarations: [ArenaLeaderboardComponent],
           imports: [IonicModule.forRoot()]
         })
         .compileComponents();
 
-    fixture = TestBed.createComponent(EventLeaderboardComponent);
+    fixture = TestBed.createComponent(ArenaLeaderboardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

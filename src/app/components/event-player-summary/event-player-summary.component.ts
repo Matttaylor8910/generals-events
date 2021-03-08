@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {kill} from 'process';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IEvent, ILeaderboardPlayer} from 'types';
+import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event-player-summary',
@@ -11,7 +11,7 @@ import {EventStatus, IEvent, ILeaderboardPlayer} from 'types';
 })
 export class EventPlayerSummaryComponent {
   @Input() player: ILeaderboardPlayer;
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
 
   @Output() close = new EventEmitter<void>();

@@ -18,8 +18,8 @@
       {{ event.endTime | date:'M/d/yyyy'}} at {{ event.endTime | date:'h:mm a'}}
     </p>
     <p>
-      {{ event.type }} arena
-      <span *ngIf="!finished">for {{ duration }}</span>
+      {{ event.type }} {{ event.format }}
+      <span *ngIf="!finished && duration">for {{ duration }}</span>
     </p>
   </ion-card-content>
 </ion-card>

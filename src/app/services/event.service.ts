@@ -21,7 +21,6 @@ export class EventService {
 
   async createEvent(event: Partial<IEvent>) {
     event = {
-      queue: [],
       replays: [],
       playerCount: 0,
       visibility: Visibility.PUBLIC,
@@ -57,9 +56,7 @@ export class EventService {
         .collection<IEvent>(
             'events',
             ref => {
-              return ref.where('endTime', finished ? '<' : '>=', Date.now())
-                  .where('visibility', 'in', visibilities)
-                  .limit(10);
+              return ref.where('visibility', 'in', visibilities).limit(10);
             })
         .snapshotChanges()
         .pipe(map(actions => {
@@ -67,6 +64,10 @@ export class EventService {
               .map(action => {
                 const {doc} = action.payload;
                 return {...doc.data(), id: doc.id, exists: doc.exists};
+              })
+              .filter(event => {
+                return finished ? event.endTime < Date.now() :
+                                  event.endTime > Date.now() || !event.endTime;
               })
               .sort((a, b) => {
                 return finished ? b.endTime - a.endTime :

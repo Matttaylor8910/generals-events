@@ -1,5 +1,10 @@
 import {GeneralsServer} from './constants';
 
+export enum EventFormat {
+  DOUBLE_ELIM = 'Double Elimination',
+  ARENA = 'Arena',
+}
+
 export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
@@ -24,26 +29,38 @@ export enum GameStatus {
   TOO_LATE = 'TOO_LATE',
 }
 
-// the event object
-// let's design for the ability to have multiple events happening
-// simultaneously located at /events/:id
-export interface IEvent {
+export interface IBaseEvent {
   name: string;
+  format: EventFormat;
   type: EventType;
   visibility: Visibility;
-  startTime: number;  // unix timestamp of start of event
-  endTime: number;    // unix timestamp of end of event
-  playersPerGame:
-      number;           // number of players to wait for before starting a game
-  queue: string[];      // player names in the queue, server will start games
-  playerCount: number;  // total players in the event
+  startTime: number;           // unix timestamp of start of event
+  endTime?: number;            // unix timestamp of end of event
+  playerCount: number;         // total players in the event
   completedGameCount: number;  // total completed games
-  ongoingGameCount: number;    // total games currently in progress
   replays: string[];           // a list of all replays that are tracked so far
   server?: GeneralsServer;     // optional server override
 
   id?: string;       // client field
   exists?: boolean;  // client field
+}
+
+export type IEvent = IArenaEvent|IDoubleElimEvent;
+
+// the arena event object located at /events/:id
+export interface IArenaEvent extends IBaseEvent {
+  playersPerGame:
+      number;       // number of players to wait for before starting a game
+  queue: string[];  // player names in the queue, server will start games
+  ongoingGameCount: number;  // total games currently in progress
+}
+
+export interface IDoubleElimEvent extends IBaseEvent {
+  winningSets: {
+    winners: number;  // games needed to win to advance in the winners bracket
+    losers: number;   // games needed to win to advance in the losers bracket
+    final: number;    // games needed to win to win the final
+  }
 }
 
 // the items to be shown in the leaderboard list

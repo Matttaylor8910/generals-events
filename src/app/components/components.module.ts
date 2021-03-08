@@ -6,13 +6,15 @@ import {TooltipModule} from 'ng2-tooltip-directive';
 
 import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-page.component';
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
+import {ArenaLeaderboardComponent} from './arena-leaderboard/arena-leaderboard.component';
+import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
+import {BracketEventComponent} from './bracket-event/bracket-event.component';
+import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
-import {EventLeaderboardComponent} from './event-leaderboard/event-leaderboard.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
 import {EventOverviewComponent} from './event-overview/event-overview.component';
 import {EventPlayerSummaryComponent} from './event-player-summary/event-player-summary.component';
-import {EventQueueComponent} from './event-queue/event-queue.component';
 import {EventSummaryComponent} from './event-summary/event-summary.component';
 import {EventTrophiesComponent} from './event-trophies/event-trophies.component';
 import {EventTrophyPlayerComponent} from './event-trophy-player/event-trophy-player.component';
@@ -26,6 +28,10 @@ import {TimerComponent} from './timer/timer.component';
   declarations: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
+    ArenaLeaderboardComponent,
+    ArenaQueueComponent,
+    BracketEventComponent,
+    BracketRegistrationComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,
@@ -33,11 +39,9 @@ import {TimerComponent} from './timer/timer.component';
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    EventLeaderboardComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
-    EventQueueComponent,
     EventSummaryComponent,
     EventTrophiesComponent,
     EventTrophyPlayerComponent,
@@ -55,6 +59,10 @@ import {TimerComponent} from './timer/timer.component';
   exports: [
     ActionsPopoverComponent,
     ActionsPopoverPageComponent,
+    ArenaLeaderboardComponent,
+    ArenaQueueComponent,
+    BracketEventComponent,
+    BracketRegistrationComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,
@@ -62,11 +70,9 @@ import {TimerComponent} from './timer/timer.component';
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    EventLeaderboardComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
-    EventQueueComponent,
     EventSummaryComponent,
     EventTrophiesComponent,
     EventTrophyPlayerComponent,

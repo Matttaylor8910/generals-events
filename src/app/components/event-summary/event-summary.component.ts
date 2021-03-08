@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IEvent} from 'types';
+import {EventStatus, IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -8,7 +8,7 @@ import {EventStatus, IEvent} from 'types';
   styleUrls: ['./event-summary.component.scss'],
 })
 export class EventSummaryComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
 
   constructor(

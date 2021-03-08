@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {EventType, GameStatus, IEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
+import {EventType, GameStatus, IArenaEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 import {timeoutAfter} from '../../util/util';
@@ -64,7 +64,7 @@ async function lookForFinishedGame(
   if (!game.replayId && players?.length) {
     // get list of tracked replays for a event
     const eventSnap = await eventRef.get();
-    const event = (eventSnap.data() || {}) as IEvent;
+    const event = (eventSnap.data() || {}) as IArenaEvent;
     const trackedReplays = event.replays || [];
 
     console.log(`${trackedReplays.length} tracked replays for ${eventSnap.id}`);
@@ -164,7 +164,7 @@ async function saveReplayToGame(
     replay: IGeneralsReplay,
     gameSnapshot: DocumentSnapshot,
     eventRef: admin.firestore.DocumentReference,
-    event: IEvent,
+    event: IArenaEvent,
     ): Promise<void> {
   const batch = db.batch();
   batch.update(eventRef, {

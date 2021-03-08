@@ -12,6 +12,10 @@
       type="text"
       placeholder="{{namePlaceholder}}"
     >
+    <label>Format</label>
+    <select [(ngModel)]="format" (change)="formatChanged($event)" name="format">
+      <option [value]="option" *ngFor="let option of formats">{{option}}</option>
+    </select>
     <label>Type</label>
     <select [(ngModel)]="type" name="type">
       <option [value]="option" *ngFor="let option of types">{{option}}</option>
@@ -34,12 +38,28 @@
       type="time"
       placeholder="hh:mm"
     >
-    <label>Duration</label>
-    <input
-      [(ngModel)]="duration"
-      type="tel"
-      placeholder="# minutes"
-    >
+    <ng-container *ngIf="format === EventFormat.ARENA">
+      <label>Duration</label>
+      <input
+        [(ngModel)]="duration"
+        type="tel"
+        placeholder="# minutes"
+      >
+    </ng-container>
+    <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM">
+      <label>Winners Bracket</label>
+      <select [(ngModel)]="winningSets.winners" name="type">
+        <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
+      </select>
+      <label>Losers Bracket</label>
+      <select [(ngModel)]="winningSets.losers" name="type">
+        <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
+      </select>
+      <label>Final</label>
+      <select [(ngModel)]="winningSets.final" name="type">
+        <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
+      </select>
+    </ng-container>
   </div>
 </ion-content>
 

@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
-import {EventType, IEvent, ILeaderboardPlayer} from '../../../types';
+import {EventType, IArenaEvent, ILeaderboardPlayer} from '../../../types';
 
 try {
   admin.initializeApp();
@@ -18,7 +18,7 @@ export const onUpdateEvent = functions.firestore.document('events/{eventId}')
                                  });
 
 async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
-  const event = snapshot.data() as IEvent;
+  const event = snapshot.data() as IArenaEvent;
   const {endTime, queue, playersPerGame} = event;
 
   // if the event isn't over, start a new game if there are enough players
@@ -47,7 +47,7 @@ async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
 }
 
 async function getNextPlayers(
-    event: IEvent,
+    event: IArenaEvent,
     eventRef: admin.firestore.DocumentReference,
     ): Promise<string[]> {
   if (event.type === EventType.FFA) {
@@ -58,7 +58,7 @@ async function getNextPlayers(
 }
 
 async function duelMatchmaking(
-    event: IEvent,
+    event: IArenaEvent,
     eventRef: admin.firestore.DocumentReference,
     ): Promise<string[]> {
   // try to find a game that can be played, starting with the first player in

@@ -1,12 +1,11 @@
 import {Component, OnDestroy} from '@angular/core';
-import {AngularFirestore} from '@angular/fire/firestore';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Observable, Subject} from 'rxjs';
-import {take, takeUntil, tap} from 'rxjs/operators';
+import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IChatMessage, IEvent, IGame, ILeaderboardPlayer} from 'types';
+import {EventFormat, EventStatus, IEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event',
@@ -32,7 +31,6 @@ export class EventPage implements OnDestroy {
       private readonly router: Router,
       private readonly eventService: EventService,
       private readonly utilService: UtilService,
-      private readonly afs: AngularFirestore,
   ) {
     this.eventId = this.route.snapshot.params.id;
     this.players$ =
@@ -74,6 +72,14 @@ export class EventPage implements OnDestroy {
     return EventStatus.UNKNOWN;
   }
 
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
+  }
+
+  get isBracket(): boolean {
+    return this.event.format === EventFormat.DOUBLE_ELIM;
+  }
+
   async checkJoinQueue(players: ILeaderboardPlayer[]) {
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
@@ -86,7 +92,9 @@ export class EventPage implements OnDestroy {
         }
 
         // only add to queue if the event is ongoing
-        if (this.status === EventStatus.ONGOING) {
+        // and this event type is arena
+        if (this.status === EventStatus.ONGOING &&
+            this.event.format === EventFormat.ARENA) {
           this.eventService.joinQueue(this.eventId, name);
         }
       }

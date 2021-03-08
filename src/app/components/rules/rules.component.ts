@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {EventStatus, EventType, IEvent} from 'types';
+import {EventFormat, EventStatus, EventType, IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -7,19 +7,23 @@ import {EventStatus, EventType, IEvent} from 'types';
   styleUrls: ['./rules.component.scss'],
 })
 export class RulesComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
 
   private _showRules = false;
 
   constructor() {}
 
-  get showRules() {
+  get showRules(): boolean {
     return this._showRules || this.status === EventStatus.UPCOMING;
   }
 
-  get isFFA() {
+  get isFFA(): boolean {
     return this.event?.type === EventType.FFA;
+  }
+
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
   }
 
   toggleShowRules() {

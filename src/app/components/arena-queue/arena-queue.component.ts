@@ -2,15 +2,15 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, EventType, IEvent} from 'types';
+import {EventStatus, EventType, IArenaEvent} from 'types';
 
 @Component({
-  selector: 'app-event-queue',
-  templateUrl: './event-queue.component.html',
-  styleUrls: ['./event-queue.component.scss'],
+  selector: 'app-arena-queue',
+  templateUrl: './arena-queue.component.html',
+  styleUrls: ['./arena-queue.component.scss'],
 })
-export class EventQueueComponent implements OnDestroy {
-  @Input() event: IEvent;
+export class ArenaQueueComponent implements OnDestroy {
+  @Input() event: IArenaEvent;
   @Input() inEvent: boolean;
   @Input() status: EventStatus;
   @Input() disqualified: boolean;
