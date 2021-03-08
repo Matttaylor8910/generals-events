@@ -8,6 +8,8 @@ import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-pag
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
 import {ArenaLeaderboardComponent} from './arena-leaderboard/arena-leaderboard.component';
 import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
+import {BracketEventComponent} from './bracket-event/bracket-event.component';
+import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
@@ -28,6 +30,8 @@ import {TimerComponent} from './timer/timer.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    BracketEventComponent,
+    BracketRegistrationComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,
@@ -57,6 +61,8 @@ import {TimerComponent} from './timer/timer.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    BracketEventComponent,
+    BracketRegistrationComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,

@@ -50,6 +50,14 @@
             (playerClicked)="selectPlayer($event)"
             *ngIf="isArena">
           </app-arena-leaderboard>
+          <app-bracket-event
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
+            *ngIf="isBracket">
+          </app-bracket-event>
           <app-rules
             [event]="event"
             [status]="status">
