@@ -60,7 +60,7 @@ export interface IDoubleElimEvent extends IBaseEvent {
     winners: number;  // games needed to win to advance in the winners bracket
     losers: number;   // games needed to win to advance in the losers bracket
     final: number;    // games needed to win to win the final
-  }
+  };
 }
 
 // the items to be shown in the leaderboard list

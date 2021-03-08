@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IArenaEvent} from 'types';
+import {EventFormat, EventStatus, IArenaEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -14,6 +14,10 @@ export class EventSummaryComponent {
   constructor(
       private readonly utilService: UtilService,
   ) {}
+
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
+  }
 
   get duration(): string {
     return this.utilService.getDurationString(
