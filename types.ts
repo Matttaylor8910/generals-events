@@ -49,6 +49,7 @@ export type IEvent = IArenaEvent|IDoubleElimEvent;
 
 // the arena event object located at /events/:id
 export interface IArenaEvent extends IBaseEvent {
+  endTime: number;  // unix timestamp of end of event, required here
   playersPerGame:
       number;       // number of players to wait for before starting a game
   queue: string[];  // player names in the queue, server will start games
