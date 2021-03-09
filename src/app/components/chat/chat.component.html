@@ -6,7 +6,7 @@
         <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'" [style.color]="message.color" (click)="nameClicked.emit(message.sender)">
           {{ message.sender }}:
         </b>
-        {{ message.text }}
+        <span [innerHtml]="message.text | http"></span>
       </p>
     </div>
     <input

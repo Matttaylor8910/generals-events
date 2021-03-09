@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {IonicModule} from '@ionic/angular';
 import {TooltipModule} from 'ng2-tooltip-directive';
+import {PipesModule} from '../pipes/pipes.module';
 
 import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-page.component';
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
@@ -55,6 +56,7 @@ import {TimerComponent} from './timer/timer.component';
       'hide-delay': 0,
       'displayTouchscreen': false,
     }),
+    PipesModule,
   ],
   exports: [
     ActionsPopoverComponent,
