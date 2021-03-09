@@ -57,6 +57,7 @@ export interface IArenaEvent extends IBaseEvent {
 }
 
 export interface IDoubleElimEvent extends IBaseEvent {
+  checkedInPlayers: string[];  // players that have checked in
   winningSets: {
     winners: number;  // games needed to win to advance in the winners bracket
     losers: number;   // games needed to win to advance in the losers bracket

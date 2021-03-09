@@ -92,6 +92,11 @@ export class ArenaQueueComponent implements OnDestroy {
     }
   }
 
+  /**
+   * Determine if this logged in player is ready to play in a game (there is a
+   * doc in the /redirect collection)
+   * Redirect the player to that lobby
+   */
   checkRedirect() {
     const subscription = `${this.event.id}_${this.generals.name}`;
 

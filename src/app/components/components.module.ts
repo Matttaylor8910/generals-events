@@ -11,6 +11,7 @@ import {ArenaLeaderboardComponent} from './arena-leaderboard/arena-leaderboard.c
 import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
 import {BracketEventComponent} from './bracket-event/bracket-event.component';
 import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
+import {BracketStatusComponent} from './bracket-status/bracket-status.component';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
@@ -33,6 +34,7 @@ import {TimerComponent} from './timer/timer.component';
     ArenaQueueComponent,
     BracketEventComponent,
     BracketRegistrationComponent,
+    BracketStatusComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,
@@ -65,6 +67,7 @@ import {TimerComponent} from './timer/timer.component';
     ArenaQueueComponent,
     BracketEventComponent,
     BracketRegistrationComponent,
+    BracketStatusComponent,
     ChatComponent,
     CrownComponent,
     GameListComponent,

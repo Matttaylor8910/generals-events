@@ -1,0 +1,18 @@
+<div class="event-queue space-between" [class.joined]="inQueue" [class.dq]="disqualified">
+  <div class="message">
+    {{ message }}
+  </div>
+
+  <ion-button class="generals-button" (click)="checkIn()" *ngIf="showCheckIn">
+    Check In
+  </ion-button>
+
+  <ion-button class="generals-button" (click)="joinMatch()" *ngIf="showJoinMatch">
+    Join Match
+  </ion-button>
+
+  <div class="starting-in" *ngIf="showTimer">
+    <b>Starting in</b>
+    <app-timer [stopAt]="event.startTime"></app-timer>
+  </div>
+</div>
