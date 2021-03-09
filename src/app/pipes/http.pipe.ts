@@ -9,7 +9,7 @@ export class HttpPipe implements PipeTransform {
     return this._domSanitizer.bypassSecurityTrustHtml(this.stylize(value));
   }
 
-  // Modify this method according to your custom logic
+  // From https://stackoverflow.com/a/65272554/2943405
   private stylize(text: string): string {
     let stylizedText: string = '';
     if (text && text.length > 0) {
