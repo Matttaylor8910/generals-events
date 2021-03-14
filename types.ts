@@ -57,12 +57,17 @@ export interface IArenaEvent extends IBaseEvent {
 }
 
 export interface IDoubleElimEvent extends IBaseEvent {
+  checkInTime: number;
   checkedInPlayers: string[];  // players that have checked in
   winningSets: {
     winners: number;  // games needed to win to advance in the winners bracket
     losers: number;   // games needed to win to advance in the losers bracket
-    final: number;    // games needed to win to win the final
+    semifinals: number;  // games needed to win to win the semifinals match
+    finals: number;      // games needed to win to win the finals match
   };
+
+  // once the event starts this bracket will be updated live by cloud functions
+  bracket?: IDoubleEliminationBracket;
 }
 
 // the items to be shown in the leaderboard list
@@ -159,11 +164,18 @@ export interface IBracketRound {
   matches: IBracketMatch[];
 }
 
+export enum MatchStatus {
+  COMPLETE = 'COMPLETE',
+  READY = 'READY',
+  NOT_STARTED = 'NOT_STARTED',
+}
+
 export interface IBracketMatch {
   teams: IMatchTeam[];
   number: number;
   final: boolean;
   bye: boolean;
+  status: MatchStatus;
 
   noRightBorder: boolean;  // helper boolean for a css class
 }

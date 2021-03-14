@@ -32,6 +32,20 @@ const winningSets = {
   [WinningSets.Bo7]: 4,
 }
 
+enum CheckInTimes {
+  CHECKIN_15 = '15 minutes before start',
+  CHECKIN_30 = '30 minutes before start',
+  CHECKIN_45 = '45 minutes before start',
+  CHECKIN_60 = 'One hour before start',
+}
+
+const checkInTimes = {
+  [CheckInTimes.CHECKIN_15]: 15,
+  [CheckInTimes.CHECKIN_30]: 30,
+  [CheckInTimes.CHECKIN_45]: 45,
+  [CheckInTimes.CHECKIN_60]: 60,
+}
+
 const months = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
   'Dec'
@@ -60,11 +74,15 @@ export class CreateEventPage {
   name: string;
   duration: number;
 
+  checkInOptions = Object.values(CheckInTimes);
+  checkIn = this.checkInOptions[0];
+
   setsOptions = Object.values(WinningSets);
   winningSets = {
     winners: WinningSets.Bo3,
     losers: WinningSets.Bo3,
-    final: WinningSets.Bo5,
+    semifinals: WinningSets.Bo5,
+    finals: WinningSets.Bo7,
   };
 
   saving = false;
@@ -141,16 +159,22 @@ export class CreateEventPage {
   }
 
   private async createDoubleElimEvent() {
+    const startTime = this.getDate().getTime();
+    const checkInMinutes = checkInTimes[this.checkIn] * 60 * 1000;
+    const checkInTime = startTime - checkInMinutes;
+
     await this.eventService.createEvent({
       name: this.name || this.namePlaceholder,
       format: this.format,
       type: this.type,
       visibility: this.visibility,
-      startTime: this.getDate().getTime(),
+      startTime,
+      checkInTime,
       winningSets: {
         winners: winningSets[this.winningSets.winners],
         losers: winningSets[this.winningSets.losers],
-        final: winningSets[this.winningSets.final],
+        semifinals: winningSets[this.winningSets.semifinals],
+        finals: winningSets[this.winningSets.finals],
       },
     });
   }

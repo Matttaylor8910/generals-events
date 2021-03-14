@@ -58,36 +58,16 @@
       background: #333333;
 
       // if the final match is in progress or ready, make it gold
-      &.status-ready,
-      &.status-in-progress,
-      &.status-complete {
+      &.status-READY,
+      &.status-COMPLETE {
         &.final {
           border: 5px solid gold !important;
         }
       }
 
-      &.status-ready {
+      &.status-READY {
         color: #fff;
-        background-color: #77a164;
-
-        .team-line {
-          border-color: #000;
-        }
-        .team-score {
-          background: #777;
-        }
-      }
-
-      &.status-in-progress {
-        color: #fff;
-        background-color: #8eabe8;
-
-        .team-line {
-          border-color: #000;
-        }
-        .team-score {
-          background: #777;
-        }
+        border: 3px solid teal;
       }
     }
 
@@ -125,26 +105,31 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #ddd;
+        background: #777;
         text-align: center;
         min-width: 30px;
         height: 100%;
+        margin-right: -30px;
       }
 
-      &.winner {
+      &.WINNER {
         font-weight: bold;
       }
 
-      &.loser {
+      &.LOSER {
         opacity: 0.5;
       }
 
-      &.eliminated .team-name {
+      &.ELIMINATED .team-name {
         text-decoration: line-through;
       }
 
       &:last-of-type {
         border-bottom: none;
+
+        .team-score {
+          border-top: 1px solid #444;
+        }
       }
     }
   }
@@ -162,15 +147,15 @@
   .team-item:nth-of-type(odd):after {
     border-right-style: solid;
     border-top-style: solid;
-    height: 100%;
+    height: 75%;
     top: 50%;
   }
 
   .team-item:nth-of-type(even):after {
     border-right-style: solid;
     border-bottom-style: solid;
-    height: 100%;
-    top: -50%;
+    height: 75%;
+    bottom: calc(50% - 1px);
   }
 
   .team-item.no-right-border:after {

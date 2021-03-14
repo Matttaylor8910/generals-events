@@ -48,7 +48,13 @@ export class GeneralsService {
     }
 
     if (location.href.includes('localhost')) {
-      const name = await this.utilService.promptForText();
+      const name = await this.utilService.promptForText(
+          'Enter your generals.io username',
+          'Your username must exactly match or your games won\'t count!',
+          'generals.io username',
+          'Join',
+          'Cancel',
+      );
       if (name) {
         this.handleDidLogin(name);
         setTimeout(() => {

@@ -67,7 +67,7 @@ function generateEmptyBracket(round1Matches: number):
   let loserTracker = round1Matches / 2;
   let loserRound = 1;
   while (loserTracker > 0) {
-    let round = {name: `Losers Round ${loserRound}`, matches: []};
+    const round = {name: `Losers Round ${loserRound}`, matches: []};
 
     for (let i = 0; i < loserTracker; i++) {
       round.matches.push({
@@ -88,6 +88,11 @@ function generateEmptyBracket(round1Matches: number):
     loserTracker =
         loserRound % 2 > 0 ? loserTracker : Math.floor(loserTracker / 2);
     loserRound++;
+
+    // the last round before we break out of the loop is the semifinals match
+    if (loserTracker === 0) {
+      round.name = 'Semifinals';
+    }
   }
 
   return bracket;

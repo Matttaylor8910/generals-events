@@ -2,8 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {ADMINS} from '../../../../constants';
-import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventStatus, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-bracket-registration',
@@ -16,13 +15,12 @@ export class BracketRegistrationComponent {
   @Input() players: ILeaderboardPlayer[];
   @Input() selectedPlayer?: ILeaderboardPlayer;
   @Input() disqualified: boolean;
+  @Input() registrationOpen: boolean;
 
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   inEvent = false;
   recentlyJoined = false;
-
-  absentPlayers: ILeaderboardPlayer[] = [];
 
   constructor(
       public readonly generals: GeneralsService,
@@ -40,21 +38,13 @@ export class BracketRegistrationComponent {
     return this.status === EventStatus.UPCOMING;
   }
 
-  get showQueue(): boolean {
-    return [
-      EventStatus.UPCOMING,
-      EventStatus.ONGOING,
-      EventStatus.ALMOST_DONE,
-    ].includes(this.status);
-  }
-
   get pageControlText(): string {
     const players = this.players?.length || 0;
     return `${players} ${players === 1 ? 'player' : 'players'} registered`;
   }
 
   get canJoin() {
-    return !this.inEvent && this.status === EventStatus.UPCOMING;
+    return !this.inEvent && this.registrationOpen;
   }
 
   get canLeave() {
