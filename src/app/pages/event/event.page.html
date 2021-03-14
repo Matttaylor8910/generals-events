@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <div class="main-panel">
+      <div class="main-panel" [class.bracket]="isBracket">
         <ng-container *ngIf="players$ | async as players">
           <app-event-trophies
             [server]="event.server"

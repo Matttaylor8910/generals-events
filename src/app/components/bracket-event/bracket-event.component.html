@@ -4,6 +4,7 @@
   [status]="status"
   [disqualified]="disqualified">
 </app-bracket-status>
+
 <app-bracket-registration
   [event]="event"
   [players]="players"
@@ -11,5 +12,13 @@
   [selectedPlayer]="selectedPlayer"
   [disqualified]="disqualified"
   (playerClicked)="playerClicked.emit($event)"
-  *ngIf="showRegistration">
+  *ngIf="showRegistration; else showBracket">
 </app-bracket-registration>
+
+<ng-template #showBracket>
+  <ion-button (click)="createBracket()">Shuffle Bracket</ion-button>
+  <app-double-elimination-bracket
+    [bracket]="bracket"
+    [hideCompletedRounds]="hideCompletedRounds">
+  </app-double-elimination-bracket>
+</ng-template>

@@ -1,0 +1,208 @@
+.tournament-container {
+  overflow: auto;
+
+  .tournament-brackets {
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    margin-bottom: 15px;
+  }
+
+  .bracket {
+    padding-left: 0;
+    display: flex;
+    margin: 60px 0 0 0;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-around;
+    list-style-type: none;
+    flex: 1;
+    position: relative;
+
+    h3 {
+      flex: 1;
+      text-align:center;
+      font-weight: 400;
+      margin: 10px;
+      font-size: 18px;
+      position: absolute;
+      top: -40px;
+      left: 0;
+      width: 100%;
+    }
+  }
+
+  .team-item {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    margin: .5rem 10px;
+    position: relative;
+    min-width: 220px;
+
+    .match-number {
+      width: 24px;
+      color: teal;
+      font-weight: bold;
+      text-align: center;
+      margin-right: 2px;
+    }
+
+    .match-item {
+      margin-top: 1px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      line-height: 2;
+      background: #333333;
+
+      // if the final match is in progress or ready, make it gold
+      &.status-ready,
+      &.status-in-progress,
+      &.status-complete {
+        &.final {
+          border: 5px solid gold !important;
+        }
+      }
+
+      &.status-ready {
+        color: #fff;
+        background-color: #77a164;
+
+        .team-line {
+          border-color: #000;
+        }
+        .team-score {
+          background: #777;
+        }
+      }
+
+      &.status-in-progress {
+        color: #fff;
+        background-color: #8eabe8;
+
+        .team-line {
+          border-color: #000;
+        }
+        .team-score {
+          background: #777;
+        }
+      }
+    }
+
+    .team-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #444444;
+      height: 32px;
+      line-height: 16px;
+      background: #333;
+      margin-right: 30px;
+
+      .team-name {
+        text-align: left;
+        padding: 2px 8px;
+
+        span:last-of-type {
+          margin-left: 5px;
+
+          &:before {
+            content: '&';
+            margin-right: 5px
+          }
+        }
+      }
+
+      .placeholder {
+        color: #7f7f7f;
+        padding-left: 8px;
+        white-space: nowrap;
+      }
+
+      .team-score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ddd;
+        text-align: center;
+        min-width: 30px;
+        height: 100%;
+      }
+
+      &.winner {
+        font-weight: bold;
+      }
+
+      &.loser {
+        opacity: 0.5;
+      }
+
+      &.eliminated .team-name {
+        text-decoration: line-through;
+      }
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .team-item:after {
+    content:'';
+    border-color: #8c8c8c;
+    border-width: 1px;
+    position: absolute;
+    display: block;
+    width: 10px;
+    right: -11px;
+  }
+
+  .team-item:nth-of-type(odd):after {
+    border-right-style: solid;
+    border-top-style: solid;
+    height: 100%;
+    top: 50%;
+  }
+
+  .team-item:nth-of-type(even):after {
+    border-right-style: solid;
+    border-bottom-style: solid;
+    height: 100%;
+    top: -50%;
+  }
+
+  .team-item.no-right-border:after {
+    border-right-style: none;
+  }
+
+  .team-item:before {
+    content:'';
+    border-top: 1px solid #8c8c8c;
+    position: absolute;
+    height: 2px;
+    width: 10px;
+    left: -10px;
+    top: 50%;
+  }
+
+  .bracket:first-of-type {
+    .team-item:before {
+      display: none;
+    }
+  }
+
+  .bracket.length-1{
+    .team-item:after {
+      display: none;
+    }
+  }
+
+  .bracket:last-of-type {
+    .team-item:before,
+    .team-item:after {
+      display: none;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
+import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, MatchTeamStatus} from 'types';
+import {getShuffledBracket} from './bracket-creator';
 
 @Component({
   selector: 'app-bracket-event',
@@ -15,6 +16,8 @@ export class BracketEventComponent {
 
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
+  bracket: IDoubleEliminationBracket;
+
   constructor() {}
 
   get showRegistration(): boolean {
@@ -24,5 +27,24 @@ export class BracketEventComponent {
     // waiting for the event organizers to start the tournament
     const bracketCreated = false;
     return this.status === EventStatus.UPCOMING || !bracketCreated;
+  }
+
+  // TODO: this will be a real flow for just admins, and it will use the checked
+  // in players
+  createBracket() {
+    const teams: IMatchTeam[] = this.players.map(player => {
+      return {
+        name: player.name,
+        score: 0,
+        status: MatchTeamStatus.UNDECIDED,
+        dq: false
+      };
+    });
+    // Assume 50% checkin
+    const bracket = getShuffledBracket(teams.slice(0, teams.length / 2));
+    console.log(bracket);
+    setTimeout(() => {
+      this.bracket = bracket;
+    });
   }
 }

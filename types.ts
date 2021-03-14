@@ -147,3 +147,38 @@ export interface IGeneralsReplay {
   turns: number;
   ranking: {name: string, stars: number}[];
 }
+
+export interface IDoubleEliminationBracket {
+  winners: IBracketRound[];
+  losers: IBracketRound[];
+}
+
+export interface IBracketRound {
+  name: string;
+  complete: boolean;
+  matches: IBracketMatch[];
+}
+
+export interface IBracketMatch {
+  teams: IMatchTeam[];
+  number: number;
+  final: boolean;
+  bye: boolean;
+
+  noRightBorder: boolean;  // helper boolean for a css class
+}
+
+export enum MatchTeamStatus {
+  UNDECIDED = 'UNDECIDED',
+  WINNER = 'WINNER',
+  LOSER = 'LOSER',
+  ELIMINATED = 'ELIMINATED',
+}
+
+export interface IMatchTeam {
+  name?: string;
+  score?: number;
+  status?: MatchTeamStatus;
+  dq?: boolean;          // when set to true, style the match to show DQ
+  placeholder?: string;  // some matches have placeholder strings
+}

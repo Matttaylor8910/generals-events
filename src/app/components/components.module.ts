@@ -12,8 +12,10 @@ import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
 import {BracketEventComponent} from './bracket-event/bracket-event.component';
 import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
 import {BracketStatusComponent} from './bracket-status/bracket-status.component';
+import {BracketComponent} from './bracket/bracket.component';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
+import {DoubleEliminationBracketComponent} from './double-elimination-bracket/double-elimination-bracket.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
 import {EventOverviewComponent} from './event-overview/event-overview.component';
 import {EventPlayerSummaryComponent} from './event-player-summary/event-player-summary.component';
@@ -32,22 +34,24 @@ import {TimerComponent} from './timer/timer.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    BracketComponent,
     BracketEventComponent,
     BracketRegistrationComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
-    GameListComponent,
-    GameSummaryComponent,
-    LoginComponent,
-    RulesComponent,
-    TimerComponent,
+    DoubleEliminationBracketComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
     EventSummaryComponent,
     EventTrophiesComponent,
     EventTrophyPlayerComponent,
+    GameListComponent,
+    GameSummaryComponent,
+    LoginComponent,
+    RulesComponent,
+    TimerComponent,
   ],
   imports: [
     IonicModule,
@@ -65,22 +69,24 @@ import {TimerComponent} from './timer/timer.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    BracketComponent,
     BracketEventComponent,
     BracketRegistrationComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
-    GameListComponent,
-    GameSummaryComponent,
-    LoginComponent,
-    RulesComponent,
-    TimerComponent,
+    DoubleEliminationBracketComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
     EventSummaryComponent,
     EventTrophiesComponent,
     EventTrophyPlayerComponent,
+    GameListComponent,
+    GameSummaryComponent,
+    LoginComponent,
+    RulesComponent,
+    TimerComponent,
   ]
 })
 export class ComponentsModule {

@@ -24,6 +24,11 @@
   .main-panel {
     width: 50%;
     max-width: 1000px;
+
+    &.bracket {
+      max-width: 100%;
+      flex-grow: 1;
+    }
   }
 
   .left-panel {
