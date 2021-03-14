@@ -5,6 +5,12 @@
   [disqualified]="disqualified">
 </app-bracket-status>
 
+<ion-segment [(ngModel)]="selectedTab" *ngIf="tabs.length > 1">
+  <ion-segment-button [value]="tab" *ngFor="let tab of tabs">
+    <ion-label>{{ tab }}</ion-label>
+  </ion-segment-button>
+</ion-segment>
+
 <app-bracket-registration
   [event]="event"
   [players]="players"
@@ -16,9 +22,8 @@
 </app-bracket-registration>
 
 <ng-template #showBracket>
-  <ion-button (click)="createBracket()">Shuffle Bracket</ion-button>
+  <ion-button class="generals-button" (click)="createBracket()">Shuffle Bracket</ion-button>
   <app-double-elimination-bracket
-    [bracket]="bracket"
-    [hideCompletedRounds]="hideCompletedRounds">
+    [bracket]="bracket">
   </app-double-elimination-bracket>
 </ng-template>
