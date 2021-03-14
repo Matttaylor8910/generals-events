@@ -54,26 +54,28 @@ export class BracketStatusComponent implements OnDestroy {
       return 'You have been disqualified for ruining the experience for others! Reach out to googleman on discord if you feel this is in error.';
     }
 
-    if (this.status === EventStatus.UPCOMING) {
-      if (this.checkedIn) {
-        return 'You are checked in! The event organizers will generate the bracket shortly, hang tight.';
-      }
-      if (this.showCheckIn) {
-        return 'Thanks for being on time! Please check in to confirm you can play in the event.';
-      }
-      if (this.inEvent) {
-        return 'You are registered for this event! Check in starts 15 minutes before the event start time.';
-      }
-      return 'Register for the event below!';
+    // status for after the bracket has been set, and thus the event has started
+    if (this.event.bracket) {
+      // TODO: states for:
+      // 1) You are up against ______, JOIN MATCH
+      // 2) You are waiting for other players to finish for your next match.
+      // 3) You have been eliminated. Feel free to spectate the rest of the
+      // matches.
+
+      return 'The event has started!';
     }
 
-    // TODO: states for:
-    // 1) You are up against ______, JOIN MATCH
-    // 2) You are waiting for other players to finish for your next match.
-    // 3) You have been eliminated. Feel free to spectate the rest of the
-    // matches.
-
-    return '';
+    // statuses before the event starts
+    if (this.checkedIn) {
+      return 'You are checked in! The event organizers will generate the bracket shortly, hang tight.';
+    }
+    if (this.showCheckIn) {
+      return 'Thanks for being on time! Please check in to confirm you can play in the event.';
+    }
+    if (this.inEvent) {
+      return 'You are registered for this event! Check in starts 15 minutes before the event start time.';
+    }
+    return 'Register for the event below!';
   }
 
   determineInEvent() {
@@ -84,8 +86,7 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   checkIn() {
-    console.log('TODO: check in');
-    this.checkedIn = true;
+    this.eventService.checkInPlayer(this.event.id, this.generals.name);
   }
 
   joinMatch() {

@@ -18,12 +18,20 @@
   [selectedPlayer]="selectedPlayer"
   [disqualified]="disqualified"
   (playerClicked)="playerClicked.emit($event)"
-  *ngIf="showRegistration; else showBracket">
+  *ngIf="showRegistration">
 </app-bracket-registration>
 
-<ng-template #showBracket>
-  <ion-button class="generals-button" (click)="createBracket()">Shuffle Bracket</ion-button>
+<ng-container *ngIf="showBracket">
+  <ng-container *ngIf="!eventStarted">
+    <ion-button class="generals-button" (click)="createBracket()">New Bracket</ion-button>
+    <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>
+    <ion-button class="generals-button" (click)="startEvent()" [disabled]="!bracket">Start Event</ion-button>
+  </ng-container>
   <app-double-elimination-bracket
     [bracket]="bracket">
   </app-double-elimination-bracket>
-</ng-template>
+</ng-container>
+
+<ng-container *ngIf="showStream">
+  <h1>Wuped will be here! 😄</h1>
+</ng-container>

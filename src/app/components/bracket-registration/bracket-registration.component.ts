@@ -22,8 +22,6 @@ export class BracketRegistrationComponent {
   inEvent = false;
   recentlyJoined = false;
 
-  absentPlayers: ILeaderboardPlayer[] = [];
-
   constructor(
       public readonly generals: GeneralsService,
       private readonly eventService: EventService,
@@ -38,14 +36,6 @@ export class BracketRegistrationComponent {
   // before the event starts, show the stars for the players
   get showStars(): boolean {
     return this.status === EventStatus.UPCOMING;
-  }
-
-  get showQueue(): boolean {
-    return [
-      EventStatus.UPCOMING,
-      EventStatus.ONGOING,
-      EventStatus.ALMOST_DONE,
-    ].includes(this.status);
   }
 
   get pageControlText(): string {

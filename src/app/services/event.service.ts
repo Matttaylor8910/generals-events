@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
+import {GameStatus, IDoubleEliminationBracket, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -240,6 +240,19 @@ export class EventService {
             return {...doc.data(), id: doc.id};
           });
         }));
+  }
+
+  checkInPlayer(eventId: string, name: string) {
+    return this.afs.collection('events').doc(eventId).update({
+      checkedInPlayers: firebase.default.firestore.FieldValue.arrayUnion(name)
+    });
+  }
+
+  setBracket(eventId: string, bracket: IDoubleEliminationBracket) {
+    return this.afs.collection('events').doc(eventId).update({
+      bracket,
+      startTime: Date.now(),
+    });
   }
 
   /**
