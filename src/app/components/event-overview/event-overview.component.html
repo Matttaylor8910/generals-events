@@ -1,7 +1,9 @@
 <ion-card class="event-overview" (click)="navToEvent()">
   <ion-card-header>
     <ion-card-title class="space-between">
-      <span>{{ event.name }}</span>
+      <span>
+        {{ event.name }} <b class="private" *ngIf="private">(Private)</b>
+      </span>
       <span class="player-count">
         <ion-icon name="people"></ion-icon>
         {{ event.playerCount }}
