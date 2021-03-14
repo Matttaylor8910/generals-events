@@ -248,11 +248,8 @@ export class EventService {
     });
   }
 
-  setBracket(eventId: string, bracket: IDoubleEliminationBracket) {
-    return this.afs.collection('events').doc(eventId).update({
-      bracket,
-      startTime: Date.now(),
-    });
+  updateEvent(eventId: string, data: Partial<IEvent>) {
+    return this.afs.collection('events').doc(eventId).update(data);
   }
 
   /**

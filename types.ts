@@ -164,11 +164,18 @@ export interface IBracketRound {
   matches: IBracketMatch[];
 }
 
+export enum MatchStatus {
+  COMPLETE = 'COMPLETE',
+  READY = 'READY',
+  NOT_STARTED = 'NOT_STARTED',
+}
+
 export interface IBracketMatch {
   teams: IMatchTeam[];
   number: number;
   final: boolean;
   bye: boolean;
+  status: MatchStatus;
 
   noRightBorder: boolean;  // helper boolean for a css class
 }

@@ -5,7 +5,7 @@
       <li class="team-item" *ngFor="let match of round.matches" [ngClass]="{'no-right-border': match.noRightBorder}">
         <span class="match-number">{{ match.number }}</span>
         <div class="match-item status-{{match.status}}" [ngClass]="{final: match.final}">
-          <div class="team-line" [ngClass]="{winner: team.winner, loser: team.loser, eliminated: team.eliminated}" *ngFor="let team of match.teams">
+          <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
             <span class="team-name" *ngIf="team.name">
               {{ team.name }} {{ team.dq ? '(DQ)' : '' }}
             </span>

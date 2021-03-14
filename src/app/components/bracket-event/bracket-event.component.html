@@ -27,6 +27,9 @@
     <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>
     <ion-button class="generals-button" (click)="startEvent()" [disabled]="!bracket">Start Event</ion-button>
   </ng-container>
+  <ng-container *ngIf="eventStarted">
+    <ion-button class="generals-button" (click)="crawl()">Simulate Crawl</ion-button>
+  </ng-container>
   <app-double-elimination-bracket
     [bracket]="bracket">
   </app-double-elimination-bracket>
