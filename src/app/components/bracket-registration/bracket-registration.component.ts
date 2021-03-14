@@ -2,8 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {ADMINS} from '../../../../constants';
-import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventStatus, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-bracket-registration',
@@ -16,6 +15,7 @@ export class BracketRegistrationComponent {
   @Input() players: ILeaderboardPlayer[];
   @Input() selectedPlayer?: ILeaderboardPlayer;
   @Input() disqualified: boolean;
+  @Input() registrationOpen: boolean;
 
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
@@ -44,7 +44,7 @@ export class BracketRegistrationComponent {
   }
 
   get canJoin() {
-    return !this.inEvent && this.status === EventStatus.UPCOMING;
+    return !this.inEvent && this.registrationOpen;
   }
 
   get canLeave() {

@@ -145,15 +145,15 @@
   .team-item:nth-of-type(odd):after {
     border-right-style: solid;
     border-top-style: solid;
-    height: 100%;
+    height: 75%;
     top: 50%;
   }
 
   .team-item:nth-of-type(even):after {
     border-right-style: solid;
     border-bottom-style: solid;
-    height: 100%;
-    top: -50%;
+    height: 75%;
+    bottom:50%;
   }
 
   .team-item.no-right-border:after {
