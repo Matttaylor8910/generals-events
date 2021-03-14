@@ -87,6 +87,14 @@ export class EventPage implements OnDestroy {
     return ADMINS.includes(this.generals.name);
   }
 
+  get showWide(): boolean {
+    if (this.isBracket) {
+      const event = this.event as IDoubleElimEvent;
+      return !!event.bracket;
+    }
+    return false;
+  }
+
   async checkJoinQueue(players: ILeaderboardPlayer[]) {
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
