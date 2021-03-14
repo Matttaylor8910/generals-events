@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IDoubleEliminationBracket, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
+import {GameStatus, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -19,30 +19,29 @@ export class EventService {
     this.db = firebase.default.firestore();
   }
 
-  async createEvent(event: Partial<IEvent>) {
-    event = {
-      replays: [],
-      playerCount: 0,
-      visibility: Visibility.PUBLIC,
-      ...event,
-    };
+  async createEvent(event: Partial<IEvent>): Promise<string> {
+    const defaults = {rvisibility: Visibility.PUBLIC};
+    const reset = {replays: [], playerCount: 0};
+    event = {...defaults, ...event, ...reset};
 
     // assign this event a human readable id that doesn't clash with an
     // existing event
     let counter;
-    let value;
-    while (!value) {
-      let id = this.getId(event.name, counter);
+    let eventId;
+    let id;
+    while (!eventId) {
+      id = this.getId(event.name, counter);
       const doc = await this.db.collection('events').doc(id).get();
 
       if (doc.exists) {
         counter = (counter || 0) + 1;
       } else {
-        value = this.afs.collection('events').doc(id).set(event);
+        await this.afs.collection('events').doc(id).set(event);
+        eventId = id;
       }
     }
 
-    return value;
+    return eventId;
   }
 
   getEvents(finished: boolean): Observable<IEvent[]> {
@@ -250,6 +249,10 @@ export class EventService {
 
   updateEvent(eventId: string, data: Partial<IEvent>) {
     return this.afs.collection('events').doc(eventId).update(data);
+  }
+
+  deleteEvent(eventId: string) {
+    return this.afs.collection('events').doc(eventId).delete();
   }
 
   /**
