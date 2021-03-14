@@ -11,7 +11,7 @@ try {
 const db = admin.firestore();
 
 export function handleArenaEventUpdate(
-    snapshot: DocumentSnapshot, eventId: string) {
+    snapshot: DocumentSnapshot, eventId: string): Promise<void> {
   return checkQueue(snapshot, eventId);
 }
 
