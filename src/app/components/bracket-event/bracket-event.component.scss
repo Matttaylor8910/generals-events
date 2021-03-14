@@ -1,0 +1,12 @@
+ion-segment {
+  margin-bottom: 20px;
+
+  ion-segment-button {
+    --color: #aaa;
+    --color-checked: teal;
+
+    &.segment-button-checked {
+      font-weight: bold;
+    }
+  }
+}

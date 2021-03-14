@@ -47,6 +47,10 @@
       >
     </ng-container>
     <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM">
+      <label>Check-in Time</label>
+      <select [(ngModel)]="checkIn" name="type">
+        <option [value]="option" *ngFor="let option of checkInOptions">{{option}}</option>
+      </select>
       <label>Winners Bracket</label>
       <select [(ngModel)]="winningSets.winners" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
@@ -55,8 +59,12 @@
       <select [(ngModel)]="winningSets.losers" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
       </select>
-      <label>Final</label>
-      <select [(ngModel)]="winningSets.final" name="type">
+      <label>Semifinals</label>
+      <select [(ngModel)]="winningSets.semifinals" name="type">
+        <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
+      </select>
+      <label>Finals</label>
+      <select [(ngModel)]="winningSets.finals" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
       </select>
     </ng-container>

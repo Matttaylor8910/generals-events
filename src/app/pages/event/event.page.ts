@@ -1,11 +1,14 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {cloneDeep} from 'lodash';
 import {Observable, Subject} from 'rxjs';
 import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IEvent, ILeaderboardPlayer} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, Visibility} from 'types';
+
+import {ADMINS} from '../../../../constants';
 
 @Component({
   selector: 'app-event',
@@ -78,6 +81,18 @@ export class EventPage implements OnDestroy {
 
   get isBracket(): boolean {
     return this.event.format === EventFormat.DOUBLE_ELIM;
+  }
+
+  get isAdmin(): boolean {
+    return ADMINS.includes(this.generals.name);
+  }
+
+  get showWide(): boolean {
+    if (this.isBracket) {
+      const event = this.event as IDoubleElimEvent;
+      return !!event.bracket;
+    }
+    return false;
   }
 
   async checkJoinQueue(players: ILeaderboardPlayer[]) {

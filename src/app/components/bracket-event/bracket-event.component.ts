@@ -1,6 +1,12 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {EventService} from 'src/app/services/event.service';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, MatchTeamStatus} from 'types';
+
+import {ADMINS} from '../../../../constants';
+
 import {getShuffledBracket} from './bracket-creator';
+import {crawlTournament} from './bracket-runner';
 
 @Component({
   selector: 'app-bracket-event',
@@ -18,33 +24,90 @@ export class BracketEventComponent {
 
   bracket: IDoubleEliminationBracket;
 
-  constructor() {}
+  constructor(
+      private readonly generals: GeneralsService,
+      private readonly eventService: EventService,
+  ) {}
 
-  get showRegistration(): boolean {
-    // TODO, show the registration component up until the bracket has been
-    // completed, the start time isn't a hard start by any means
-    // we should show some sort of messaging to players though that they are
-    // waiting for the event organizers to start the tournament
-    const bracketCreated = false;
-    return this.status === EventStatus.UPCOMING || !bracketCreated;
+  ngOnChanges() {
+    if (this.event?.bracket) {
+      this.bracket = this.event.bracket;
+
+      if (this.selectedTab = 'Registration') {
+        this.selectedTab = 'Bracket';
+      }
+    }
   }
 
-  // TODO: this will be a real flow for just admins, and it will use the checked
-  // in players
+  selectedTab = 'Registration';
+
+  get registrationOpen(): boolean {
+    return !this.eventStarted;
+  }
+
+  get showRegistration(): boolean {
+    return this.selectedTab === 'Registration' && this.registrationOpen;
+  }
+
+  get showBracket(): boolean {
+    return this.selectedTab === 'Bracket';
+  }
+
+  get showStream(): boolean {
+    return this.selectedTab === 'Stream';
+  }
+
+  get eventStarted(): boolean {
+    return this.event?.bracket && this.status === EventStatus.ONGOING;
+  }
+
+  get tabs(): string[] {
+    const tabs = [];
+
+    // before the event starts
+    if (this.registrationOpen) {
+      tabs.push('Registration');
+
+      if (ADMINS.includes(this.generals.name)) {
+        tabs.push('Bracket');
+      }
+    }
+
+    // during the event
+    else {
+      tabs.push('Bracket');
+      tabs.push('Stream');
+    }
+
+    return tabs;
+  }
+
   createBracket() {
-    const teams: IMatchTeam[] = this.players.map(player => {
-      return {
-        name: player.name,
-        score: 0,
-        status: MatchTeamStatus.UNDECIDED,
-        dq: false
-      };
+    const teams: IMatchTeam[] = this.event.checkedInPlayers.map(name => {
+      return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false};
     });
-    // Assume 50% checkin
-    const bracket = getShuffledBracket(teams.slice(0, teams.length / 2));
-    console.log(bracket);
-    setTimeout(() => {
-      this.bracket = bracket;
+    this.bracket = getShuffledBracket(teams);
+  }
+
+  // TODO: likely remove
+  checkInAll() {
+    for (const player of this.players) {
+      this.eventService.checkInPlayer(this.event.id, player.name);
+    }
+  }
+
+  startEvent() {
+    this.eventService.updateEvent(this.event.id, {
+      bracket: this.bracket,
+      startTime: Date.now(),
     });
+  }
+
+  // TODO: move to cloud function
+  crawl() {
+    if (this.event.bracket) {
+      crawlTournament(this.event.bracket);
+      this.eventService.updateEvent(this.event.id, {bracket: this.bracket});
+    }
   }
 }

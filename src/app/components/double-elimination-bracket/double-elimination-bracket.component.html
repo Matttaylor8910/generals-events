@@ -13,3 +13,7 @@
     [minRoundsToShow]="minRoundsToShow">
   </app-bracket>
 </ng-container>
+
+<div class="actions" (click)="toggleHideCompleted()" *ngIf="showToggle">
+  {{ toggleText }}
+</div>

@@ -7,6 +7,14 @@
     </ion-buttons>
     <ion-title>{{ event?.name }}</ion-title>
     <ion-buttons slot="end">
+      <ng-container *ngIf="isAdmin">
+        <ion-button tooltip="Delete Event" (click)="deleteEvent()">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+        <ion-button tooltip="Clone Event" (click)="cloneEvent()">
+          <ion-icon name="copy-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
       <app-login
         [eventId]="eventId"
         [status]="status"
@@ -33,7 +41,7 @@
         </div>
       </div>
 
-      <div class="main-panel" [class.wide]="event.bracket">
+      <div class="main-panel" [class.wide]="showWide">
         <ng-container *ngIf="players$ | async as players">
           <app-event-trophies
             [server]="event.server"
@@ -86,6 +94,7 @@
 <ng-template #empty>
   <div class="empty-container">
     <h1>This event doesn't seem to exist 🤔</h1>
+    <ion-button class="generals-button" (click)="goHome()">Go Home</ion-button>
   </div>
 </ng-template>
 
