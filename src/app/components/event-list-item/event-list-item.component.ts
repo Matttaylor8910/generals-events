@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, IEvent} from 'types';
+import {EventFormat, IEvent, Visibility} from 'types';
 
 @Component({
   selector: 'app-event-list-item',
@@ -27,6 +27,10 @@ export class EventListItemComponent {
 
   get finished(): boolean {
     return this.event?.endTime < Date.now();
+  }
+
+  get private(): boolean {
+    return this.event.visibility === Visibility.PRIVATE;
   }
 
   navToEvent() {
