@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
 import {AlertController, LoadingController, ToastController} from '@ionic/angular';
-import {resolve} from 'dns';
 
 @Injectable({providedIn: 'root'})
 export class UtilService {
