@@ -33,13 +33,15 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showTimer(): boolean {
-    return this.status === EventStatus.UPCOMING && !this.showCheckIn;
+    return this.status === EventStatus.UPCOMING && !this.checkInOpen;
+  }
+
+  get checkInOpen(): boolean {
+    return this.event?.checkInTime < Date.now();
   }
 
   get showCheckIn(): boolean {
-    // show check in within 15 minutes
-    return this.inEvent && !this.checkedIn &&
-        this.event?.startTime < Date.now() + (15 * 60 * 1000);
+    return this.inEvent && !this.checkedIn && this.checkInOpen;
   }
 
   get showJoinMatch(): boolean {

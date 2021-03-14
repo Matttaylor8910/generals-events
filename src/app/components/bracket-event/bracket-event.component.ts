@@ -1,7 +1,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ADMINS} from 'constants';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, MatchTeamStatus} from 'types';
+
+import {ADMINS} from '../../../../constants';
+
 import {getShuffledBracket} from './bracket-creator';
 
 @Component({
