@@ -164,6 +164,57 @@ export class EventPage implements OnDestroy {
     this.router.navigate(['/']);
   }
 
+  async cloneEvent() {
+    const name = await this.utilService.promptForText(
+        'Event Name',
+        'Enter a new name for the cloned event',
+        'New Name',
+        'Clone',
+        'Cancel',
+    );
+
+    if (name) {
+      let cloned = cloneDeep(this.event) as IEvent;
+      cloned.name = name;
+      cloned.visibility = Visibility.PRIVATE;
+
+      // handle deleting special cases
+      if (cloned.format === EventFormat.DOUBLE_ELIM) {
+        cloned = cloned as IDoubleElimEvent;
+        cloned.checkedInPlayers = [];
+        delete cloned.bracket;
+        delete cloned.endTime;
+      } else {
+        cloned = cloned as IArenaEvent;
+        cloned.ongoingGameCount = 0;
+        cloned.completedGameCount = 0;
+      }
+
+      // add all of the players to this event
+      const eventId = await this.eventService.createEvent(cloned);
+      for (const player of this.players) {
+        this.eventService.addPlayer(eventId, player.name);
+      }
+
+      // nav there
+      this.router.navigate(['/', eventId]);
+    }
+  }
+
+  async deleteEvent() {
+    const confirm = await this.utilService.confirm(
+        'Delete Event',
+        `Are you sure you want to delete ${
+            this.event.name}? This cannot be undone.`,
+        'Delete',
+        'Cancel',
+    );
+    if (confirm) {
+      this.eventService.deleteEvent(this.event.id);
+      this.goHome();
+    }
+  }
+
   ngOnDestroy() {
     this.destroyed$.next();
   }
