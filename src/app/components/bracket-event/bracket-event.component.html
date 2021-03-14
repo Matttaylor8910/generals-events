@@ -11,16 +11,22 @@
   </ion-segment-button>
 </ion-segment>
 
-<app-bracket-registration
-  [event]="event"
-  [players]="players"
-  [status]="status"
-  [selectedPlayer]="selectedPlayer"
-  [disqualified]="disqualified"
-  [registrationOpen]="registrationOpen"
-  (playerClicked)="playerClicked.emit($event)"
-  *ngIf="showRegistration">
-</app-bracket-registration>
+<ng-container *ngIf="showRegistration">
+  <app-bracket-registration
+    [event]="event"
+    [players]="players"
+    [status]="status"
+    [selectedPlayer]="selectedPlayer"
+    [disqualified]="disqualified"
+    [registrationOpen]="registrationOpen"
+    (playerClicked)="playerClicked.emit($event)">
+  </app-bracket-registration>
+
+  <app-rules
+    [event]="event"
+    [status]="status">
+  </app-rules>
+</ng-container>
 
 <ng-container *ngIf="showBracket">
   <ng-container *ngIf="!eventStarted">
