@@ -1,4 +1,6 @@
 .tournament-container {
+  overflow: auto;
+
   .tournament-brackets {
     display: flex;
     flex-direction: row;
@@ -153,7 +155,7 @@
     border-right-style: solid;
     border-bottom-style: solid;
     height: 75%;
-    bottom:50%;
+    bottom: calc(50% - 1px);
   }
 
   .team-item.no-right-border:after {
