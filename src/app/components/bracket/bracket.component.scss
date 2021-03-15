@@ -1,6 +1,4 @@
 .tournament-container {
-  overflow: auto;
-
   .tournament-brackets {
     display: flex;
     flex-direction: row;
@@ -32,7 +30,7 @@
     }
   }
 
-  .team-item {
+  .match-container {
     flex-grow: 1;
     display: flex;
     align-items: center;
@@ -56,6 +54,7 @@
       width: 100%;
       line-height: 2;
       background: #333333;
+      border: 3px solid transparent;
 
       // if the final match is in progress or ready, make it gold
       &.status-READY,
@@ -68,6 +67,7 @@
       &.status-READY {
         color: #fff;
         border: 3px solid teal;
+        cursor: pointer;
       }
     }
 
@@ -134,7 +134,7 @@
     }
   }
 
-  .team-item:after {
+  .match-container:after {
     content:'';
     border-color: #8c8c8c;
     border-width: 1px;
@@ -144,25 +144,25 @@
     right: -11px;
   }
 
-  .team-item:nth-of-type(odd):after {
+  .match-container:nth-of-type(odd):after {
     border-right-style: solid;
     border-top-style: solid;
     height: 75%;
     top: 50%;
   }
 
-  .team-item:nth-of-type(even):after {
+  .match-container:nth-of-type(even):after {
     border-right-style: solid;
     border-bottom-style: solid;
     height: 75%;
     bottom: calc(50% - 1px);
   }
 
-  .team-item.no-right-border:after {
+  .match-container.no-right-border:after {
     border-right-style: none;
   }
 
-  .team-item:before {
+  .match-container:before {
     content:'';
     border-top: 1px solid #8c8c8c;
     position: absolute;
@@ -173,20 +173,27 @@
   }
 
   .bracket:first-of-type {
-    .team-item:before {
+    .match-container:before {
       display: none;
     }
   }
 
   .bracket.length-1{
-    .team-item:after {
+    .match-container:after {
       display: none;
     }
   }
 
   .bracket:last-of-type {
-    .team-item:before,
-    .team-item:after {
+    justify-content: center;
+
+    .match-container {
+      flex-grow: initial;
+      margin: 45px 10px;
+    }
+
+    .match-container:before,
+    .match-container:after {
       display: none;
     }
   }

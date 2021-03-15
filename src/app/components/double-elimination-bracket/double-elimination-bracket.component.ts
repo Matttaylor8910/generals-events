@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {IDoubleEliminationBracket} from 'types';
+import {IDoubleElimEvent, IDoubleEliminationBracket} from 'types';
 
 const HIDE_COMPLETED = 'generals-hide-completed';
 @Component({
@@ -8,6 +8,7 @@ const HIDE_COMPLETED = 'generals-hide-completed';
   styleUrls: ['./double-elimination-bracket.component.scss'],
 })
 export class DoubleEliminationBracketComponent {
+  @Input() event: IDoubleElimEvent;
   @Input() bracket: IDoubleEliminationBracket;
   @Input() minRoundsToShow = 4;
 

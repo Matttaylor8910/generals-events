@@ -1,18 +1,22 @@
-<ng-container *ngIf="bracket?.winners as winners">
-  <app-bracket
-    [bracketRounds]="winners"
-    [hideCompletedRounds]="hideCompletedRounds"
-    [minRoundsToShow]="minRoundsToShow">
-  </app-bracket>
-</ng-container>
+<div class="bracket-container">
+  <ng-container *ngIf="bracket?.winners as winners">
+    <app-bracket
+      [event]="event"
+      [bracketRounds]="winners"
+      [hideCompletedRounds]="hideCompletedRounds"
+      [minRoundsToShow]="minRoundsToShow">
+    </app-bracket>
+  </ng-container>
 
-<ng-container *ngIf="bracket?.losers as losers">
-  <app-bracket
-    [bracketRounds]="losers"
-    [hideCompletedRounds]="hideCompletedRounds"
-    [minRoundsToShow]="minRoundsToShow">
-  </app-bracket>
-</ng-container>
+  <ng-container *ngIf="bracket?.losers as losers">
+    <app-bracket
+      [event]="event"
+      [bracketRounds]="losers"
+      [hideCompletedRounds]="hideCompletedRounds"
+      [minRoundsToShow]="minRoundsToShow">
+    </app-bracket>
+  </ng-container>
+</div>
 
 <div class="actions" (click)="toggleHideCompleted()" *ngIf="showToggle">
   {{ toggleText }}

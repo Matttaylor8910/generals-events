@@ -25,8 +25,13 @@ export class GeneralsService {
     window.open(`${SITE_URLS[server]}/replays/${replayId}`, '_blank');
   }
 
-  joinLobby(name: string, server = GeneralsServer.NA) {
-    location.href = `${SITE_URLS[server]}/games/${name}`, '_blank';
+  joinLobby(name: string, server = GeneralsServer.NA, newTab = false) {
+    const url = `${SITE_URLS[server]}/games/${name}`;
+    if (newTab) {
+      window.open(url, '_blank');
+    } else {
+      location.href = url;
+    }
   }
 
   setName(name: string) {

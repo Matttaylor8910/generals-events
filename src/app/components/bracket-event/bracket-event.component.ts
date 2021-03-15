@@ -6,7 +6,6 @@ import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPl
 import {ADMINS} from '../../../../constants';
 
 import {getShuffledBracket} from './bracket-creator';
-import {crawlTournament} from './bracket-runner';
 
 @Component({
   selector: 'app-bracket-event',
@@ -101,13 +100,5 @@ export class BracketEventComponent {
       bracket: this.bracket,
       startTime: Date.now(),
     });
-  }
-
-  // TODO: move to cloud function
-  crawl() {
-    if (this.event.bracket) {
-      crawlTournament(this.event.bracket);
-      this.eventService.updateEvent(this.event.id, {bracket: this.bracket});
-    }
   }
 }

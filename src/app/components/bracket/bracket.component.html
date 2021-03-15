@@ -2,9 +2,9 @@
   <div class="tournament-brackets">
     <ul class="bracket bracket-{{i + 1}}" *ngFor="let round of rounds; let i = index" [ngClass]="{'length-1': round.matches.length === 1}">
       <h3>{{ round.name }}</h3>
-      <li class="team-item" *ngFor="let match of round.matches" [ngClass]="{'no-right-border': match.noRightBorder}">
-        <span class="match-number">{{ match.number }}</span>
-        <div class="match-item status-{{match.status}}" [ngClass]="{final: match.final}">
+      <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" (click)="handleClickMatch(match)">
+        <span class="match-number" (click)="randomAdvance(match, $event)">{{ match.number }}</span>
+        <div class="match-item status-{{match.status}}" [class.final]="match.final">
           <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
             <span class="team-name" *ngIf="team.name">
               {{ team.name }} {{ team.dq ? '(DQ)' : '' }}

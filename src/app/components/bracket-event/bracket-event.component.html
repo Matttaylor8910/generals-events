@@ -30,11 +30,12 @@
 
 <ng-container *ngIf="showBracket">
   <ng-container *ngIf="!eventStarted">
-    <ion-button class="generals-button" (click)="createBracket()">New Bracket</ion-button>
+    <ion-button class="generals-button" (click)="createBracket()">New Bracket ({{ event.checkedInPlayers.length }})</ion-button>
     <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>
     <ion-button class="generals-button" (click)="startEvent()" [disabled]="!bracket">Start Event</ion-button>
   </ng-container>
   <app-double-elimination-bracket
+    [event]="event"
     [bracket]="bracket">
   </app-double-elimination-bracket>
 </ng-container>
