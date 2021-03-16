@@ -20,7 +20,7 @@ export class EventService {
   }
 
   async createEvent(event: Partial<IEvent>): Promise<string> {
-    const defaults = {rvisibility: Visibility.PUBLIC};
+    const defaults = {visibility: Visibility.PUBLIC};
     const reset = {replays: [], playerCount: 0};
     event = {...defaults, ...event, ...reset};
 
