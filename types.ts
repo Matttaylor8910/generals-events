@@ -34,18 +34,17 @@ export interface IBaseEvent {
   format: EventFormat;
   type: EventType;
   visibility: Visibility;
-  startTime: number;           // unix timestamp of start of event
-  endTime?: number;            // unix timestamp of end of event
-  playerCount: number;         // total players in the event
-  completedGameCount: number;  // total completed games
-  replays: string[];           // a list of all replays that are tracked so far
-  server?: GeneralsServer;     // optional server override
+  startTime: number;        // unix timestamp of start of event
+  endTime?: number;         // unix timestamp of end of event
+  playerCount: number;      // total players in the event
+  replays: string[];        // a list of all replays that are tracked so far
+  server?: GeneralsServer;  // optional server override
 
   id?: string;       // client field
   exists?: boolean;  // client field
 }
 
-export type IEvent = IArenaEvent|IDoubleElimEvent;
+export type IEvent = IArenaEvent|IDoubleElimEvent|ILinkEvent;
 
 // the arena event object located at /events/:id
 export interface IArenaEvent extends IBaseEvent {
@@ -53,7 +52,8 @@ export interface IArenaEvent extends IBaseEvent {
   playersPerGame:
       number;       // number of players to wait for before starting a game
   queue: string[];  // player names in the queue, server will start games
-  ongoingGameCount: number;  // total games currently in progress
+  ongoingGameCount: number;    // total games currently in progress
+  completedGameCount: number;  // total completed games
 }
 
 export interface IDoubleElimEvent extends IBaseEvent {
@@ -68,6 +68,10 @@ export interface IDoubleElimEvent extends IBaseEvent {
 
   // once the event starts this bracket will be updated live by cloud functions
   bracket?: IDoubleEliminationBracket;
+}
+
+export interface ILinkEvent extends IBaseEvent {
+  url: string;  // link to an external event
 }
 
 // the items to be shown in the leaderboard list

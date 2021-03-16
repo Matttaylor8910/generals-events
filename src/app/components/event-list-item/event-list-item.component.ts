@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, IEvent, Visibility} from 'types';
+import {EventFormat, IEvent, ILinkEvent, Visibility} from 'types';
 
 @Component({
   selector: 'app-event-list-item',
@@ -34,6 +34,11 @@ export class EventListItemComponent {
   }
 
   navToEvent() {
-    this.router.navigate(['/', this.event.id]);
+    const {url} = this.event as ILinkEvent;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      this.router.navigate(['/', this.event.id]);
+    }
   }
 }
