@@ -55,7 +55,8 @@ export class EventService {
         .collection<IEvent>(
             'events',
             ref => {
-              return ref.where('visibility', 'in', visibilities).limit(10);
+              return ref.where('visibility', 'in', visibilities)
+                  .orderBy('startTime', 'desc');
             })
         .snapshotChanges()
         .pipe(map(actions => {
