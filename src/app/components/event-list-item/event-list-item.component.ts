@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, IEvent, ILinkEvent, Visibility} from 'types';
 
@@ -14,6 +15,7 @@ export class EventListItemComponent {
   constructor(
       private readonly router: Router,
       private readonly utilService: UtilService,
+      private readonly generals: GeneralsService,
   ) {}
 
   get duration(): string {
@@ -40,5 +42,10 @@ export class EventListItemComponent {
     } else {
       this.router.navigate(['/', this.event.id]);
     }
+  }
+
+  goToProfile(name: string, $event: Event) {
+    $event.stopPropagation();
+    this.generals.goToProfile(name, this.event.server);
   }
 }

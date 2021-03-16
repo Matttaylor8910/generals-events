@@ -9,6 +9,13 @@
         {{ event.playerCount }}
       </span>
     </ion-card-title>
+    <ion-card-subtitle class="winners" *ngIf="event.winners as winners">
+      <ion-icon name="trophy"></ion-icon>
+      <span class="winner" *ngFor="let winner of winners; index as i" (click)="goToProfile(winner, $event)">
+        <b>{{ winner }}</b>
+        <span *ngIf="winners.length > i + 1">and</span>
+      </span>
+    </ion-card-subtitle>
   </ion-card-header>
   <ion-card-content>
     <p>

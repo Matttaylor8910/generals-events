@@ -38,6 +38,7 @@ export interface IBaseEvent {
   endTime?: number;         // unix timestamp of end of event
   playerCount: number;      // total players in the event
   replays: string[];        // a list of all replays that are tracked so far
+  winners: string[];        // a list of the winner(s)
   server?: GeneralsServer;  // optional server override
 
   id?: string;       // client field
