@@ -1,12 +1,10 @@
-.tournament-container {
-  .tournament-brackets {
-    display: flex;
-    flex-direction: row;
-    list-style-type: none;
-    margin-bottom: 15px;
-  }
+.bracket-container {
+  display: flex;
+  flex-direction: row;
+  list-style-type: none;
+  margin-bottom: 15px;
 
-  .bracket {
+  .round {
     padding-left: 0;
     display: flex;
     margin: 60px 0 0 0;
@@ -16,7 +14,7 @@
     list-style-type: none;
     flex: 1;
     position: relative;
-    max-width: 300px;
+    max-width: 500px;
     max-height: 10000px;
     opacity: 1;
     transition: all 1s;
@@ -35,9 +33,14 @@
       margin: 10px;
       font-size: 18px;
       position: absolute;
-      top: -40px;
+      top: -60px;
       left: 0;
       width: 100%;
+
+      .best-of {
+        font-size: 16px;
+        color: teal;
+      }
     }
   }
 
@@ -187,19 +190,19 @@
     top: 50%;
   }
 
-  .bracket:first-of-type {
+  .round:first-of-type {
     .match-container:before {
       display: none;
     }
   }
 
-  .bracket.length-1{
+  .round.length-1{
     .match-container:after {
       display: none;
     }
   }
 
-  .bracket:last-of-type {
+  .round:last-of-type {
     justify-content: center;
 
     .match-container {

@@ -76,10 +76,15 @@ export class BracketComponent {
             match.teams.forEach((team, teamIndex) => {
               const t = m.teams[teamIndex];
               t.dq = team.dq;
-              t.name = team.name;
               t.placeholder = team.placeholder;
-              t.score = team.score;
               t.status = team.status;
+
+              // coallesce the score and name we've seen before with the new one
+              // coming in to prevent any flicker
+              // maybe a terrible idea, will force users to have to refresh in
+              // the case that we need to manually fix the bracket
+              t.score = Math.max(t.score || 0, team.score);
+              t.name = t.name || team.name;
             });
           }
         });
