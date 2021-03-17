@@ -1,5 +1,4 @@
 import {Component, Input} from '@angular/core';
-import {cloneDeep} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
@@ -29,8 +28,17 @@ export class BracketComponent {
     this.updateBracket(this.bracket);
   }
 
-  shouldHide(index: number) {
+  shouldHide(index: number): boolean {
     return index < this.start;
+  }
+
+  getBestOf(sets: number): string {
+    if (sets === 1) {
+      return 'Winner of one game';
+    } else if (sets > 1) {
+      return `Best ${sets} of ${sets * 2 - 1}`;
+    }
+    return '';
   }
 
   handleClickMatch(match: IBracketMatch) {
@@ -42,17 +50,31 @@ export class BracketComponent {
   // TODO: remove this
   randomAdvance(match: IBracketMatch, $event: Event) {
     $event.stopPropagation();
+    this.update(match.number);
+  }
+  // TODO: remove this
+  randomUpdate(i: number) {
+    this.update(i);
 
+    if (i < 200) {
+      setTimeout(() => {
+        this.randomUpdate(i + 1);
+      }, 700);
+    }
+  }
+  // TODO: remove this
+  update(i: number) {
     const updates = {};
+
     const random = Math.floor(Math.random() * 2);
     const winner = random === 0 ? 'team1Score' : 'team2Score';
     const loser = random === 0 ? 'team2Score' : 'team1Score';
-    updates[`bracket.results.${match.number}.${winner}`] = 2;
-    updates[`bracket.results.${match.number}.${loser}`] =
-        Math.floor(Math.random() * 2);
+    updates[`bracket.results.${i}.${winner}`] = 2;
+    updates[`bracket.results.${i}.${loser}`] = Math.floor(Math.random() * 2);
 
     this.eventService.updateEvent(this.event.id, updates);
   }
+
 
   private updateBracket(rounds: IBracketRound[]) {
     if (this.rounds) {
@@ -78,13 +100,8 @@ export class BracketComponent {
               t.dq = team.dq;
               t.placeholder = team.placeholder;
               t.status = team.status;
-
-              // coallesce the score and name we've seen before with the new one
-              // coming in to prevent any flicker
-              // maybe a terrible idea, will force users to have to refresh in
-              // the case that we need to manually fix the bracket
-              t.score = Math.max(t.score || 0, team.score);
-              t.name = t.name || team.name;
+              t.score = team.score;
+              t.name = team.name;
             });
           }
         });

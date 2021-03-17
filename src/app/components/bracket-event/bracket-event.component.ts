@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, MatchTeamStatus} from 'types';
+import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -41,7 +41,7 @@ export class BracketEventComponent {
   selectedTab = 'Registration';
 
   get registrationOpen(): boolean {
-    return !this.eventStarted;
+    return this.event?.bracket === undefined;
   }
 
   get showRegistration(): boolean {
@@ -82,10 +82,7 @@ export class BracketEventComponent {
   }
 
   createBracket() {
-    const teams: IMatchTeam[] = this.event.checkedInPlayers.map(name => {
-      return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false};
-    });
-    this.bracket = getShuffledBracket(teams);
+    this.bracket = getShuffledBracket(this.event);
   }
 
   // TODO: likely remove

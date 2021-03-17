@@ -168,6 +168,7 @@ export interface IBracketRound {
   name: string;
   complete: boolean;
   matches: IBracketMatch[];
+  winningSets: number;
 }
 
 export enum MatchStatus {

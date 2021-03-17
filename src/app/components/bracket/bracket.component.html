@@ -2,11 +2,11 @@
   <ul class="round round-{{r + 1}}" *ngFor="let round of rounds; let r = index" [ngClass]="{'length-1': round.matches.length === 1}" [class.hide]="shouldHide(r)">
     <h3>
       <div class="round-name">{{ round.name }}</div>
-      <div class="best-of">Best of 7</div>
+      <div class="best-of">{{ getBestOf(round.winningSets) }}</div>
     </h3>
-    <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)" (click)="handleClickMatch(match)">
+    <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)">
       <span class="match-number" (click)="randomAdvance(match, $event)">{{ match.number }}</span>
-      <div class="match-item status-{{match.status}}" [class.final]="match.final">
+      <div class="match-item status-{{match.status}}" [class.final]="match.final" (click)="handleClickMatch(match)">
         <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
           <span class="team-name" *ngIf="team.name">
             {{ team.name }} {{ team.dq ? '(DQ)' : '' }}

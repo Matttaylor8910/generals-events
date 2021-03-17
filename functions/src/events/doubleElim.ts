@@ -5,27 +5,41 @@ import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, 
 
 type BracketName = 'winners'|'losers';
 
-const TODO_WINNING_SETS = 2;
-
-export async function handleDoubleElimEventUpdate(
-    snapshot: DocumentSnapshot, eventId: string): Promise<void> {
+export async function handleDoubleElimEventUpdate(snapshot: DocumentSnapshot):
+    Promise<void> {
   const event = snapshot.data() as IDoubleElimEvent;
 
-  if (event?.bracket) {
-    crawlTournament(event.bracket);
-    await snapshot.ref.update({
+  if (event?.bracket && !event.endTime) {
+    const eventOver = crawlTournament(event.bracket);
+
+    const updates: {[key: string]: any} = {
       'bracket.winners': event.bracket.winners,
       'bracket.losers': event.bracket.losers,
-    });
+    };
+
+    if (eventOver) {
+      // find the winner of the finals match
+      const finals = event.bracket.winners[event.bracket.winners.length - 1];
+      const lastMatch = finals.matches[finals.matches.length - 1];
+      const winner = lastMatch.teams.find(t => t.score === finals.winningSets);
+
+      // set the winner and endTime
+      updates.winners = [winner!.name];
+      updates.endTime = Date.now();
+    }
+
+    await snapshot.ref.update(updates);
   }
 }
 
 /**
- * Crawl both sides of the tournament for updates and post back to firebase
+ * Crawl both sides of the bracket for updates and post back to firebase
  */
 export function crawlTournament(bracket: IDoubleEliminationBracket) {
-  crawlBracket(bracket, 'winners');
+  const eventOver = crawlBracket(bracket, 'winners');
   crawlBracket(bracket, 'losers');
+
+  return eventOver;
 }
 
 /**
@@ -36,6 +50,8 @@ function crawlBracket(
     bracket: IDoubleEliminationBracket,
     bracketName: BracketName,
 ) {
+  let eventOver = false;
+
   bracket[bracketName].forEach((round, roundIdx) => {
     if (!round.complete) {
       round.matches.forEach((match, matchIdx) => {
@@ -43,7 +59,9 @@ function crawlBracket(
           case MatchStatus.COMPLETE:
             break;
           case MatchStatus.READY:
-            checkupOnMatch(bracket, match, roundIdx, matchIdx, bracketName);
+            eventOver = checkupOnMatch(
+                bracket, match, roundIdx, matchIdx, bracketName,
+                round.winningSets);
             break;
           default:
             determineReadyMatch(
@@ -56,6 +74,8 @@ function crawlBracket(
           round.matches.every(match => match.status === MatchStatus.COMPLETE);
     }
   });
+
+  return eventOver;
 }
 
 /**
@@ -113,6 +133,7 @@ function hasTwoTeams(match: IBracketMatch):
 /**
  * If the match was ready, we can make the assumption that there are two
  * teams. Determine if the match is over and if we need to move players around
+ * Return true if the event is over
  */
 function checkupOnMatch(
     bracket: IDoubleEliminationBracket,
@@ -120,6 +141,7 @@ function checkupOnMatch(
     roundIdx: number,
     matchIdx: number,
     bracketName: BracketName,
+    winningSets: number,
 ) {
   const matchResults = bracket.results[String(match.number)] || {};
   const {team1Score = 0, team2Score = 0} = matchResults;
@@ -128,19 +150,23 @@ function checkupOnMatch(
   match.teams[1].score = team2Score;
 
   // if team1 has won, end the match and advance
-  if (team1Score >= TODO_WINNING_SETS) {
-    advancePlayers(
+  if (team1Score >= winningSets) {
+    return advancePlayers(
         bracket, match, match.teams[0], match.teams[1], roundIdx, matchIdx,
         bracketName);
-  } else if (team2Score >= TODO_WINNING_SETS) {
-    advancePlayers(
+  } else if (team2Score >= winningSets) {
+    return advancePlayers(
         bracket, match, match.teams[1], match.teams[0], roundIdx, matchIdx,
         bracketName);
   }
+
+  // event is still going
+  return false;
 }
 
 /**
  * Advance players after a match is completed
+ * Return true if the event is over
  */
 function advancePlayers(
     bracket: IDoubleEliminationBracket,
@@ -155,7 +181,7 @@ function advancePlayers(
   winningTeam.status = MatchTeamStatus.WINNER;
   losingTeam.status = MatchTeamStatus.LOSER;
 
-  // end the tournament or do a finals rematch
+  // end the event or do a finals rematch
   if (match.final) {
     // the player(s) in the kings seat lost
     const winnersBracketWinnerLost = losingTeam.name === match.teams[0].name;
@@ -180,7 +206,7 @@ function advancePlayers(
       // strip the old finals match of its gold border
       match.final = false;
     } else {
-      endTournament();
+      return true;
     }
   }
 
@@ -189,6 +215,9 @@ function advancePlayers(
     advanceWinningTeam(bracket, winningTeam, roundIdx, matchIdx, bracketName);
     advanceLosingTeam(bracket, losingTeam, roundIdx, matchIdx, bracketName);
   }
+
+  // event is still going
+  return false;
 }
 
 /**
@@ -272,31 +301,25 @@ function getLoserMatchToGoTo(
     bracket: IDoubleEliminationBracket,
     roundIdx: number,
     matchIdx: number,
-    ):
-    IBracketMatch {
-      let loserRound;
+    ): IBracketMatch {
+  let loserRound;
 
-      // round 0 just joins match losers from winner round 0 into matches
-      if (roundIdx === 0) {
-        loserRound = bracket.losers[0];
-        return loserRound.matches[Math.floor(matchIdx / 2)];
-      }
+  // round 0 just joins match losers from winner round 0 into matches
+  if (roundIdx === 0) {
+    loserRound = bracket.losers[0];
+    return loserRound.matches[Math.floor(matchIdx / 2)];
+  }
 
-      // later losers from the winner's bracket need to figure out where to go
-      else {
-        const loserRoundIdx = (roundIdx * 2) - 1;
-        loserRound = bracket.losers[loserRoundIdx];
+  // later losers from the winner's bracket need to figure out where to go
+  else {
+    const loserRoundIdx = (roundIdx * 2) - 1;
+    loserRound = bracket.losers[loserRoundIdx];
 
-        // determine if we are going to be reversing the losers in this round
-        const loserMatchIdx = (loserRoundIdx + 1) % 4 > 0 ?
-            loserRound.matches.length - (matchIdx + 1) :
-            matchIdx;
+    // determine if we are going to be reversing the losers in this round
+    const loserMatchIdx = (loserRoundIdx + 1) % 4 > 0 ?
+        loserRound.matches.length - (matchIdx + 1) :
+        matchIdx;
 
-        return loserRound.matches[loserMatchIdx];
-      }
-    }
-
-function
-endTournament() {
-  console.log('TODO');
+    return loserRound.matches[loserMatchIdx];
+  }
 }

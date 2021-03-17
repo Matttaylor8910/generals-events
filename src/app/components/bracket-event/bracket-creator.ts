@@ -1,15 +1,19 @@
 import {cloneDeep, map, shuffle} from 'lodash';
-import {IBracketMatch, IDoubleEliminationBracket, IMatchTeam} from 'types';
+import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchTeamStatus} from 'types';
 
-export function getShuffledBracket(teams: IMatchTeam[]):
+export function getShuffledBracket(event: IDoubleElimEvent):
     IDoubleEliminationBracket {
+  let teams: IMatchTeam[] = event.checkedInPlayers.map(name => {
+    return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false};
+  });
+
   teams = cloneDeep(teams);
 
   // determine the number of matches in the first round given a set # of teams
   const round1Matches = determineRound1Matches(teams.length);
 
   // generate an empty bracket given a number of round 1 matches
-  const bracket = generateEmptyBracket(round1Matches);
+  const bracket = generateEmptyBracket(round1Matches, event);
 
   // shuffle the teams
   teams = shuffle(teams);
@@ -33,15 +37,22 @@ export function getShuffledBracket(teams: IMatchTeam[]):
   return bracket;
 }
 
-function generateEmptyBracket(round1Matches: number):
-    IDoubleEliminationBracket {
+function generateEmptyBracket(
+    round1Matches: number,
+    event: IDoubleElimEvent,
+    ): IDoubleEliminationBracket {
   const bracket = {winners: [], losers: [], results: {}};
+  const {winners, losers, semifinals, finals} = event.winningSets;
 
   // generate the winner bracket
   let winnerTracker = round1Matches;
   let winnerRound = 1;
   while (winnerTracker > 0) {
-    const round = {name: `Round ${winnerRound}`, matches: []};
+    const round = {
+      name: `Round ${winnerRound}`,
+      matches: [],
+      winningSets: winners,
+    };
 
     for (let i = 0; i < winnerTracker; i++) {
       round.matches.push({teams: []});
@@ -57,17 +68,26 @@ function generateEmptyBracket(round1Matches: number):
     // the last round before we break out of the loop is the semifinals match
     if (winnerTracker === 0) {
       round.name = 'Semifinals';
+      round.winningSets = semifinals;
     }
   }
 
   // add the finals match
-  bracket.winners.push({name: 'Finals', matches: [{teams: []}]});
+  bracket.winners.push({
+    name: 'Finals',
+    matches: [{teams: []}],
+    winningSets: finals,
+  });
 
   // generate losers bracket
   let loserTracker = round1Matches / 2;
   let loserRound = 1;
   while (loserTracker > 0) {
-    const round = {name: `Losers Round ${loserRound}`, matches: []};
+    const round = {
+      name: `Losers Round ${loserRound}`,
+      matches: [],
+      winningSets: losers,
+    };
 
     for (let i = 0; i < loserTracker; i++) {
       round.matches.push({
@@ -92,6 +112,7 @@ function generateEmptyBracket(round1Matches: number):
     // the last round before we break out of the loop is the semifinals match
     if (loserTracker === 0) {
       round.name = 'Semifinals';
+      round.winningSets = semifinals;
     }
   }
 
