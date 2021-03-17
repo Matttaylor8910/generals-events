@@ -16,6 +16,17 @@
     list-style-type: none;
     flex: 1;
     position: relative;
+    max-width: 300px;
+    max-height: 10000px;
+    opacity: 1;
+    transition: all 1s;
+
+    &.hide {
+      max-width: 0;
+      opacity: 0;
+      max-height: 0;
+      pointer-events: none;
+    }
 
     h3 {
       flex: 1;
@@ -160,6 +171,10 @@
 
   .match-container.no-right-border:after {
     border-right-style: none;
+  }
+
+  .match-container.no-left-border:before {
+    border: none;
   }
 
   .match-container:before {

@@ -11,11 +11,12 @@ import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types
 })
 export class BracketComponent {
   @Input() event: IDoubleElimEvent;
-  @Input() bracketRounds: IBracketRound[];
+  @Input() bracket: IBracketRound[];
   @Input() hideCompletedRounds: boolean;
   @Input() minRoundsToShow: number;
 
   rounds: IBracketRound[];
+  start = 0;
 
   constructor(
       private readonly generals: GeneralsService,
@@ -23,21 +24,13 @@ export class BracketComponent {
   ) {}
 
   ngOnChanges() {
-    if (this.hideCompletedRounds) {
-      const nonCompleted = this.bracketRounds.filter(round => !round.complete);
+    // crawl the bracket and update values, not references, so it doesn't
+    // re-render
+    this.updateBracket(this.bracket);
+  }
 
-      if (this.minRoundsToShow && nonCompleted.length < this.minRoundsToShow) {
-        const end = this.bracketRounds.length;
-        const start = this.bracketRounds.length > this.minRoundsToShow ?
-            this.bracketRounds.length - this.minRoundsToShow :
-            0;
-        this.rounds = this.bracketRounds.slice(start, end);
-      } else {
-        this.rounds = nonCompleted;
-      }
-    } else {
-      this.rounds = cloneDeep(this.bracketRounds);
-    }
+  shouldHide(index: number) {
+    return index < this.start;
   }
 
   handleClickMatch(match: IBracketMatch) {
@@ -50,10 +43,75 @@ export class BracketComponent {
   randomAdvance(match: IBracketMatch, $event: Event) {
     $event.stopPropagation();
 
-    const winner = Math.floor(Math.random() * 2);
-    const loser = winner === 0 ? 1 : 0;
-    match.teams[winner].score = 2;
-    match.teams[loser].score = Math.floor(Math.random() * 2);
-    this.eventService.updateEvent(this.event.id, {bracket: this.event.bracket});
+    const updates = {};
+    const random = Math.floor(Math.random() * 2);
+    const winner = random === 0 ? 'team1Score' : 'team2Score';
+    const loser = random === 0 ? 'team2Score' : 'team1Score';
+    updates[`bracket.results.${match.number}.${winner}`] = 2;
+    updates[`bracket.results.${match.number}.${loser}`] =
+        Math.floor(Math.random() * 2);
+
+    this.eventService.updateEvent(this.event.id, updates);
+  }
+
+  private updateBracket(rounds: IBracketRound[]) {
+    if (this.rounds) {
+      rounds.forEach((round, roundIndex) => {
+        const r = this.rounds[roundIndex];
+        r.complete = round.complete;
+        r.name = round.name;
+
+        round.matches.forEach((match, matchIndex) => {
+          const m = r.matches[matchIndex];
+
+          if (m === undefined) {
+            r.matches.push(match);
+          } else {
+            m.bye = match.bye;
+            m.final = match.final;
+            m.noRightBorder = match.noRightBorder;
+            m.number = match.number;
+            m.status = match.status;
+
+            match.teams.forEach((team, teamIndex) => {
+              const t = m.teams[teamIndex];
+              t.dq = team.dq;
+              t.name = team.name;
+              t.placeholder = team.placeholder;
+              t.score = team.score;
+              t.status = team.status;
+            });
+          }
+        });
+      });
+    } else {
+      this.rounds = rounds;
+    }
+
+    this.determineComplete();
+  }
+
+  private determineComplete() {
+    // determine which rounds to show
+    if (this.hideCompletedRounds) {
+      const firstNonComplete = this.rounds.findIndex(round => !round.complete);
+      const nonCompleteRounds = this.rounds.length - firstNonComplete;
+
+      // all rounds are complete
+      if (firstNonComplete === -1) {
+        const idealStart = this.rounds.length - this.minRoundsToShow;
+        if (idealStart >= 0) {
+          this.start = idealStart;
+        }
+      } else if (nonCompleteRounds < this.minRoundsToShow) {
+        this.start = this.rounds.length > this.minRoundsToShow ?
+            this.rounds.length - this.minRoundsToShow :
+            0;
+      } else {
+        this.start = firstNonComplete;
+      }
+    } else {
+      this.start = 0;
+    }
   }
 }

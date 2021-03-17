@@ -1,8 +1,8 @@
 <div class="tournament-container" *ngIf="rounds">
   <div class="tournament-brackets">
-    <ul class="bracket bracket-{{i + 1}}" *ngFor="let round of rounds; let i = index" [ngClass]="{'length-1': round.matches.length === 1}">
+    <ul class="bracket bracket-{{r + 1}}" *ngFor="let round of rounds; let r = index" [ngClass]="{'length-1': round.matches.length === 1}" [class.hide]="shouldHide(r)">
       <h3>{{ round.name }}</h3>
-      <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" (click)="handleClickMatch(match)">
+      <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)" (click)="handleClickMatch(match)">
         <span class="match-number" (click)="randomAdvance(match, $event)">{{ match.number }}</span>
         <div class="match-item status-{{match.status}}" [class.final]="match.final">
           <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">

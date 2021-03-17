@@ -13,7 +13,10 @@ export async function handleDoubleElimEventUpdate(
 
   if (event?.bracket) {
     crawlTournament(event.bracket);
-    await snapshot.ref.update({bracket: event.bracket});
+    await snapshot.ref.update({
+      'bracket.winners': event.bracket.winners,
+      'bracket.losers': event.bracket.losers,
+    });
   }
 }
 
@@ -118,8 +121,11 @@ function checkupOnMatch(
     matchIdx: number,
     bracketName: BracketName,
 ) {
-  const team1Score = match.teams[0].score || 0;
-  const team2Score = match.teams[1].score || 0;
+  const matchResults = bracket.results[String(match.number)] || {};
+  const {team1Score = 0, team2Score = 0} = matchResults;
+
+  match.teams[0].score = team1Score;
+  match.teams[1].score = team2Score;
 
   // if team1 has won, end the match and advance
   if (team1Score >= TODO_WINNING_SETS) {
@@ -152,9 +158,13 @@ function advancePlayers(
   // end the tournament or do a finals rematch
   if (match.final) {
     // the player(s) in the kings seat lost
-    const needsRematch = losingTeam.name === match.teams[0].name;
+    const winnersBracketWinnerLost = losingTeam.name === match.teams[0].name;
 
-    if (needsRematch) {
+    // #71 there should only ever be two finals matches
+    const finalsRound = bracket.winners[bracket.winners.length - 1];
+    const isFirstFinal = finalsRound.matches.length === 1;
+
+    if (winnersBracketWinnerLost && isFirstFinal) {
       // setup the new finals match
       const finalFinal = cloneDeep(match);
       finalFinal.teams.forEach(team => {

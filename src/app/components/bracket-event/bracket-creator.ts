@@ -35,7 +35,7 @@ export function getShuffledBracket(teams: IMatchTeam[]):
 
 function generateEmptyBracket(round1Matches: number):
     IDoubleEliminationBracket {
-  const bracket = {winners: [], losers: []}
+  const bracket = {winners: [], losers: [], results: {}};
 
   // generate the winner bracket
   let winnerTracker = round1Matches;

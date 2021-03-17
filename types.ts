@@ -161,6 +161,7 @@ export interface IGeneralsReplay {
 export interface IDoubleEliminationBracket {
   winners: IBracketRound[];
   losers: IBracketRound[];
+  results: IMatchResults;
 }
 
 export interface IBracketRound {
@@ -198,4 +199,11 @@ export interface IMatchTeam {
   status?: MatchTeamStatus;
   dq?: boolean;          // when set to true, style the match to show DQ
   placeholder?: string;  // some matches have placeholder strings
+}
+
+export interface IMatchResults {
+  [key: string]: {
+    team1Score: number,
+    team2Score: number,
+  };
 }
