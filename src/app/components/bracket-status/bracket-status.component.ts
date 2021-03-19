@@ -1,4 +1,5 @@
 import {Component, Input, OnDestroy} from '@angular/core';
+import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
@@ -56,7 +57,7 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showSpectateMatch(): boolean {
-    return this.spectateStatus.match !== null;
+    return !!this.spectateStatus.player1 && !!this.spectateStatus.player2;
   }
 
   get showStatusBar(): boolean {
@@ -77,6 +78,10 @@ export class BracketStatusComponent implements OnDestroy {
       }
       if (this.spectateStatus.match) {
         const {player1, player2} = this.spectateStatus;
+        if ([player1, player2].includes(undefined)) {
+          return `You will play the winner of match ${
+              this.spectateStatus.match}, but it may be a while.`
+        }
         return `You will play the winner between ${player1} and ${player2}!`;
       }
       if (this.eliminated) {
@@ -149,9 +154,8 @@ export class BracketStatusComponent implements OnDestroy {
                 foundEliminated = true;
               }
             } else {
-              if (this.setSpectateStatus(r, m, t, winners, losers)) {
-                foundSpectate = true;
-              }
+              this.setSpectateStatus(r, m, t, winners, losers);
+              foundSpectate = true;
             }
           }
         }
@@ -176,22 +180,43 @@ export class BracketStatusComponent implements OnDestroy {
       winners: IBracketRound[],
       losers: IBracketRound[],
   ) {
+    let waitingOn: IBracketMatch;
+
     // because we were iterating through all rounds combined, indexes beyond the
     // winners rounds are losers rounds
     if (round < winners.length) {
       // winners bracket is easy, just look back one round
       const offset = team === 0 ? 1 : 0;
-      const waitingOn = winners[round - 1].matches[match * 2 + offset];
-      this.spectateStatus.player1 = waitingOn.teams[0].name;
-      this.spectateStatus.player2 = waitingOn.teams[1].name;
-      this.spectateStatus.match = waitingOn.number;
-      return true;
+      waitingOn = winners[round - 1].matches[match * 2 + offset];
     }
 
-    // TODO: handle finding the match you're waiting on while sitting in the
-    // loser's bracket
+    // find the match you're waiting on from the loser's bracket
+    else {
+      round = round % winners.length;
+      const myMatch = losers[round].matches[match];
+      const placeholderMatch =
+          Number(myMatch.teams[1].placeholder?.split('Loser of ')[1]);
 
-    return false;
+      // if there is a placeholder match, parse out the match number
+      if (placeholderMatch) {
+        waitingOn = flatten(winners.map(round => round.matches))
+                        .find(match => match.number === placeholderMatch);
+      }
+
+      // otherwise look for coming from the round before
+      else {
+        // round 2 (index 1) is even, round 3 (index 2) is odd
+        const odd = round % 2 === 0;
+        if (odd) {
+          const offset = team === 0 ? 1 : 0;
+          match = match * 2 + offset;
+        }
+        waitingOn = losers[round - 1].matches[match];
+      }
+    }
+    this.spectateStatus.player1 = waitingOn.teams[0].name;
+    this.spectateStatus.player2 = waitingOn.teams[1].name;
+    this.spectateStatus.match = waitingOn.number;
   }
 
   resetReadyStatus() {
