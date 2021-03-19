@@ -2,7 +2,7 @@
   class="bracket-status space-between"
   [class.dq]="disqualified"
   [class.opponent]="readyStatus?.opponent"
-  [class.checked-in]="checkedIn"
+  [class.checked-in]="checkedIn && checkInOpen"
   *ngIf="showStatusBar"
 >
   <div class="message">
@@ -17,7 +17,7 @@
     Join Match
   </ion-button>
 
-  <ion-icon class="checkin-checkmark" name="checkmark-circle" *ngIf="checkInOpen && checkedIn"></ion-icon>
+  <ion-icon class="checkin-checkmark" name="checkmark-circle" *ngIf="checkedIn && checkInOpen"></ion-icon>
 
   <div class="starting-in" *ngIf="showTimer">
     <b>

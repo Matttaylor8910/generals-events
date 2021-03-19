@@ -52,6 +52,10 @@ export class BracketEventComponent {
     return this.selectedTab === 'Bracket';
   }
 
+  get showRules(): boolean {
+    return this.selectedTab === 'Rules';
+  }
+
   get showStream(): boolean {
     return this.selectedTab === 'Stream';
   }
@@ -77,6 +81,9 @@ export class BracketEventComponent {
       tabs.push('Bracket');
       tabs.push('Stream');
     }
+
+    // Always show a rules tab
+    tabs.push('Rules');
 
     return tabs;
   }
