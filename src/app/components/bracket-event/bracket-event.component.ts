@@ -67,7 +67,7 @@ export class BracketEventComponent {
     if (this.registrationOpen) {
       tabs.push('Registration');
 
-      if (ADMINS.includes(this.generals.name)) {
+      if (this.isAdmin) {
         tabs.push('Bracket');
       }
     }
@@ -79,6 +79,18 @@ export class BracketEventComponent {
     }
 
     return tabs;
+  }
+
+  get isAdmin(): boolean {
+    return ADMINS.includes(this.generals.name);
+  }
+
+  get showBracketButtons(): boolean {
+    return this.isAdmin && !this.event?.bracket;
+  }
+
+  get finished(): boolean {
+    return this.status === EventStatus.FINISHED;
   }
 
   createBracket() {
