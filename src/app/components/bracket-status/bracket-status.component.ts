@@ -185,9 +185,17 @@ export class BracketStatusComponent implements OnDestroy {
     // because we were iterating through all rounds combined, indexes beyond the
     // winners rounds are losers rounds
     if (round < winners.length) {
-      // winners bracket is easy, just look back one round
-      const offset = team === 0 ? 1 : 0;
-      waitingOn = winners[round - 1].matches[match * 2 + offset];
+      // look at the last losers bracket match, there is only ever one match in
+      // the final losers bracket round
+      if (round === winners.length - 1) {
+        waitingOn = losers[losers.length - 1].matches[0];
+      }
+
+      // other winners bracket matches are easy, just look back one round
+      else {
+        const offset = team === 0 ? 1 : 0;
+        waitingOn = winners[round - 1].matches[match * 2 + offset];
+      }
     }
 
     // find the match you're waiting on from the loser's bracket
