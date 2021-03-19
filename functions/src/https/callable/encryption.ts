@@ -5,7 +5,7 @@ import * as functions from 'firebase-functions';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 
 // firebase functions:config:set generals.encryption="secret-key"

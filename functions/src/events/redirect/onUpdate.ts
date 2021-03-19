@@ -5,7 +5,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 
 export const onUpdateRedirect =

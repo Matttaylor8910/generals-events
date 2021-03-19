@@ -8,7 +8,7 @@ import * as simulator from '../../util/simulator';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 const db: admin.firestore.Firestore = admin.firestore();
 

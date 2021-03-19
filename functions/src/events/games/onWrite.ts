@@ -12,7 +12,7 @@ import {timeoutAfter} from '../../util/util';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 const db = admin.firestore();
 
