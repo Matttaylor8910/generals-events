@@ -41,7 +41,7 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get checkInOpen(): boolean {
-    return this.event?.checkInTime < Date.now();
+    return this.event?.checkInTime < Date.now() && !this.event?.bracket;
   }
 
   get showCheckIn(): boolean {

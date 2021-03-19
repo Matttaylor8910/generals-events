@@ -85,6 +85,21 @@ table {
           text-align: center;
         }
       }
+
+      .generals-button {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .checkin {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        ion-icon {
+          margin-right: 10px;
+        }
+      }
     }
 
     &.small-devices {

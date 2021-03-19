@@ -37,12 +37,21 @@
         {{ player.name }}
       </td>
       <td class="points">
-        <div class="stars">
+        <div class="stars" *ngIf="!canCheckIn || isCheckedIn(player.name)">
           <ion-icon name="star" color="warning"></ion-icon>
           <span *ngIf="player?.stats?.currentStars > -1; else spinner">
             {{ player.stats?.currentStars | number:'1.0-0' }}
           </span>
         </div>
+        <ng-container *ngIf="canCheckIn && !isCheckedIn(player.name)">
+          <ion-button size="small" class="generals-button" *ngIf="generals.name === player.name" (click)="checkIn()">
+            Check In
+          </ion-button>
+          <ion-text class="checkin" color="warning" *ngIf="generals.name !== player.name">
+            <ion-icon name="warning"></ion-icon>
+            Not checked in
+          </ion-text>
+        </ng-container>
       </td>
     </tr>
   </ng-container>

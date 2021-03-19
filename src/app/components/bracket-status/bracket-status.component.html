@@ -1,4 +1,10 @@
-<div class="event-queue space-between" [class.dq]="disqualified" [class.opponent]="readyStatus?.opponent" *ngIf="showStatusBar">
+<div
+  class="bracket-status space-between"
+  [class.dq]="disqualified"
+  [class.opponent]="readyStatus?.opponent"
+  [class.checked-in]="checkedIn"
+  *ngIf="showStatusBar"
+>
   <div class="message">
     {{ message }}
   </div>
@@ -10,6 +16,8 @@
   <ion-button class="generals-button" (click)="joinMatch()" *ngIf="showJoinMatch">
     Join Match
   </ion-button>
+
+  <ion-icon class="checkin-checkmark" name="checkmark-circle" *ngIf="checkInOpen && checkedIn"></ion-icon>
 
   <div class="starting-in" *ngIf="showTimer">
     <b>

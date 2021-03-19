@@ -1,4 +1,4 @@
-.event-queue {
+.bracket-status {
   min-height: 64px;
   margin: 10px 0 20px;
   background: #333;
@@ -11,10 +11,18 @@
   }
 
   &.opponent {
-    background-color: teal;
-    border-color: teal;
     font-weight: bold;
     font-size: 20px;
+  }
+
+  &.checked-in,
+  &.opponent {
+    background-color: teal;
+    border-color: teal;
+  }
+
+  .checkin-checkmark {
+    font-size: 28px;
   }
 
   .message {
