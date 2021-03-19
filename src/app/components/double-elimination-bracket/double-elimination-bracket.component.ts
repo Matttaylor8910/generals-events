@@ -16,7 +16,8 @@ export class DoubleEliminationBracketComponent {
   hideCompletedRounds: boolean;
 
   constructor() {
-    this.hideCompletedRounds = localStorage.getItem(HIDE_COMPLETED) === 'true';
+    const cached = localStorage.getItem(HIDE_COMPLETED);
+    this.hideCompletedRounds = localStorage.getItem(HIDE_COMPLETED) !== 'false';
   }
 
   ngOnChanges() {
