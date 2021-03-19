@@ -2,7 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IBracketMatch, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
+import {EventStatus, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
 
 @Component({
   selector: 'app-bracket-status',
@@ -22,6 +22,8 @@ export class BracketStatusComponent implements OnDestroy {
   checkedIn = false;
 
   readyStatus: {opponent: null|string, match: null|number, sets: null|number};
+  spectateStatus:
+      {player1: null|string, player2: null|string, match: null|number};
   eliminated = false;
 
   constructor(
@@ -29,6 +31,7 @@ export class BracketStatusComponent implements OnDestroy {
       private readonly eventService: EventService,
   ) {
     this.resetReadyStatus();
+    this.resetSpectateStatus();
     this.generals.nameChanged$.subscribe(this.determineInEvent.bind(this));
   }
 
@@ -49,7 +52,11 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showJoinMatch(): boolean {
-    return this.inEvent && !!this.readyStatus.opponent;
+    return this.readyStatus.match !== null;
+  }
+
+  get showSpectateMatch(): boolean {
+    return this.spectateStatus.match !== null;
   }
 
   get showStatusBar(): boolean {
@@ -63,16 +70,19 @@ export class BracketStatusComponent implements OnDestroy {
 
     // status for after the bracket has been set, and thus the event has started
     if (this.event.bracket) {
-      if (this.readyStatus.opponent) {
+      if (this.readyStatus.match) {
         const {opponent, sets} = this.readyStatus;
         return `You are up against ${opponent}! As a reminder it's best ${
             sets} of ${sets * 2 - 1}`;
+      }
+      if (this.spectateStatus.match) {
+        const {player1, player2} = this.spectateStatus;
+        return `You will play the winner between ${player1} and ${player2}!`;
       }
       if (this.eliminated) {
         return `You have been eliminated, better luck next time. Stick around and spectate other matches!`;
       }
 
-      // TODO:
       return 'Waiting for next match, feel free to spectate other matches while you wait!';
     }
 
@@ -106,31 +116,51 @@ export class BracketStatusComponent implements OnDestroy {
         `match_${this.readyStatus.match}`, this.event.server, true, false);
   }
 
+  spectateMatch() {
+    this.generals.joinLobby(
+        `match_${this.spectateStatus.match}`, this.event.server, true, true);
+  }
+
   findNextMatch() {
     let foundReady = false;
+    let foundSpectate = false;
     let foundEliminated = false;
-    const {winners = [], losers = []} = this.event?.bracket || {};
-    // iterate through all matches looking for the next one with your name
-    for (const round of winners.concat(losers)) {
-      for (const match of round.matches) {
-        const players = match.teams.map(t => t.name);
-        if (players.includes(this.generals.name)) {
-          if (match.status === MatchStatus.READY) {
-            this.setMatchReadyStatus(players, match, round.winningSets);
-            foundReady = true;
-          } else if (match.status === MatchStatus.COMPLETE) {
-            this.eliminated = foundEliminated ||
-                match.teams.some(
-                    team => team.name === this.generals.name &&
-                        team.status === MatchTeamStatus.ELIMINATED);
-            if (this.eliminated) foundEliminated = true;
+
+    if (this.inEvent) {
+      const {winners = [], losers = []} = this.event?.bracket || {};
+      const combined = winners.concat(losers);
+
+      // iterate through all matches looking for the next one with your name
+      for (let r = 0; r < combined.length; r++) {
+        const round = combined[r];
+        for (let m = 0; m < round.matches.length; m++) {
+          const match = round.matches[m];
+          const players = match.teams.map(t => t.name);
+          const t = players.indexOf(this.generals.name);
+
+          if (t >= 0) {
+            if (match.status === MatchStatus.READY) {
+              this.setMatchReadyStatus(players, match, round.winningSets);
+              foundReady = true;
+            } else if (match.status === MatchStatus.COMPLETE) {
+              this.eliminated = foundEliminated ||
+                  match.teams[t].status === MatchTeamStatus.ELIMINATED;
+              if (this.eliminated) {
+                foundEliminated = true;
+              }
+            } else {
+              if (this.setSpectateStatus(r, m, t, winners, losers)) {
+                foundSpectate = true;
+              }
+            }
           }
         }
       }
     }
 
-    // didn't find a match that's ready for us
+    // reset statuses when we don't find matches to talk about
     if (!foundReady) this.resetReadyStatus();
+    if (!foundSpectate) this.resetSpectateStatus();
   }
 
   setMatchReadyStatus(players: string[], match: IBracketMatch, sets: number) {
@@ -141,9 +171,39 @@ export class BracketStatusComponent implements OnDestroy {
         match.number}`);
   }
 
-  resetReadyStatus() {
-    this.readyStatus = {match: null, opponent: null, sets: null};
+  setSpectateStatus(
+      round: number,
+      match: number,
+      team: number,
+      winners: IBracketRound[],
+      losers: IBracketRound[],
+  ) {
+    // because we were iterating through all rounds combined, indexes beyond the
+    // winners rounds are losers rounds
+    if (round < winners.length) {
+      // winners bracket is easy, just look back one round
+      const offset = team === 0 ? 1 : 0;
+      const waitingOn = winners[round - 1].matches[match * 2 + offset];
+      this.spectateStatus.player1 = waitingOn.teams[0].name;
+      this.spectateStatus.player2 = waitingOn.teams[1].name;
+      this.spectateStatus.match = waitingOn.number;
+      return true;
+    }
+
+    // TODO: handle finding the match you're waiting on while sitting in the
+    // loser's bracket
+
+    return false;
   }
+
+  resetReadyStatus() {
+    this.readyStatus = {opponent: null, match: null, sets: null};
+  }
+
+  resetSpectateStatus() {
+    this.spectateStatus = {player1: null, player2: null, match: null};
+  }
+
 
   private unsubscribe() {
     if (this.redirect$) {

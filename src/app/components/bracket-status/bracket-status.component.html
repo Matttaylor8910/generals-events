@@ -17,6 +17,10 @@
     Join Match
   </ion-button>
 
+  <ion-button class="generals-button" (click)="spectateMatch()" *ngIf="showSpectateMatch">
+    Spectate Match
+  </ion-button>
+
   <ion-icon class="checkin-checkmark" name="checkmark-circle" *ngIf="checkedIn && checkInOpen"></ion-icon>
 
   <div class="starting-in" *ngIf="showTimer">
