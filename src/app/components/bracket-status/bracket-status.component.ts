@@ -2,7 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
+import {EventStatus, IBracketMatch, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
 
 @Component({
   selector: 'app-bracket-status',
@@ -21,10 +21,14 @@ export class BracketStatusComponent implements OnDestroy {
   inEvent = false;
   checkedIn = false;
 
+  readyStatus: {opponent: null|string, match: null|number, sets: null|number};
+  eliminated = false;
+
   constructor(
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
   ) {
+    this.resetReadyStatus();
     this.generals.nameChanged$.subscribe(this.determineInEvent.bind(this));
   }
 
@@ -45,8 +49,11 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showJoinMatch(): boolean {
-    // TODO: show join match button when you are up
-    return this.inEvent && false;
+    return this.inEvent && !!this.readyStatus.opponent;
+  }
+
+  get showStatusBar(): boolean {
+    return !this.event?.bracket || this.inEvent;
   }
 
   get message(): string {
@@ -56,13 +63,17 @@ export class BracketStatusComponent implements OnDestroy {
 
     // status for after the bracket has been set, and thus the event has started
     if (this.event.bracket) {
-      // TODO: states for:
-      // 1) You are up against ______, JOIN MATCH
-      // 2) You are waiting for other players to finish for your next match.
-      // 3) You have been eliminated. Feel free to spectate the rest of the
-      // matches.
+      if (this.readyStatus.opponent) {
+        const {opponent, sets} = this.readyStatus;
+        return `You are up against ${opponent}! As a reminder it's best ${
+            sets} of ${sets * 2 - 1}`;
+      }
+      if (this.eliminated) {
+        return `You have been eliminated, better luck next time. Stick around and spectate other matches!`;
+      }
 
-      return 'The event has started!';
+      // TODO:
+      return 'Waiting for next match, feel free to spectate other matches while you wait!';
     }
 
     // statuses before the event starts
@@ -83,6 +94,7 @@ export class BracketStatusComponent implements OnDestroy {
     this.inEvent = this.players && !!me;
     this.checkedIn =
         this.inEvent && this.event.checkedInPlayers?.includes(me.name);
+    this.findNextMatch();
   }
 
   checkIn() {
@@ -90,7 +102,47 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   joinMatch() {
-    console.log('TODO: open up the match this player can join in a new tab');
+    this.generals.joinLobby(
+        `match_${this.readyStatus.match}`, this.event.server, true, false);
+  }
+
+  findNextMatch() {
+    let foundReady = false;
+    let foundEliminated = false;
+    const {winners = [], losers = []} = this.event?.bracket || {};
+    // iterate through all matches looking for the next one with your name
+    for (const round of winners.concat(losers)) {
+      for (const match of round.matches) {
+        const players = match.teams.map(t => t.name);
+        if (players.includes(this.generals.name)) {
+          if (match.status === MatchStatus.READY) {
+            this.setMatchReadyStatus(players, match, round.winningSets);
+            foundReady = true;
+          } else if (match.status === MatchStatus.COMPLETE) {
+            this.eliminated = foundEliminated ||
+                match.teams.some(
+                    team => team.name === this.generals.name &&
+                        team.status === MatchTeamStatus.ELIMINATED);
+            if (this.eliminated) foundEliminated = true;
+          }
+        }
+      }
+    }
+
+    // didn't find a match that's ready for us
+    if (!foundReady) this.resetReadyStatus();
+  }
+
+  setMatchReadyStatus(players: string[], match: IBracketMatch, sets: number) {
+    this.readyStatus.match = match.number;
+    this.readyStatus.opponent = players.find(p => p !== this.generals.name);
+    this.readyStatus.sets = sets;
+    console.log(`Ready to play against ${this.readyStatus.opponent} in match ${
+        match.number}`);
+  }
+
+  resetReadyStatus() {
+    this.readyStatus = {match: null, opponent: null, sets: null};
   }
 
   private unsubscribe() {

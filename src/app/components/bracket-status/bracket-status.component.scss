@@ -4,9 +4,17 @@
   background: #333;
   padding: 0 12px 0 18px;
   border: 4px solid #333;
+  font-size: 18px;
 
   &.dq {
     border-color: red;
+  }
+
+  &.opponent {
+    background-color: teal;
+    border-color: teal;
+    font-weight: bold;
+    font-size: 20px;
   }
 
   .message {

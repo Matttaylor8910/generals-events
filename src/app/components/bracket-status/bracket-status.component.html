@@ -1,4 +1,4 @@
-<div class="event-queue space-between" [class.dq]="disqualified">
+<div class="event-queue space-between" [class.dq]="disqualified" [class.opponent]="readyStatus?.opponent" *ngIf="showStatusBar">
   <div class="message">
     {{ message }}
   </div>
