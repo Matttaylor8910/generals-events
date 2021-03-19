@@ -22,9 +22,17 @@ export class BracketStatusComponent implements OnDestroy {
   inEvent = false;
   checkedIn = false;
 
-  readyStatus: {opponent: null|string, match: null|number, sets: null|number};
-  spectateStatus:
-      {player1: null|string, player2: null|string, match: null|number};
+  readyStatus: {
+    opponent: null|string,
+    match: null|number,
+    sets: null|number,
+  };
+  spectateStatus: {
+    player1: null|string,
+    player2: null|string,
+    match: null|number,
+    winner: boolean,
+  };
   eliminated = false;
 
   constructor(
@@ -77,12 +85,14 @@ export class BracketStatusComponent implements OnDestroy {
             sets} of ${sets * 2 - 1}`;
       }
       if (this.spectateStatus.match) {
-        const {player1, player2} = this.spectateStatus;
+        const {player1, player2, winner} = this.spectateStatus;
+        const outcome = winner ? 'winner' : 'loser';
         if ([player1, player2].includes(undefined)) {
-          return `You will play the winner of match ${
+          return `You will play the ${outcome} of match ${
               this.spectateStatus.match}, but it may be a while.`
         }
-        return `You will play the winner between ${player1} and ${player2}!`;
+        return `You will play the ${outcome} between ${player1} and ${
+            player2}!`;
       }
       if (this.eliminated) {
         return `You have been eliminated, better luck next time. Stick around and spectate other matches!`;
@@ -181,6 +191,7 @@ export class BracketStatusComponent implements OnDestroy {
       losers: IBracketRound[],
   ) {
     let waitingOn: IBracketMatch;
+    let winner = true;
 
     // because we were iterating through all rounds combined, indexes beyond the
     // winners rounds are losers rounds
@@ -209,6 +220,7 @@ export class BracketStatusComponent implements OnDestroy {
       if (placeholderMatch) {
         waitingOn = flatten(winners.map(round => round.matches))
                         .find(match => match.number === placeholderMatch);
+        winner = false;
       }
 
       // otherwise look for coming from the round before
@@ -225,14 +237,24 @@ export class BracketStatusComponent implements OnDestroy {
     this.spectateStatus.player1 = waitingOn.teams[0].name;
     this.spectateStatus.player2 = waitingOn.teams[1].name;
     this.spectateStatus.match = waitingOn.number;
+    this.spectateStatus.winner = winner;
   }
 
   resetReadyStatus() {
-    this.readyStatus = {opponent: null, match: null, sets: null};
+    this.readyStatus = {
+      opponent: null,
+      match: null,
+      sets: null,
+    };
   }
 
   resetSpectateStatus() {
-    this.spectateStatus = {player1: null, player2: null, match: null};
+    this.spectateStatus = {
+      player1: null,
+      player2: null,
+      match: null,
+      winner: false,
+    };
   }
 
 
