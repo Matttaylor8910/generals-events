@@ -172,6 +172,7 @@ async function saveReplayToMatch(
   // determine which team won and increment the
   const winningIndex = players.indexOf(winner.name);
   const teamToIncrement = winningIndex === 0 ? 'team1Score' : 'team2Score';
+  console.log(`incrementing team ${teamToIncrement} for match ${number}`);
   batch.update(eventRef, {
     [`bracket.results.${number}.${teamToIncrement}`]:
         admin.firestore.FieldValue.increment(1)
