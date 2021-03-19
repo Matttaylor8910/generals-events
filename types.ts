@@ -104,17 +104,20 @@ export interface ILeaderboardPlayerStats {
   killDeathRatio: number|null;  // totalKills / (totalGames - totalWins)
 }
 
+export interface IReplayData {
+  started: number;        // unix timestamp of start of the game
+  finished?: number;      // unix timestamp of the end of the game
+  replay?: IReplayStats;  // replay scores, summary, stats, etc
+  replayId?: string;      // replay id from generals api response
+}
+
 // a game that was played during an event
 // located at /events/:id/games
-export interface IGame {
-  started: number;        // unix timestamp of start of the game
+export interface IGame extends IReplayData {
   players: string[];      // a list of the players in a game, ordered by points
   status: GameStatus;     // the current status of the game
   timesChecked?: number;  // just some metadata for the last time a game was
                           // checked to see if there was a replay
-  finished?: number;      // unix timestamp of the end of the game
-  replayId?: string;      // replay id from generals api response
-  replay?: IReplayStats;  // replay scores, summary, stats, etc
   id?: string;            // client field
 }
 
@@ -187,6 +190,13 @@ export interface IBracketMatch {
   noRightBorder: boolean;  // helper boolean for a css class
 }
 
+export interface IBracketMatchDocument extends IBracketMatch {
+  players: string[];
+  timesChecked: number;
+  started: number;
+  replays: IReplayData[];
+}
+
 export enum MatchTeamStatus {
   UNDECIDED = 'UNDECIDED',
   WINNER = 'WINNER',
@@ -203,6 +213,7 @@ export interface IMatchTeam {
 }
 
 export interface IMatchResults {
+  // the key is the match number
   [key: string]: {
     team1Score: number,
     team2Score: number,

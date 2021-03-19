@@ -10,7 +10,7 @@ export async function handleDoubleElimEventUpdate(snapshot: DocumentSnapshot):
   const event = snapshot.data() as IDoubleElimEvent;
 
   if (event?.bracket && !event.endTime) {
-    const eventOver = crawlTournament(event.bracket);
+    const eventOver = await crawlTournament(snapshot, event.bracket);
 
     const updates: {[key: string]: any} = {
       'bracket.winners': event.bracket.winners,
@@ -35,9 +35,12 @@ export async function handleDoubleElimEventUpdate(snapshot: DocumentSnapshot):
 /**
  * Crawl both sides of the bracket for updates and post back to firebase
  */
-export function crawlTournament(bracket: IDoubleEliminationBracket) {
-  const eventOver = crawlBracket(bracket, 'winners');
-  crawlBracket(bracket, 'losers');
+async function crawlTournament(
+    snapshot: DocumentSnapshot,
+    bracket: IDoubleEliminationBracket,
+) {
+  const eventOver = await crawlBracket(snapshot, bracket, 'winners');
+  await crawlBracket(snapshot, bracket, 'losers');
 
   return eventOver;
 }
@@ -46,34 +49,44 @@ export function crawlTournament(bracket: IDoubleEliminationBracket) {
  * Crawl through every round in the bracket to see if any matches
  * need to be updated or players need to advance
  */
-function crawlBracket(
+async function crawlBracket(
+    snapshot: DocumentSnapshot,
     bracket: IDoubleEliminationBracket,
     bracketName: BracketName,
 ) {
   let eventOver = false;
+  const rounds = bracket[bracketName];
 
-  bracket[bracketName].forEach((round, roundIdx) => {
+  for (let roundIdx = 0; roundIdx < rounds.length; roundIdx++) {
+    const round = rounds[roundIdx];
     if (!round.complete) {
-      round.matches.forEach((match, matchIdx) => {
+      for (let matchIdx = 0; matchIdx < round.matches.length; matchIdx++) {
+        const match = round.matches[matchIdx];
         switch (match.status) {
           case MatchStatus.COMPLETE:
             break;
           case MatchStatus.READY:
-            eventOver = checkupOnMatch(
-                bracket, match, roundIdx, matchIdx, bracketName,
+            eventOver = await checkupOnMatch(
+                snapshot, bracket, match, roundIdx, matchIdx, bracketName,
                 round.winningSets);
             break;
           default:
-            determineReadyMatch(
-                bracket, match, roundIdx, matchIdx, bracketName);
+            await determineReadyMatch(
+                snapshot,
+                bracket,
+                match,
+                roundIdx,
+                matchIdx,
+                bracketName,
+            );
         }
-      });
+      }
 
       // determine if the whole round is complete
       round.complete =
           round.matches.every(match => match.status === MatchStatus.COMPLETE);
     }
-  });
+  }
 
   return eventOver;
 }
@@ -81,7 +94,8 @@ function crawlBracket(
 /**
  * Determine if a match is ready to start or if byes/players need to progress
  */
-function determineReadyMatch(
+async function determineReadyMatch(
+    snapshot: DocumentSnapshot,
     bracket: IDoubleEliminationBracket,
     match: IBracketMatch,
     roundIdx: number,
@@ -98,12 +112,12 @@ function determineReadyMatch(
       advanceTeam.status = MatchTeamStatus.WINNER;
     }
 
-    match.status = MatchStatus.COMPLETE;
+    await setMatchComplete(snapshot, match);
   }
 
   // if there are two teams ready to play, start em up
   else if (hasTwoTeams(match)) {
-    match.status = MatchStatus.READY;
+    await setMatchReady(snapshot, match);
   }
 
   else if (byebye(match)) {
@@ -136,6 +150,7 @@ function hasTwoTeams(match: IBracketMatch):
  * Return true if the event is over
  */
 function checkupOnMatch(
+    snapshot: DocumentSnapshot,
     bracket: IDoubleEliminationBracket,
     match: IBracketMatch,
     roundIdx: number,
@@ -152,23 +167,24 @@ function checkupOnMatch(
   // if team1 has won, end the match and advance
   if (team1Score >= winningSets) {
     return advancePlayers(
-        bracket, match, match.teams[0], match.teams[1], roundIdx, matchIdx,
-        bracketName);
+        snapshot, bracket, match, match.teams[0], match.teams[1], roundIdx,
+        matchIdx, bracketName);
   } else if (team2Score >= winningSets) {
     return advancePlayers(
-        bracket, match, match.teams[1], match.teams[0], roundIdx, matchIdx,
-        bracketName);
+        snapshot, bracket, match, match.teams[1], match.teams[0], roundIdx,
+        matchIdx, bracketName);
   }
 
   // event is still going
-  return false;
+  return Promise.resolve(false);
 }
 
 /**
  * Advance players after a match is completed
  * Return true if the event is over
  */
-function advancePlayers(
+async function advancePlayers(
+    snapshot: DocumentSnapshot,
     bracket: IDoubleEliminationBracket,
     match: IBracketMatch,
     winningTeam: IMatchTeam,
@@ -177,7 +193,7 @@ function advancePlayers(
     matchIdx: number,
     bracketName: BracketName,
 ) {
-  match.status = MatchStatus.COMPLETE;
+  await setMatchComplete(snapshot, match);
   winningTeam.status = MatchTeamStatus.WINNER;
   losingTeam.status = MatchTeamStatus.LOSER;
 
@@ -198,7 +214,7 @@ function advancePlayers(
         team.status = MatchTeamStatus.UNDECIDED;
       });
       finalFinal.number = match.number + 1;
-      finalFinal.status = MatchStatus.READY;
+      await setMatchReady(snapshot, finalFinal);
 
       // get it started
       bracket.winners[roundIdx].matches.push(finalFinal);
@@ -301,25 +317,57 @@ function getLoserMatchToGoTo(
     bracket: IDoubleEliminationBracket,
     roundIdx: number,
     matchIdx: number,
-    ): IBracketMatch {
-  let loserRound;
+    ):
+    IBracketMatch {
+      let loserRound;
 
-  // round 0 just joins match losers from winner round 0 into matches
-  if (roundIdx === 0) {
-    loserRound = bracket.losers[0];
-    return loserRound.matches[Math.floor(matchIdx / 2)];
+      // round 0 just joins match losers from winner round 0 into matches
+      if (roundIdx === 0) {
+        loserRound = bracket.losers[0];
+        return loserRound.matches[Math.floor(matchIdx / 2)];
+      }
+
+      // later losers from the winner's bracket need to figure out where to go
+      else {
+        const loserRoundIdx = (roundIdx * 2) - 1;
+        loserRound = bracket.losers[loserRoundIdx];
+
+        // determine if we are going to be reversing the losers in this round
+        const loserMatchIdx = (loserRoundIdx + 1) % 4 > 0 ?
+            loserRound.matches.length - (matchIdx + 1) :
+            matchIdx;
+
+        return loserRound.matches[loserMatchIdx];
+      }
+    }
+
+async function setMatchReady(
+    snapshot: DocumentSnapshot,
+    match: IBracketMatch,
+) {
+  match.status = MatchStatus.READY;
+  try {
+    await snapshot.ref.collection('matches').doc(String(match.number)).create({
+      ...match,
+      players: match.teams.map(team => team.name),
+      started: Date.now(),
+    });
+  } catch (e) {
+    // do nothing, it's already created
   }
+}
 
-  // later losers from the winner's bracket need to figure out where to go
-  else {
-    const loserRoundIdx = (roundIdx * 2) - 1;
-    loserRound = bracket.losers[loserRoundIdx];
-
-    // determine if we are going to be reversing the losers in this round
-    const loserMatchIdx = (loserRoundIdx + 1) % 4 > 0 ?
-        loserRound.matches.length - (matchIdx + 1) :
-        matchIdx;
-
-    return loserRound.matches[loserMatchIdx];
+async function setMatchComplete(
+    snapshot: DocumentSnapshot,
+    match: IBracketMatch,
+) {
+  match.status = MatchStatus.COMPLETE;
+  try {
+    await snapshot.ref.collection('matches')
+        .doc(String(match.number))
+        .update({...match});
+  } catch (e) {
+    // when we cannot set matches as complete, it's because they were never
+    // started in the first place, meaning it was probably a bye
   }
 }
