@@ -1,5 +1,4 @@
 import {Component, Input} from '@angular/core';
-import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
 
@@ -19,7 +18,6 @@ export class BracketComponent {
 
   constructor(
       private readonly generals: GeneralsService,
-      private readonly eventService: EventService,
   ) {}
 
   ngOnChanges() {
@@ -50,35 +48,6 @@ export class BracketComponent {
           `match_${match.number}`, this.event.server, true, !inMatch);
     }
   }
-
-  // TODO: remove this
-  randomAdvance(match: IBracketMatch, $event: Event) {
-    $event.stopPropagation();
-    this.update(match.number);
-  }
-  // TODO: remove this
-  randomUpdate(i: number) {
-    this.update(i);
-
-    if (i < 200) {
-      setTimeout(() => {
-        this.randomUpdate(i + 1);
-      }, 700);
-    }
-  }
-  // TODO: remove this
-  update(i: number) {
-    const updates = {};
-
-    const random = Math.floor(Math.random() * 2);
-    const winner = random === 0 ? 'team1Score' : 'team2Score';
-    const loser = random === 0 ? 'team2Score' : 'team1Score';
-    updates[`bracket.results.${i}.${winner}`] = 2;
-    updates[`bracket.results.${i}.${loser}`] = Math.floor(Math.random() * 2);
-
-    this.eventService.updateEvent(this.event.id, updates);
-  }
-
 
   private updateBracket(rounds: IBracketRound[]) {
     if (this.rounds) {
