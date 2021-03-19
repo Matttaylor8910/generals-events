@@ -123,41 +123,48 @@ export class EventService {
             return action.payload.doc.data();
           });
 
-          // sort players by points, then win rate, then total games, then
+          // sort players by rank, points, then win rate, then total games, then
           // quickest win, then stars, then fallback to name
           players.sort((a, b) => {
             if (this.equal(a.dq, b.dq)) {
-              if (this.equal(a.points, b.points)) {
-                if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
-                  if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
-                    if (this.equal(
-                            a.stats?.quickestWin, b.stats?.quickestWin)) {
+              if (this.equal(a.rank, b.rank)) {
+                if (this.equal(a.points, b.points)) {
+                  if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
+                    if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
                       if (this.equal(
-                              a.stats?.currentStars, b.stats?.currentStars)) {
-                        // fallback to name
-                        return a.name.localeCompare(b.name);
+                              a.stats?.quickestWin, b.stats?.quickestWin)) {
+                        if (this.equal(
+                                a.stats?.currentStars, b.stats?.currentStars)) {
+                          // fallback to name
+                          return a.name.localeCompare(b.name);
+                        } else {
+                          // current stars descending (b - a)
+                          return (b.stats?.currentStars || 0) -
+                              (a.stats?.currentStars || 0);
+                        }
                       } else {
-                        // current stars descending (b - a)
-                        return (b.stats?.currentStars || 0) -
-                            (a.stats?.currentStars || 0);
+                        // quickest win ascending (a - b)
+                        return (a.stats?.quickestWin || 999) -
+                            (b.stats?.quickestWin || 999);
                       }
                     } else {
-                      // quickest win ascending (a - b)
-                      return (a.stats?.quickestWin || 999) -
-                          (b.stats?.quickestWin || 999);
+                      // total games descending (b - a)
+                      return (b.stats?.totalGames || 0) -
+                          (a.stats?.totalGames || 0);
                     }
                   } else {
-                    // total games descending (b - a)
-                    return (b.stats?.totalGames || 0) -
-                        (a.stats?.totalGames || 0);
+                    // win rate descending (b - a)
+                    return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
                   }
                 } else {
-                  // win rate descending (b - a)
-                  return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
+                  // points descending (b - a)
+                  return b.points - a.points;
                 }
               } else {
-                // points descending (b - a)
-                return b.points - a.points;
+                // rank ascending (a - b)
+                const ar = a.rank || Number.MAX_SAFE_INTEGER;
+                const br = b.rank || Number.MAX_SAFE_INTEGER;
+                return ar - br;
               }
             } else {
               // DQ status ascending, non-DQ'd will be first

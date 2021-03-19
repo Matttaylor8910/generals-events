@@ -47,8 +47,7 @@
             [server]="event.server"
             [players]="players"
             [status]="status"
-            (playerClicked)="selectPlayer($event)"
-            *ngIf="isArena">
+            (playerClicked)="selectPlayer($event)">
           </app-event-trophies>
           <app-arena-leaderboard
             [event]="event"

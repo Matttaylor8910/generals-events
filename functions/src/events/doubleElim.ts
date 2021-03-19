@@ -222,6 +222,8 @@ async function advancePlayers(
       // strip the old finals match of its gold border
       match.final = false;
     } else {
+      await setRank(snapshot, winningTeam.name!, 1);
+      await setRank(snapshot, losingTeam.name!, 2);
       return true;
     }
   }
@@ -229,7 +231,8 @@ async function advancePlayers(
   // if not the finals, just advance players
   else {
     advanceWinningTeam(bracket, winningTeam, roundIdx, matchIdx, bracketName);
-    advanceLosingTeam(bracket, losingTeam, roundIdx, matchIdx, bracketName);
+    await advanceLosingTeam(
+        snapshot, bracket, losingTeam, roundIdx, matchIdx, bracketName);
   }
 
   // event is still going
@@ -278,7 +281,8 @@ function advanceWinningTeam(
  * Pass the losing team to the right spot in the loser's bracket, or eliminate
  * them
  */
-function advanceLosingTeam(
+async function advanceLosingTeam(
+    snapshot: DocumentSnapshot,
     bracket: IDoubleEliminationBracket,
     team: IMatchTeam,
     roundIdx: number,
@@ -288,6 +292,11 @@ function advanceLosingTeam(
   // if the team lost in the loser bracket, nothing to do but eliminate
   if (bracketName === 'losers') {
     team.status = MatchTeamStatus.ELIMINATED;
+
+    // this was the loser of the loser's bracket semifinal, they placed 3rd
+    if (bracket[bracketName].length === roundIdx + 1) {
+      await setRank(snapshot, team.name!, 3);
+    }
   }
 
   // otherwise bring those losers from the winner's bracket to the loser's
@@ -370,4 +379,8 @@ async function setMatchComplete(
     // when we cannot set matches as complete, it's because they were never
     // started in the first place, meaning it was probably a bye
   }
+}
+
+function setRank(snapshot: DocumentSnapshot, name: string, rank: number) {
+  return snapshot.ref.collection('players').doc(name).update({rank});
 }
