@@ -167,8 +167,6 @@ export class BracketStatusComponent implements OnDestroy {
     this.readyStatus.match = match.number;
     this.readyStatus.opponent = players.find(p => p !== this.generals.name);
     this.readyStatus.sets = sets;
-    console.log(`Ready to play against ${this.readyStatus.opponent} in match ${
-        match.number}`);
   }
 
   setSpectateStatus(
