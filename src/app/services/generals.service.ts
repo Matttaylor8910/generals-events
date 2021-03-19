@@ -25,8 +25,18 @@ export class GeneralsService {
     window.open(`${SITE_URLS[server]}/replays/${replayId}`, '_blank');
   }
 
-  joinLobby(name: string, server = GeneralsServer.NA, newTab = false) {
-    const url = `${SITE_URLS[server]}/games/${name}`;
+  joinLobby(
+      name: string,
+      server = GeneralsServer.NA,
+      newTab = false,
+      spectate = true,
+  ) {
+    let url = `${SITE_URLS[server]}/games/${name}?spectate_defeat=false`;
+
+    if (spectate) {
+      url += '&spectate=true';
+    }
+
     if (newTab) {
       window.open(url, '_blank');
     } else {

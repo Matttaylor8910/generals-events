@@ -43,7 +43,11 @@ export class BracketComponent {
 
   handleClickMatch(match: IBracketMatch) {
     if (match.status === MatchStatus.READY) {
-      this.generals.joinLobby(`match_${match.number}`, this.event.server, true);
+      const players = match.teams.map(team => team.name);
+      const inMatch = players.includes(this.generals.name);
+
+      this.generals.joinLobby(
+          `match_${match.number}`, this.event.server, true, !inMatch);
     }
   }
 
