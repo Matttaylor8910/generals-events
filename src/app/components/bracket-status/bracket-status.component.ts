@@ -163,7 +163,9 @@ export class BracketStatusComponent implements OnDestroy {
               if (this.eliminated) {
                 foundEliminated = true;
               }
-            } else {
+            } else if (r > 0) {
+              // can't set the spectate status for games from the first round in
+              // the winner's bracket
               this.setSpectateStatus(r, m, t, winners, losers);
               foundSpectate = true;
             }
