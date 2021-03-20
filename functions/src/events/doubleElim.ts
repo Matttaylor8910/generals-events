@@ -356,10 +356,12 @@ async function setMatchReady(
 ) {
   match.status = MatchStatus.READY;
   try {
+    const now = Date.now();
     await snapshot.ref.collection('matches').doc(String(match.number)).create({
       ...match,
       players: match.teams.map(team => team.name),
-      started: Date.now(),
+      started: now,
+      updated: now,
     });
   } catch (e) {
     // do nothing, it's already created
@@ -372,9 +374,10 @@ async function setMatchComplete(
 ) {
   match.status = MatchStatus.COMPLETE;
   try {
-    await snapshot.ref.collection('matches')
-        .doc(String(match.number))
-        .update({...match});
+    await snapshot.ref.collection('matches').doc(String(match.number)).update({
+      ...match,
+      updated: Date.now(),
+    });
   } catch (e) {
     // when we cannot set matches as complete, it's because they were never
     // started in the first place, meaning it was probably a bye

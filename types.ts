@@ -194,6 +194,7 @@ export interface IBracketMatchDocument extends IBracketMatch {
   players: string[];
   timesChecked: number;
   started: number;
+  updated: number;
   replays: IReplayData[];
 }
 

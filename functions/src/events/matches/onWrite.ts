@@ -180,12 +180,13 @@ async function saveReplayToMatch(
 
   // save the replay to the match doc
   batch.update(matchSnapshot.ref, {
+    updated: Date.now(),
     replays: admin.firestore.FieldValue.arrayUnion({
       replayId: replay.id,
       started: replay.started,
       finished: replay.started + (turns * 1000),
       replay: {scores, summary, turns},
-    })
+    }),
   });
 
   console.log('committing...');

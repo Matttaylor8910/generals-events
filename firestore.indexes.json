@@ -31,6 +31,14 @@
         {"fieldPath": "visibility", "order": "ASCENDING"},
         {"fieldPath": "startTime", "order": "DESCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "updated", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []
