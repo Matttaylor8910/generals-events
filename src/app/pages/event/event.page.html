@@ -25,7 +25,7 @@
 </ion-header>
 
 <ion-content>
-  <div class="page-container" *ngIf="event; else loading">
+  <div class="page-container" [class.bracket]="showWide" *ngIf="event; else loading">
     <ng-container *ngIf="event.exists; else empty">
       <div class="left-panel">
         <div class="panel-container">
@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <div class="main-panel" [class.wide]="showWide">
+      <div class="main-panel">
         <ng-container *ngIf="players$ | async as players">
           <app-event-trophies
             [event]="event"
@@ -70,12 +70,13 @@
         </ng-container>
       </div>
 
-      <div class="right-panel">
+      <div class="right-panel" [class.show]="showRightPanel">
         <div class="panel-container">
           <app-event-player-summary
             [player]="selectedPlayer"
             [event]="event"
             [status]="status"
+            [showRank]="isArena"
             (close)="selectPlayer()"
             *ngIf="selectedPlayer">
           </app-event-player-summary>

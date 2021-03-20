@@ -117,4 +117,9 @@ export class BracketEventComponent {
       startTime: Date.now(),
     });
   }
+
+  handlePlayerClicked(name: string) {
+    const player = this.players.find(p => p.name === name);
+    this.playerClicked.emit(player);
+  }
 }

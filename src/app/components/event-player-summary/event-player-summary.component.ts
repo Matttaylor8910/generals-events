@@ -13,6 +13,7 @@ export class EventPlayerSummaryComponent {
   @Input() player: ILeaderboardPlayer;
   @Input() event: IArenaEvent;
   @Input() status: EventStatus;
+  @Input() showRank: boolean;
 
   @Output() close = new EventEmitter<void>();
 

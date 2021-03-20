@@ -1,5 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {IDoubleElimEvent, IDoubleEliminationBracket} from 'types';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer} from 'types';
 
 const HIDE_COMPLETED = 'generals-hide-completed';
 @Component({
@@ -12,11 +12,12 @@ export class DoubleEliminationBracketComponent {
   @Input() bracket: IDoubleEliminationBracket;
   @Input() minRoundsToShow = 4;
 
+  @Output() playerClicked = new EventEmitter<string>();
+
   showToggle = false;
   hideCompletedRounds: boolean;
 
   constructor() {
-    const cached = localStorage.getItem(HIDE_COMPLETED);
     this.hideCompletedRounds = localStorage.getItem(HIDE_COMPLETED) !== 'false';
   }
 

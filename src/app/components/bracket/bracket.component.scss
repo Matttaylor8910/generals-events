@@ -107,6 +107,11 @@
             margin-right: 5px
           }
         }
+
+        &:hover {
+          color: teal;
+          cursor: pointer;
+        }
       }
 
       .placeholder {

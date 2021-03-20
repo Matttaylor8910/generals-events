@@ -33,7 +33,8 @@
     </ng-container>
     <app-double-elimination-bracket
       [event]="event"
-      [bracket]="bracket">
+      [bracket]="bracket"
+      (playerClicked)="handlePlayerClicked($event)">
     </app-double-elimination-bracket>
   </ng-container>
 

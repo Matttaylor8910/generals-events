@@ -24,11 +24,6 @@
   .main-panel {
     width: 50%;
     max-width: 1000px;
-
-    &.wide {
-      max-width: 100%;
-      flex-grow: 1;
-    }
   }
 
   .left-panel {
@@ -53,6 +48,25 @@
 
   .hidden {
     display: none;
+  }
+
+  &.bracket {
+    .left-panel {
+      min-width: 350px;
+    }
+    .main-panel {
+      max-width: 100%;
+      width: 100%;
+      flex-grow: 1;
+    }
+    .right-panel {
+      flex: 0;
+
+      &.show {
+        min-width: 350px;
+        flex: 1;
+      }
+    }
   }
 }
 

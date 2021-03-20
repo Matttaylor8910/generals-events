@@ -1,4 +1,5 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
 
@@ -13,11 +14,14 @@ export class BracketComponent {
   @Input() hideCompletedRounds: boolean;
   @Input() minRoundsToShow: number;
 
+  @Output() playerClicked = new EventEmitter<string>();
+
   rounds: IBracketRound[];
   start = 0;
 
   constructor(
       private readonly generals: GeneralsService,
+      private readonly eventService: EventService,
   ) {}
 
   ngOnChanges() {
@@ -46,7 +50,18 @@ export class BracketComponent {
 
       this.generals.joinLobby(
           `match_${match.number}`, this.event.server, true, !inMatch);
+
+      // TODO delete
+      // this.eventService.updateEvent(
+      //     this.event.id,
+      //     {[`bracket.results.${match.number}.team1Score`]: 2},
+      // );
     }
+  }
+
+  clickPlayer(name: string, $event: Event) {
+    $event.stopPropagation();
+    this.playerClicked.emit(name);
   }
 
   private updateBracket(rounds: IBracketRound[]) {

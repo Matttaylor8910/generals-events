@@ -95,6 +95,10 @@ export class EventPage implements OnDestroy {
     return false;
   }
 
+  get showRightPanel(): boolean {
+    return !!this.selectedPlayer || this.event?.endTime > 0;
+  }
+
   async checkJoinQueue(players: ILeaderboardPlayer[]) {
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
@@ -135,7 +139,8 @@ export class EventPage implements OnDestroy {
       } else {
         // before the event starts, if there is no selected player show the
         // player summary for the logged in player
-        if (this.status === EventStatus.UPCOMING && this.generals.name) {
+        const select = this.status === EventStatus.UPCOMING || this.isBracket;
+        if (select && this.generals.name) {
           this.selectedPlayer = this.findPlayer(this.generals.name);
         }
       }

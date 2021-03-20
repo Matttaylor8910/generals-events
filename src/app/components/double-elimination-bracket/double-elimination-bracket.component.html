@@ -4,7 +4,8 @@
       [event]="event"
       [bracket]="winners"
       [hideCompletedRounds]="hideCompletedRounds"
-      [minRoundsToShow]="minRoundsToShow">
+      [minRoundsToShow]="minRoundsToShow"
+      (playerClicked)="playerClicked.emit($event)">
     </app-bracket>
   </ng-container>
 
@@ -13,7 +14,8 @@
       [event]="event"
       [bracket]="losers"
       [hideCompletedRounds]="hideCompletedRounds"
-      [minRoundsToShow]="minRoundsToShow">
+      [minRoundsToShow]="minRoundsToShow"
+      (playerClicked)="playerClicked.emit($event)">
     </app-bracket>
   </ng-container>
 </div>
