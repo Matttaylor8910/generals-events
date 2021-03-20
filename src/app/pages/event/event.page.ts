@@ -104,7 +104,15 @@ export class EventPage implements OnDestroy {
     // generals name set, join the queue
     if (location.href.includes('join=true')) {
       const {name} = this.generals;
-      if (name && this.status !== EventStatus.FINISHED) {
+
+      // add the player to the event if registration is open
+      // for arena: any time, so long as the tournament isn't over
+      // for brackets: up until the bracket has been generated
+      const registrationOpen = this.isArena ?
+          this.status !== EventStatus.FINISHED :
+          !(this.event as IDoubleElimEvent)?.bracket;
+
+      if (name && registrationOpen) {
         // join the event if you haven't already
         if (!players.some(p => p.name === name)) {
           await this.eventService.addPlayer(this.eventId, name);
@@ -112,8 +120,7 @@ export class EventPage implements OnDestroy {
 
         // only add to queue if the event is ongoing
         // and this event type is arena
-        if (this.status === EventStatus.ONGOING &&
-            this.event.format === EventFormat.ARENA) {
+        if (this.status === EventStatus.ONGOING && this.isArena) {
           this.eventService.joinQueue(this.eventId, name);
         }
       }

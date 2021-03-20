@@ -115,6 +115,7 @@ export class BracketEventComponent {
     this.eventService.updateEvent(this.event.id, {
       bracket: this.bracket,
       startTime: Date.now(),
+      playerCount: this.event.checkedInPlayers.length,
     });
   }
 
