@@ -34,12 +34,6 @@ export class HomePage {
   async createEvent() {
     const modal = await this.modalController.create({
       component: CreateEventPage,
-      cssClass: 'my-custom-class',
-      componentProps: {
-        'firstName': 'Douglas',
-        'lastName': 'Adams',
-        'middleInitial': 'N',
-      },
     });
     return await modal.present();
   }

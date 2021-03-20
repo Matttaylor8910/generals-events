@@ -1,0 +1,19 @@
+ion-segment-button {
+  color: teal;
+  --color-checked: teal;
+}
+.update-match-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+
+  .teams .name {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  ion-button {
+    margin-top: 20px;
+  }
+}

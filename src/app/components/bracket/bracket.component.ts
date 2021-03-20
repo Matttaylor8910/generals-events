@@ -1,5 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {EventService} from 'src/app/services/event.service';
+import {ModalController} from '@ionic/angular';
+import {ADMINS} from 'constants';
+import {UpdateMatchPage} from 'src/app/pages/event/update-match/update-match.page';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
 
@@ -13,6 +15,7 @@ export class BracketComponent {
   @Input() bracket: IBracketRound[];
   @Input() hideCompletedRounds: boolean;
   @Input() minRoundsToShow: number;
+  @Input() bracketName: string;
 
   @Output() playerClicked = new EventEmitter<string>();
 
@@ -21,7 +24,7 @@ export class BracketComponent {
 
   constructor(
       private readonly generals: GeneralsService,
-      private readonly eventService: EventService,
+      private readonly modalController: ModalController,
   ) {}
 
   ngOnChanges() {
@@ -50,12 +53,26 @@ export class BracketComponent {
 
       this.generals.joinLobby(
           `match_${match.number}`, this.event.server, true, !inMatch);
+    }
+  }
 
-      // TODO delete
-      // this.eventService.updateEvent(
-      //     this.event.id,
-      //     {[`bracket.results.${match.number}.team1Score`]: 2},
-      // );
+  async handleClickMatchNumber(
+      match: IBracketMatch,
+      roundIdx: number,
+      matchIdx: number,
+  ) {
+    if (ADMINS.includes(this.generals.name)) {
+      const modal = await this.modalController.create({
+        component: UpdateMatchPage,
+        componentProps: {
+          match,
+          roundIdx,
+          matchIdx,
+          event: this.event,
+          bracketName: this.bracketName,
+        },
+      });
+      return await modal.present();
     }
   }
 

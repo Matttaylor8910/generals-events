@@ -10,5 +10,5 @@ import {IonicModule} from '@ionic/angular';
     IonicModule,
   ],
 })
-export class CreateEventPageModule {
+export class UpdateMatchPageModule {
 }

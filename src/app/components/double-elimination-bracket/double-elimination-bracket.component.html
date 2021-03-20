@@ -2,9 +2,10 @@
   <ng-container *ngIf="bracket?.winners as winners">
     <app-bracket
       [event]="event"
-      [bracket]="winners"
+      [bracket]="bracket.winners"
       [hideCompletedRounds]="hideCompletedRounds"
       [minRoundsToShow]="minRoundsToShow"
+      bracketName="winners"
       (playerClicked)="playerClicked.emit($event)">
     </app-bracket>
   </ng-container>
@@ -12,9 +13,10 @@
   <ng-container *ngIf="bracket?.losers as losers">
     <app-bracket
       [event]="event"
-      [bracket]="losers"
+      [bracket]="bracket.losers"
       [hideCompletedRounds]="hideCompletedRounds"
       [minRoundsToShow]="minRoundsToShow"
+      bracketName="losers"
       (playerClicked)="playerClicked.emit($event)">
     </app-bracket>
   </ng-container>

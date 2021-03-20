@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Update Match</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="update-match-container" *ngIf="newMatch as match">
+    <div class="teams">
+      <div class="team" *ngFor="let team of match.teams; index as i">
+        <h2 class="name">
+          {{ team.name || 'No team/player yet' }}
+        </h2>
+        <div class="score-buttons">
+          <ion-segment [(ngModel)]="team.score">
+            <ion-segment-button [value]="score" *ngFor="let score of scores">
+              <ion-label>{{ score }}</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+      </div>
+    </div>
+    <ion-button class="generals-button" (click)="save()" [disabled]="!canSave">Save</ion-button>
+  </div>
+</ion-content>

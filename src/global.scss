@@ -46,6 +46,9 @@ ion-header {
     }
   }
 }
+ion-modal ion-header ion-toolbar ion-title {
+  padding: 0;
+}
 
 ion-title,
 .generals-title {

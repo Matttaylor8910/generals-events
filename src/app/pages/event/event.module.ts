@@ -7,6 +7,7 @@ import {ComponentsModule} from 'src/app/components/components.module';
 
 import {EventPageRoutingModule} from './event-routing.module';
 import {EventPage} from './event.page';
+import {UpdateMatchPage} from './update-match/update-match.page';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import {EventPage} from './event.page';
   ],
   declarations: [
     EventPage,
+    UpdateMatchPage,
   ]
 })
 export class EventPageModule {

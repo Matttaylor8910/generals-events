@@ -1,11 +1,11 @@
 <div class="bracket-container" *ngIf="rounds">
-  <ul class="round round-{{r + 1}}" *ngFor="let round of rounds; let r = index" [ngClass]="{'length-1': round.matches.length === 1}" [class.hide]="shouldHide(r)">
+  <ul class="round round-{{r + 1}}" *ngFor="let round of rounds; index as r" [ngClass]="{'length-1': round.matches.length === 1}" [class.hide]="shouldHide(r)">
     <h3>
       <div class="round-name">{{ round.name }}</div>
       <div class="best-of">{{ getBestOf(round.winningSets) }}</div>
     </h3>
-    <li class="match-container" *ngFor="let match of round.matches" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)">
-      <span class="match-number">{{ match.number }}</span>
+    <li class="match-container" *ngFor="let match of round.matches; index as m" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)">
+      <span class="match-number" (click)="handleClickMatchNumber(match, r, m)">{{ match.number }}</span>
       <div class="match-item status-{{match.status}}" [class.final]="match.final" (click)="handleClickMatch(match)">
         <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
           <span class="team-name" (click)="clickPlayer(team.name, $event)" *ngIf="team.name">
