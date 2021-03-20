@@ -15,7 +15,8 @@ export class RulesComponent {
   constructor() {}
 
   get showRules(): boolean {
-    return this._showRules || this.status === EventStatus.UPCOMING;
+    return this._showRules || this.status === EventStatus.UPCOMING ||
+        this.isBracket;
   }
 
   get isFFA(): boolean {
