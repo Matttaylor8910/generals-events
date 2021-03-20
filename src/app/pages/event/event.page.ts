@@ -39,7 +39,7 @@ export class EventPage implements OnDestroy {
     this.players$ =
         this.eventService.getPlayers(this.eventId).pipe(tap(players => {
           this.players = players;
-          this.checkJoinQueue(players);
+          this.checkJoinQueue();
           this.determineSelectPlayer(true);
           this.determineDisqualified();
         }));
@@ -60,13 +60,15 @@ export class EventPage implements OnDestroy {
       if (endTime < now) {
         return EventStatus.FINISHED;
       } else {
-        if (startTime > now) {
+        const {bracket} = this.event as IDoubleElimEvent;
+
+        if (startTime > now || (this.isBracket && !bracket)) {
           return EventStatus.UPCOMING;
         } else {
           const THIRTY_SECONDS = 1000 * 30;
           if (endTime - Date.now() < THIRTY_SECONDS) {
             return EventStatus.ALMOST_DONE;
-          } else {
+          } else if (this.isBracket) {
             return EventStatus.ONGOING;
           }
         }
@@ -99,7 +101,11 @@ export class EventPage implements OnDestroy {
     return !!this.selectedPlayer || this.event?.endTime > 0;
   }
 
-  async checkJoinQueue(players: ILeaderboardPlayer[]) {
+  get inEvent(): boolean {
+    return this.players?.some(p => p.name === this.generals.name);
+  }
+
+  async checkJoinQueue() {
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
     if (location.href.includes('join=true')) {
@@ -114,7 +120,7 @@ export class EventPage implements OnDestroy {
 
       if (name && registrationOpen) {
         // join the event if you haven't already
-        if (!players.some(p => p.name === name)) {
+        if (!this.inEvent) {
           await this.eventService.addPlayer(this.eventId, name);
         }
 
@@ -143,12 +149,22 @@ export class EventPage implements OnDestroy {
             this.selectedPlayer = updated;
           }
         }
-      } else {
-        // before the event starts, if there is no selected player show the
-        // player summary for the logged in player
-        const select = this.status === EventStatus.UPCOMING || this.isBracket;
-        if (select && this.generals.name) {
-          this.selectedPlayer = this.findPlayer(this.generals.name);
+      }
+
+      // if no player is selected, be smart about automatically selecting one
+      else {
+        if (this.inEvent) {
+          // select your own player if the event is upcoming or finished
+          if (this.status === EventStatus.UPCOMING ||
+              this.status === EventStatus.FINISHED) {
+            this.selectedPlayer = this.findPlayer(this.generals.name);
+          }
+        } else {
+          // if you're not logged in, and the event is over, select the winner
+          // of the event
+          if (this.status === EventStatus.FINISHED && this.isBracket) {
+            this.selectedPlayer = this.findPlayer(this.event.winners[0]);
+          }
         }
       }
     }
