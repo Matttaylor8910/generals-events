@@ -90,13 +90,13 @@
           <div class="space-between">
             <div class="left-side">
               <div>
-                <ng-container *ngIf="isArena">
+                <ng-container *ngIf="game.opponents?.length !== 1">
                   <span class="points" [class.win]="game.rank === 1">+{{ game.points }}</span>
                   <span class="summary">
                     Finished <span [class.win]="game.rank === 1">#{{ game.rank }}</span> with {{ game.kills }} {{ game.kills === 1 ? 'kill' : 'kills' }}.
                   </span>
                 </ng-container>
-                <ng-container *ngIf="isBracket">
+                <ng-container *ngIf="game.opponents?.length === 1">
                   <span class="result" [class.win]="game.rank === 1">{{ game.rank === 1 ? 'W' : 'L' }}</span>
                   <span class="summary">
                     vs {{ game.opponents?.join('') }}

@@ -34,10 +34,6 @@ export class EventPlayerSummaryComponent {
     return this.event?.format === EventFormat.ARENA;
   }
 
-  get isBracket(): boolean {
-    return this.event?.format === EventFormat.DOUBLE_ELIM;
-  }
-
   /**
    * Only show KDR if it differs from average kills and only after this player
    * has died at least once
