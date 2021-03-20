@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {kill} from 'process';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event-player-summary',
@@ -28,6 +28,14 @@ export class EventPlayerSummaryComponent {
 
   get notFinished(): boolean {
     return this.status !== EventStatus.FINISHED;
+  }
+
+  get isArena(): boolean {
+    return this.event?.format === EventFormat.ARENA;
+  }
+
+  get isBracket(): boolean {
+    return this.event?.format === EventFormat.DOUBLE_ELIM;
   }
 
   /**

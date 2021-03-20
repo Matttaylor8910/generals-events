@@ -39,7 +39,7 @@ export class EventTrophiesComponent {
     return !!this.second && !!this.third;
   }
 
-  get showStats(): boolean {
+  get isArena(): boolean {
     return this.event?.format === EventFormat.ARENA;
   }
 }

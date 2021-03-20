@@ -98,4 +98,8 @@ export class BracketRegistrationComponent {
     this.inEvent =
         this.players && !!this.players.find(p => p.name === this.generals.name);
   }
+
+  trackByFn(player: ILeaderboardPlayer) {
+    return player.name;
+  }
 }

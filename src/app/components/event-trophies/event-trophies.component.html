@@ -3,21 +3,21 @@
     <app-event-trophy-player
       class="other-players"
       [player]="second"
-      [showStats]="showStats"
+      [isArena]="isArena"
       place="second"
       (playerClicked)="playerClicked.emit(second)"
       *ngIf="showOtherPlaces">
     </app-event-trophy-player>
     <app-event-trophy-player
       [player]="first"
-      [showStats]="showStats"
+      [isArena]="isArena"
       (playerClicked)="playerClicked.emit(first)"
       place="first">
     </app-event-trophy-player>
     <app-event-trophy-player
       class="other-players"
       [player]="third"
-      [showStats]="showStats"
+      [isArena]="isArena"
       place="third"
       (playerClicked)="playerClicked.emit(third)"
       *ngIf="showOtherPlaces">

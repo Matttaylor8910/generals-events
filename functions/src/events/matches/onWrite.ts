@@ -189,6 +189,32 @@ async function saveReplayToMatch(
     }),
   });
 
+  for (const player of scores) {
+    // determine if this player is in the event
+    const playerRef = eventRef.collection('players').doc(player.name);
+    const playerDoc = await playerRef.get();
+    if (!playerDoc.exists) continue;
+
+    const opponents = scores.filter(score => score.name !== player.name)
+                          .map(score => score.name);
+
+    // determine finished for this player based on their last turn
+    const record = {
+      replayId: replay.id,
+      started: replay.started,
+      finished: replay.started + (player.lastTurn * 1000),
+      ...player,
+
+      // TODO make this an offical object at some point
+      opponents,
+    };
+
+    // update the player's points, streak, and record on the leaderboard
+    batch.update(playerRef, {
+      record: admin.firestore.FieldValue.arrayUnion(record),
+    });
+  }
+
   console.log('committing...');
   await batch.commit();
   console.log('done!');

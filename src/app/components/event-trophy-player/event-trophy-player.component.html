@@ -4,24 +4,30 @@
     <div class="rank">{{ rank }}</div>
   </div>
   <div class="name" (click)="playerClicked.emit()">{{ player.name }}</div>
-  <ng-container *ngIf="showStats">
-    <div class="stats" *ngIf="player.stats as stats">
-      <div>
-        <span>Games Played</span>
-        <b>{{ stats.totalGames }}</b>
-      </div>
-      <div>
-        <span>Win Rate</span>
-        <b>{{ stats.winRate | percent:'1.0-1' }}</b>
-      </div>
-      <div>
-        <span>Quickest Win</span>
-        <b>{{ stats.quickestWin }} turns</b>
-      </div>
-      <div>
-        <span>Kill-Death Ratio</span>
-        <b>{{ stats.killDeathRatio | number:'1.0-2' }}</b>
-      </div>
+  <div class="stats" *ngIf="player.stats as stats">
+    <div>
+      <span>Games Played</span>
+      <b>{{ stats.totalGames }}</b>
     </div>
-  </ng-container>
+    <div *ngIf="!isArena">
+      <span>Games Won</span>
+      <b>{{ stats.totalWins || 0 }}</b>
+    </div>
+    <div>
+      <span>Win Rate</span>
+      <b>{{ stats.winRate | percent:'1.0-1' }}</b>
+    </div>
+    <div *ngIf="isArena">
+      <span>Quickest Win</span>
+      <b>{{ stats.quickestWin }} turns</b>
+    </div>
+    <div *ngIf="isArena">
+      <span>Kill-Death Ratio</span>
+      <b>{{ stats.killDeathRatio | number:'1.0-2' }}</b>
+    </div>
+    <div *ngIf="!isArena">
+      <span>Avg Turns</span>
+      <b>{{ stats.averageTurns | number:'1.0-0' }} turns</b>
+    </div>
+  </div>
 </div>

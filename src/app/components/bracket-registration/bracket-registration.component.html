@@ -23,7 +23,7 @@
       </div>
     </th>
   </tr>
-  <ng-container *ngFor="let player of players; let i = index">
+  <ng-container *ngFor="let player of players; let i = index; trackBy: trackByFn">
     <tr [class.even]="i % 2 === 0">
       <td class="marker"
         [class.you]="player.name === generals.name"
