@@ -18,6 +18,7 @@ const RANKS = {
   templateUrl: './event-trophy-player.component.html',
   styleUrls: ['./event-trophy-player.component.scss'],
 }) export class EventTrophyPlayerComponent {
+  @Input() showStats: boolean;
   @Input() player: ILeaderboardPlayer;
   @Input() place: Place;
 

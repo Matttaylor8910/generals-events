@@ -44,7 +44,7 @@
       <div class="main-panel" [class.wide]="showWide">
         <ng-container *ngIf="players$ | async as players">
           <app-event-trophies
-            [server]="event.server"
+            [event]="event"
             [players]="players"
             [status]="status"
             (playerClicked)="selectPlayer($event)">

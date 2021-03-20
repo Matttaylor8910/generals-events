@@ -1,8 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {GeneralsServer} from '../../../../constants';
-import {EventStatus, ILeaderboardPlayer} from '../../../../types';
+import {EventFormat, EventStatus, IEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-event-trophies',
@@ -10,7 +9,7 @@ import {EventStatus, ILeaderboardPlayer} from '../../../../types';
   styleUrls: ['./event-trophies.component.scss'],
 })
 export class EventTrophiesComponent {
-  @Input() server = GeneralsServer.NA;
+  @Input() event: IEvent;
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
 
@@ -38,5 +37,9 @@ export class EventTrophiesComponent {
 
   get showOtherPlaces(): boolean {
     return !!this.second && !!this.third;
+  }
+
+  get showStats(): boolean {
+    return this.event?.format === EventFormat.ARENA;
   }
 }
