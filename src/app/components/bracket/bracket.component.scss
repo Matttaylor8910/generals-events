@@ -69,6 +69,7 @@
       line-height: 2;
       background: #333333;
       border: 3px solid transparent;
+      cursor: pointer;
 
       // if the final match is in progress or ready, make it gold
       &.status-READY,
@@ -81,7 +82,10 @@
       &.status-READY {
         color: #fff;
         border: 3px solid teal;
-        cursor: pointer;
+      }
+
+      &.status-COMPLETE {
+        cursor: initial;
       }
     }
 

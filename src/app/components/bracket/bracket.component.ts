@@ -47,7 +47,7 @@ export class BracketComponent {
   }
 
   handleClickMatch(match: IBracketMatch) {
-    if (match.status === MatchStatus.READY) {
+    if (match.status !== MatchStatus.COMPLETE) {
       const players = match.teams.map(team => team.name);
       const inMatch = players.includes(this.generals.name);
 
