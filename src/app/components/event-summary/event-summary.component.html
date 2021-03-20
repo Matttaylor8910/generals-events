@@ -19,6 +19,8 @@
         </p>
       </ion-label>
     </ion-item>
+
+    <!-- arena items -->
     <ng-container *ngIf="isArena">
       <ion-item>
         <ion-icon slot="start" name="stopwatch"></ion-icon>
@@ -35,6 +37,8 @@
         </ion-label>
       </ion-item>
     </ng-container>
+
+    <!-- override -->
     <ion-item *ngIf="event.server">
       <ion-icon slot="start" name="server"></ion-icon>
       <ion-label>
@@ -42,5 +46,10 @@
         <p>Using <b>{{ event.server }}</b> server</p>
       </ion-label>
     </ion-item>
+
+    <ion-button expand="block" class="generals-button color-secondary" href="https://discord.gg/QP63V5Y" target="_blank">
+      <ion-icon slot="start" name="logo-discord"></ion-icon>
+      Join our discord
+    </ion-button>
   </ion-card>
 </div>
