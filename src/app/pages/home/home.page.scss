@@ -49,3 +49,9 @@ ion-content {
     }
   }
 }
+
+@media(max-width: 700px) {
+  .start-buttons {
+    display: none;
+  }
+}
