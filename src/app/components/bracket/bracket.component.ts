@@ -1,9 +1,10 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ModalController} from '@ionic/angular';
-import {ADMINS} from 'constants';
 import {UpdateMatchPage} from 'src/app/pages/event/update-match/update-match.page';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
+
+import {ADMINS} from '../../../../constants';
 
 @Component({
   selector: 'app-bracket',
