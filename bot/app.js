@@ -20,6 +20,8 @@ let interval;
 let eventId;
 let lobbyId;
 let botIndex = 0;
+let team;
+let teams;
 
 let last;
 for (const arg of args) {
@@ -29,6 +31,8 @@ for (const arg of args) {
     lobbyId = arg;
   } else if (last === '--bot') {
     botIndex = Number(arg);
+  } else if (last === '--team') {
+    team = Number(arg);
   }
   last = arg;
 }
@@ -72,6 +76,7 @@ socket.on('game_start', function(data) {
   replay_url =
       'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
   usernames = data.usernames;
+  teams = data.teams;
   chatRoom = data.chat_room;
   console.log(name + '\tgame starting! replay: ' + replay_url);
   socket.emit('chat_message', chatRoom, 'glhf');
@@ -93,6 +98,11 @@ socket.on('game_won', gameOver.bind(this));
 
 function joinCustomGameQueue(lobbyId) {
   socket.emit('join_private', lobbyId, userId);
+
+  if (team !== undefined) {
+    socket.emit('set_custom_team', lobbyId, team);
+  }
+
   interval = setInterval(() => {
     socket.emit('set_force_start', lobbyId, true);
   }, 5000);
