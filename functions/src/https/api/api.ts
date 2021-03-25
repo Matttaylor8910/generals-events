@@ -50,8 +50,16 @@ app.get('/replays/:replayId/stats', async (request, response) => {
 
   try {
     if (!replayId) throw new Error('replayId is blank');
-    const replay = await simulator.getReplayStats(replayId, server);
-    response.json(replay);
+    const {scores, summary, turns} =
+        await simulator.getReplayStats(replayId, server);
+    response.json({
+      scores: scores.map(score => {
+        const {name, kills, rank, lastTurn, killed, killedBy} = score;
+        return {name, kills, rank, lastTurn, killed, killedBy};
+      }),
+      summary,
+      turns
+    });
   } catch (error) {
     response.status(500).send({
       error: `could not retrieve replay (${replayId}) from ${server} server`,
