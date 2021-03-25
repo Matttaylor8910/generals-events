@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title (click)="generals.goToProfile(name)">{{ name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="generals-button color-secondary" (click)="getGames()" [disabled]="!loaded" *ngIf="status">
+        Update
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngIf="profile$ | async as profile; else loading">
+    <div class="center-container" *ngIf="profile.exists; else notExist">
+      <h1>Status: {{ profile.status || '???'}}</h1>
+      <h1>{{ profile.totalGames || 0}} total games found</h1>
+      <ng-container *ngIf="replays$ | async as replays">
+        {{ replays.length || 0}} replays cached
+      </ng-container>
+      <ion-button class="generals-button" (click)=getReplays() [disabled]="!loaded">
+        Log Replays
+      </ion-button>
+    </div>
+  </ng-container>
+</ion-content>
+
+<ng-template #notExist>
+  <div class="spinner-container">
+    <h1>Loading all games...</h1>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <div class="spinner-container">
+    <ion-spinner></ion-spinner>
+  </div>
+</ng-template>

@@ -1,4 +1,5 @@
 import {Component, Input} from '@angular/core';
+import {Router} from '@angular/router';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
@@ -22,6 +23,7 @@ export class LoginComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly eventService: EventService,
+      private readonly router: Router,
   ) {
     this.checkUserParam();
     this.ngOnChanges();
@@ -45,6 +47,10 @@ export class LoginComponent {
       this.eventService.leaveQueue(eventId, name);
     }
     this.generals.logout();
+  }
+
+  goToProfile() {
+    this.router.navigate(['/', 'profiles', this.generals.name]);
   }
 
   ngOnChanges() {

@@ -8,9 +8,9 @@ const routes: Routes = [
         import('./pages/home/home.module').then(m => m.HomePageModule),
   },
   {
-    path: 'past',
+    path: 'profiles/:name',
     loadChildren: () =>
-        import('./pages/past/past.module').then(m => m.PastPageModule),
+        import('./pages/profile/profile.module').then(m => m.ProfilePageModule)
   },
   {
     path: ':id',

@@ -14,8 +14,8 @@ export function getLastReplayForUsername(
 
 export function getReplaysForUsername(
     name: string,
-    offset: number,
-    count: number,
+    offset = 0,
+    count = 200,
     server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
   const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${

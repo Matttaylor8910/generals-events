@@ -220,3 +220,28 @@ export interface IMatchResults {
     team2Score: number,
   };
 }
+
+export enum PlayerProfileStatus {
+  FIRST_LOAD = 'FIRST_LOAD',
+  LOADING = 'LOADING',
+  LOADED = 'LOADED',
+}
+
+// located at /players/{:name}
+export interface IPlayerProfile {
+  status: PlayerProfileStatus;
+  lastUpdated: number;
+  lastReplayId: string;
+
+  // stats
+  totalGames: number;
+
+  // client field
+  exists?: boolean;
+}
+
+// located at /players/{:name}/replays/chunk_0 for example
+export interface IPlayerReplaysChunk {
+  replays: IGeneralsReplay;
+  order: number;
+}

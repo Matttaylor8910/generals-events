@@ -1,8 +1,10 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {kill} from 'process';
+import {Router} from '@angular/router';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
+
+import {GeneralsServer} from '../../../../constants';
 
 @Component({
   selector: 'app-event-player-summary',
@@ -20,6 +22,7 @@ export class EventPlayerSummaryComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly utilService: UtilService,
+      private readonly router: Router,
   ) {}
 
   get upcoming(): boolean {
@@ -51,5 +54,9 @@ export class EventPlayerSummaryComponent {
     } else {
       return this.utilService.getDurationString(prevFinished, started);
     }
+  }
+
+  goToProfile(name: string) {
+    this.router.navigate(['/', 'profiles', name]);
   }
 }
