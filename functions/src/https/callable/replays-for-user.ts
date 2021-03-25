@@ -55,24 +55,21 @@ export const getReplaysForUser =
           // save replays in chunks, multiple replays per doc, to save on db
           // reads when reading this data for charts
           const chunkSize = 2000;
-          const batch = db.batch();
           for (let i = 0; i < allReplays.length; i += chunkSize) {
             const chunk = Math.floor(i / chunkSize);
-            batch.set(playerRef.collection('replays').doc(`chunk_${chunk}`), {
+            await playerRef.collection('replays').doc(`chunk_${chunk}`).set({
               replays: allReplays.slice(i, i + chunkSize),
               order: chunk,
             });
           }
 
           // save the player stats
-          batch.update(playerRef, {
+          return playerRef.update({
             status: PlayerProfileStatus.LOADED,
             lastUpdated: Date.now(),
             lastReplayId,
             totalGames: allReplays.length,
           });
-
-          return batch.commit();
         });
 
 /**
@@ -94,7 +91,6 @@ async function getAllReplays(
   ]);
   return flatten(replays);
 }
-
 
 /**
  * Find the total number of games for a player using binary search

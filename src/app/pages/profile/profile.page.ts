@@ -1,7 +1,6 @@
 import {Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Observable} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
+import {take} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {IGeneralsReplay, IPlayerProfile, IProfileStats, PlayerProfileStatus} from 'types';
@@ -14,9 +13,7 @@ import {IGeneralsReplay, IPlayerProfile, IProfileStats, PlayerProfileStatus} fro
 export class ProfilePage {
   name: string;
 
-  status: PlayerProfileStatus;
-
-  profile$: Observable<IPlayerProfile>;
+  profile: IPlayerProfile;
   stats: IProfileStats;
 
   minTurns = 50;
@@ -27,13 +24,12 @@ export class ProfilePage {
       private readonly profileService: ProfileService,
   ) {
     this.name = this.route.snapshot.params.name;
-    this.profile$ =
-        this.profileService.getProfile(this.name).pipe(tap(profile => {
-          this.status = profile.status;
-          if (!profile.exists) {
-            this.getGames();
-          }
-        }));
+    this.profileService.getProfile(this.name).subscribe(profile => {
+      this.profile = profile;
+      if (!profile.exists) {
+        this.getGames();
+      }
+    });
 
     this.profileService.getReplays(this.name).subscribe(replays => {
       this.stats = this.getStats(this.name, replays);
@@ -42,7 +38,7 @@ export class ProfilePage {
   }
 
   get loaded() {
-    return this.status === PlayerProfileStatus.LOADED;
+    return this.profile?.status === PlayerProfileStatus.LOADED;
   }
 
   getGames() {

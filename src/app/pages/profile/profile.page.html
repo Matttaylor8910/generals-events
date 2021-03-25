@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title (click)="generals.goToProfile(name)">{{ name }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button class="generals-button color-secondary" (click)="getGames()" [disabled]="!loaded" *ngIf="status">
+      <ion-button class="generals-button color-secondary" (click)="getGames()" [disabled]="!loaded" *ngIf="profile?.exists">
         Update
       </ion-button>
     </ion-buttons>
@@ -10,8 +10,8 @@
 </ion-header>
 
 <ion-content>
-  <ng-container *ngIf="profile$ | async as profile; else loading">
-    <div class="profile-container" *ngIf="profile.exists; else notExist">
+  <ng-container *ngIf="profile?.exists; else loading">
+    <div class="profile-container" *ngIf="loaded; else notExist">
       <ion-card>
         <ion-card-content>
           <app-chart-win-rate
@@ -81,7 +81,8 @@
 
 <ng-template #notExist>
   <div class="spinner-container">
-    <h1>Loading all replay data...</h1>
+    <h1>Loading generals.io profile...</h1>
+    <h3 *ngIf="profile.totalGames">Saving {{ profile.totalGames }} replays...</h3>
   </div>
 </ng-template>
 
