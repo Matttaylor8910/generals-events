@@ -18,7 +18,8 @@ export class ChartWinRateComponent implements OnChanges, OnDestroy {
   @Input() xAxis: string;
   @Input() yAxis: string;
   @Input() xIsDate = false;
-  @Input() bucketSize = 200;
+
+  bucketSize = 200;
 
   chart: any;
   uniqueId: string = uniqueId();
@@ -32,14 +33,25 @@ export class ChartWinRateComponent implements OnChanges, OnDestroy {
       // always kill the previous observable
       this.destroyed$.next();
       setTimeout(() => {
-        this.updateChart(this.data);
+        // determine a good default bucket size
+        const bucketSize = this.data.length > this.bucketSize * 2 ?
+            this.bucketSize :
+            Math.floor(this.data.length / 10);
+
+        this.updateChart(bucketSize);
       });
     }
   }
 
-  updateChart(dataPoints) {
+  get bucketMax() {
+    return (this.data?.length || 2) - 1;
+  }
+
+  updateChart(bucketSize: number) {
+    this.bucketSize = bucketSize;
+
     // prevent the chart from updating if there is nothing different
-    const dataString = JSON.stringify(dataPoints);
+    const dataString = JSON.stringify(this.data) + this.bucketSize;
     if (this.lastDataString === dataString) {
       return;
     }
@@ -49,14 +61,15 @@ export class ChartWinRateComponent implements OnChanges, OnDestroy {
     }
 
     const datePipe = new DatePipe('en-US');
-    const data = this.getMovingAverage(dataPoints, this.yAxis);
-    const dates = this.getMovingAverage(dataPoints, this.xAxis)
+    const data = this.getMovingAverage(this.data, this.yAxis);
+    const dates = this.getMovingAverage(this.data, this.xAxis)
                       .map(
                           d => this.xIsDate ?
                               datePipe.transform(new Date(d), 'MM/dd/yyyy') :
                               Math.floor(d));
 
     const chartId = `chart-${this.uniqueId}`;
+
     this.chart = new Chart(chartId, {
       type: 'line',
       data: {
@@ -90,10 +103,7 @@ export class ChartWinRateComponent implements OnChanges, OnDestroy {
   }
 
   getMovingAverage(data: any[], field: string) {
-    const bucketSize = data.length > this.bucketSize * 2 ?
-        this.bucketSize :
-        Math.floor(data.length / 10);
-    return ma(map(data, field), bucketSize).filter(d => d >= 0)
+    return ma(map(data, field), this.bucketSize).filter(d => d >= 0)
   }
 
   ngOnDestroy() {
