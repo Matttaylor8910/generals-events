@@ -11,22 +11,77 @@
 
 <ion-content>
   <ng-container *ngIf="profile$ | async as profile; else loading">
-    <div class="center-container" *ngIf="profile.exists; else notExist">
-      <h1>Status: {{ profile.status || '???'}}</h1>
-      <h1>{{ profile.totalGames || 0}} total games found</h1>
-      <ng-container *ngIf="replays$ | async as replays">
-        {{ replays.length || 0}} replays cached
-      </ng-container>
-      <ion-button class="generals-button" (click)=getReplays() [disabled]="!loaded">
-        Log Replays
-      </ion-button>
+    <div class="profile-container" *ngIf="profile.exists; else notExist">
+      <ion-card>
+        <ion-card-content>
+          <app-chart-win-rate
+            title="FFA Percentile vs Time"
+            [data]="stats?.ffaChartData"
+            yAxis="percentile"
+            xAxis="started"
+            xIsDate="true">
+          </app-chart-win-rate>
+        </ion-card-content>
+      </ion-card>
+      <ion-card>
+        <ion-card-content>
+          <app-chart-win-rate
+            title="1v1 Win Rate vs Time"
+            [data]="stats?.v1ChartData"
+            yAxis="winner"
+            xAxis="started"
+            xIsDate="true">
+          </app-chart-win-rate>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stats-card">
+        <ion-card-header>
+          <ion-card-title>
+            Stats
+          </ion-card-title>
+        </ion-card-header>
+        <ng-container *ngIf="stats; else loadingItem">
+          <ion-item>
+            <ion-label>Total Replays</ion-label>
+            <ion-text slot="end">{{ profile.totalGames }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>FFA Games Played</ion-label>
+            <ion-text slot="end">{{ stats.ffaCount }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>FFA Percentile</ion-label>
+            <ion-text slot="end">{{ stats.ffaPercentile | percent:'1.2' }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>FFA Win Rate</ion-label>
+            <ion-text slot="end">{{ stats.ffaWinRate | percent:'1.2' }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>1v1 Games Played</ion-label>
+            <ion-text slot="end">{{ stats.v1Count }}</ion-text>
+          </ion-item>
+          <ion-item>
+            <ion-label>1v1 Win Rate</ion-label>
+            <ion-text slot="end">{{ stats.v1WinRate | percent:'1.2' }}</ion-text>
+          </ion-item>
+        </ng-container>
+      </ion-card>
     </div>
   </ng-container>
 </ion-content>
 
+<ng-template #loadingItem>
+  <ion-item>
+    <ion-label>
+      <h2>Loading stats...</h2>
+    </ion-label>
+  </ion-item>
+</ng-template>
+
 <ng-template #notExist>
   <div class="spinner-container">
-    <h1>Loading all games...</h1>
+    <h1>Loading all replay data...</h1>
   </div>
 </ng-template>
 

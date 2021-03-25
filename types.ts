@@ -158,7 +158,12 @@ export interface IGeneralsReplay {
   id: string;
   started: number;
   turns: number;
-  ranking: {name: string, stars: number}[];
+  ranking: IGeneralsRanking[];
+}
+
+export interface IGeneralsRanking {
+  name: string;
+  stars: number;
 }
 
 export interface IDoubleEliminationBracket {
@@ -238,6 +243,27 @@ export interface IPlayerProfile {
 
   // client field
   exists?: boolean;
+}
+
+export interface IProfileStats {
+  ffaCount: number;
+  ffaPercentile: number;
+  ffaWinRate: number;
+  ffaChartData: {
+    started: number,
+    percentile: number,
+    rank: number,
+    count: number,
+  }[];
+  v1Count: number;
+  v1WinRate: number;
+  v1ChartData: {
+    started: number,
+    rank: number,
+    winner: number,
+    opponent: IGeneralsRanking,
+    count: number,
+  }[];
 }
 
 // located at /players/{:name}/replays/chunk_0 for example

@@ -41,7 +41,7 @@ export class ProfileService {
 
           console.log(`loaded ${replays.length} chunks`);
 
-          return flatten(replays);
+          return flatten(replays).sort((a, b) => a.started - b.started);
         }));
   }
 }
