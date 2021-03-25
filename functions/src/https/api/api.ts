@@ -44,6 +44,21 @@ app.get('/replays/:replayId', async (request, response) => {
   }
 });
 
+app.get('/replays/:replayId/stats', async (request, response) => {
+  const {replayId} = request.params;
+  const server = (request.query.server || GeneralsServer.NA) as string;
+
+  try {
+    if (!replayId) throw new Error('replayId is blank');
+    const replay = await simulator.getReplayStats(replayId, server);
+    response.json(replay);
+  } catch (error) {
+    response.status(500).send({
+      error: `could not retrieve replay (${replayId}) from ${server} server`,
+    });
+  }
+});
+
 /**
  * Return the event matching the id provided, or return null if not found
  */

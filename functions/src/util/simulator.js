@@ -87,7 +87,7 @@ function simulate(replay) {
             // surrender then immediately jump into a new game will look like
             // they were in two games at once, even though they already
             // surrendered and left
-            if (players[i].lastTurn === undefined) {
+            if (players[i].lastTurn === 0) {
               players[i].lastTurn = turn;
             }
           }
