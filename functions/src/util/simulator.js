@@ -62,7 +62,7 @@ function simulate(replay) {
   let {afks, usernames} = replay;
   let currentAFK = new Set();
   let players = replay.usernames.map(name => {
-    return {name, kills: 0, lastTurn: 0};
+    return {name, kills: 0, lastTurn: 0, killed: [], killedBy: []};
   });
   let turn = 0;
 
@@ -82,13 +82,15 @@ function simulate(replay) {
           if (killer !== undefined) {
             summary.push(`${killer} killed ${usernames[i]} on turn ${turn}`);
             players[killerIndex].kills++;
+            players[killerIndex].killed.push(usernames[i]);
 
             // only set lastTurn if it isn't already set, otherwise players who
             // surrender then immediately jump into a new game will look like
             // they were in two games at once, even though they already
             // surrendered and left
-            if (players[i].lastTurn === undefined) {
+            if (players[i].lastTurn === 0) {
               players[i].lastTurn = turn;
+              players[i].killedBy.push(killer);
             }
           }
         }
@@ -129,10 +131,19 @@ function simulate(replay) {
 
   // scoring right now is a combination of rank + # of kills
   const scores = game.scores.map((score, index) => {
-    const {name, kills, lastTurn} = players[score.i];
+    const {name, kills, lastTurn, killed, killedBy} = players[score.i];
     const rank = index + 1;
     const points = game.generals.length - rank + kills;
-    return {name, kills, rank, points, lastTurn, streak: false};
+    return {
+      name,
+      kills,
+      rank,
+      points,
+      lastTurn,
+      killed,
+      killedBy,
+      streak: false
+    };
   });
 
   return {scores, summary, turns: turn};

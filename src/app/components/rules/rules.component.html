@@ -73,7 +73,10 @@
 
     <h1>How does this work?</h1>
     <div class="space-after"><span class="highlight">This event will be run as a double elimination bracket</span>, meaning you are not knocked out of the event until you lose two matches. When a player loses a match, they are then sent to the losers bracket. If you can progress through the losers bracket without a loss, you will be able to play against winner of the winners bracket in a final.</div>
-    <div class="space-after highlight">Most matches will be best 2 out of 3, the semifinals will be best 3 out of 5, and the final will be best 4 out of 7.</div>
+    <div><span class="highlight">Winner's bracket:</span> {{ bestOf(event.winningSets.winners) }}</div>
+    <div><span class="highlight">Loser's bracket:</span> {{ bestOf(event.winningSets.losers) }}</div>
+    <div><span class="highlight">Semifinal matches:</span> {{ bestOf(event.winningSets.semifinals) }}</div>
+    <div class="space-after"><span class="highlight">Finals match:</span> {{ bestOf(event.winningSets.finals) }}</div>
     <div>If the loser of the finals match has not lost a match yet, each player will have only had one loss and will then play one more final match to win the event. As the winner of the loser bracket, you must beat the winner of the winners bracket twice!</div>
 
     <h1>How do we record the result?</h1>
