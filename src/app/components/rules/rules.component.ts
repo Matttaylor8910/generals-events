@@ -31,6 +31,10 @@ export class RulesComponent {
     return this.event?.format === EventFormat.DOUBLE_ELIM;
   }
 
+  bestOf(winningSets: number): string {
+    return `best ${winningSets} of ${winningSets * 2 - 1}`;
+  }
+
   toggleShowRules() {
     this._showRules = !this._showRules;
   }
