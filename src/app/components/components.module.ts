@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {IonicModule} from '@ionic/angular';
 import {TooltipModule} from 'ng2-tooltip-directive';
+
 import {PipesModule} from '../pipes/pipes.module';
 
 import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-page.component';
@@ -13,6 +14,7 @@ import {BracketEventComponent} from './bracket-event/bracket-event.component';
 import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
 import {BracketStatusComponent} from './bracket-status/bracket-status.component';
 import {BracketComponent} from './bracket/bracket.component';
+import {ChartWinRateComponent} from './chart-win-rate/chart-win-rate';
 import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
 import {DoubleEliminationBracketComponent} from './double-elimination-bracket/double-elimination-bracket.component';
@@ -41,6 +43,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
+    ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     EventListItemComponent,
     EventOverviewComponent,
@@ -77,6 +80,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
+    ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     EventListItemComponent,
     EventOverviewComponent,

@@ -115,6 +115,7 @@ ion-button.generals-button {
   }
 }
 
+.center-container,
 .empty-container,
 .spinner-container {
   display: flex;
@@ -123,7 +124,7 @@ ion-button.generals-button {
   align-items: center;
   text-align: center;
   padding: 20px;
-  height: 100px;
+  min-height: 100px;
   width: 100%;
   font-size: 20px;
 }

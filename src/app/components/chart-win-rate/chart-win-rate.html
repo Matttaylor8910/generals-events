@@ -1,0 +1,8 @@
+<div class="chart-container">
+  <canvas id="chart-{{ uniqueId }}"></canvas>
+  <ion-spinner *ngIf="!chart"></ion-spinner>
+</div>
+<ion-range color="dark" min="1" [max]="bucketMax" [value]="bucketSize" (ionChange)="updateChart($event.target.value)" *ngIf="chart">
+  <ion-label slot="start">Bucket Size:</ion-label>
+  <ion-label slot="end">{{ bucketMax }}</ion-label>
+</ion-range>

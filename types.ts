@@ -159,7 +159,12 @@ export interface IGeneralsReplay {
   id: string;
   started: number;
   turns: number;
-  ranking: {name: string, stars: number}[];
+  ranking: IGeneralsRanking[];
+}
+
+export interface IGeneralsRanking {
+  name: string;
+  stars: number;
 }
 
 export interface IDoubleEliminationBracket {
@@ -220,4 +225,50 @@ export interface IMatchResults {
     team1Score: number,
     team2Score: number,
   };
+}
+
+export enum PlayerProfileStatus {
+  FIRST_LOAD = 'FIRST_LOAD',
+  LOADING = 'LOADING',
+  LOADED = 'LOADED',
+}
+
+// located at /players/{:name}
+export interface IPlayerProfile {
+  status: PlayerProfileStatus;
+  lastUpdated: number;
+  lastReplayId: string;
+
+  // stats
+  totalGames: number;
+
+  // client field
+  exists?: boolean;
+}
+
+export interface IProfileStats {
+  ffaCount: number;
+  ffaPercentile: number;
+  ffaWinRate: number;
+  ffaChartData: {
+    started: number,
+    percentile: number,
+    rank: number,
+    count: number,
+  }[];
+  v1Count: number;
+  v1WinRate: number;
+  v1ChartData: {
+    started: number,
+    rank: number,
+    winner: number,
+    opponent: IGeneralsRanking,
+    count: number,
+  }[];
+}
+
+// located at /players/{:name}/replays/chunk_0 for example
+export interface IPlayerReplaysChunk {
+  replays: IGeneralsReplay;
+  order: number;
 }

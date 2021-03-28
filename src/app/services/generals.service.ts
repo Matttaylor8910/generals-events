@@ -1,6 +1,7 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
+import {IGeneralsReplay} from 'types';
 import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {UtilService} from './util.service';
 
@@ -123,5 +124,11 @@ export class GeneralsService {
     localStorage.removeItem(GENERALS_NAME);
     delete this.name;
     this.nameChanged$.emit();
+  }
+
+  async getReplaysForUser(encryptedString: string): Promise<IGeneralsReplay[]> {
+    const getReplaysForUser =
+        this.aff.httpsCallable<string, IGeneralsReplay[]>('getReplaysForUser');
+    return getReplaysForUser(encryptedString).toPromise();
   }
 }
