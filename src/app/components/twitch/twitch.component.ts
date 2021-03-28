@@ -3,12 +3,13 @@ import {EventStatus} from 'types.js';
 import Twitch from '../../../assets/twitch.js';
 
 @Component({
-  selector: 'app-wuped',
-  templateUrl: './wuped.component.html',
-  styleUrls: ['./wuped.component.scss'],
+  selector: 'app-twitch',
+  templateUrl: './twitch.component.html',
+  styleUrls: ['./twitch.component.scss'],
 })
-export class WupedComponent implements OnInit {
+export class TwitchComponent implements OnInit {
   @Input() status: EventStatus;
+  @Input() channel: string;
 
   constructor() {}
 
@@ -17,7 +18,7 @@ export class WupedComponent implements OnInit {
       new Twitch.Embed('twitch-embed', {
         width: '100%',
         height: '600',
-        channel: 'wupedz',
+        channel: this.channel,
       });
     }
   }

@@ -66,6 +66,7 @@ export interface IDoubleElimEvent extends IBaseEvent {
     semifinals: number;  // games needed to win to win the semifinals match
     finals: number;      // games needed to win to win the finals match
   };
+  twitchChannel?: string;  // optional streamer URL
 
   // once the event starts this bracket will be updated live by cloud functions
   bracket?: IDoubleEliminationBracket;
