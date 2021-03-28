@@ -32,7 +32,7 @@ export class GeneralsService {
       newTab = false,
       spectate = true,
   ) {
-    let url = `${SITE_URLS[server]}/games/${name}?spectate_defeat=true`;
+    let url = `${SITE_URLS[server]}/games/${name}?spectate_defeat=false`;
 
     if (spectate) {
       url += '&spectate=true';
