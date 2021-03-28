@@ -79,7 +79,10 @@ export class BracketEventComponent {
     // during the event
     else {
       tabs.push('Bracket');
-      tabs.push('Stream');
+
+      if (this.event?.twitchChannel) {
+        tabs.push('Stream');
+      }
     }
 
     // Always show a rules tab

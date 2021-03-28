@@ -39,7 +39,7 @@
   </ng-container>
 
   <ng-container *ngIf="showStream">
-    <app-wuped [status]="status"></app-wuped>
+    <app-twitch [channel]="event?.twitchChannel" [status]="status"></app-twitch>
   </ng-container>
 
   <ng-container *ngIf="showRules">

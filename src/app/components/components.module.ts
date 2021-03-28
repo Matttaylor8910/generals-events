@@ -27,7 +27,7 @@ import {GameSummaryComponent} from './game-summary/game-summary.component';
 import {LoginComponent} from './login/login.component';
 import {RulesComponent} from './rules/rules.component';
 import {TimerComponent} from './timer/timer.component';
-import {WupedComponent} from './wuped/wuped.component';
+import {TwitchComponent} from './twitch/twitch.component';
 
 @NgModule({
   declarations: [
@@ -53,7 +53,7 @@ import {WupedComponent} from './wuped/wuped.component';
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    WupedComponent,
+    TwitchComponent,
   ],
   imports: [
     IonicModule,
@@ -89,7 +89,7 @@ import {WupedComponent} from './wuped/wuped.component';
     LoginComponent,
     RulesComponent,
     TimerComponent,
-    WupedComponent,
+    TwitchComponent,
   ]
 })
 export class ComponentsModule {
