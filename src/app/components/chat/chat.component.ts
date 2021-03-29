@@ -6,6 +6,8 @@ import {MessageService} from 'src/app/services/message.service';
 import {ADMINS} from '../../../../constants';
 import {IArenaEvent, IChatMessage} from '../../../../types';
 
+const FIVE_MINS = 1000 * 60 * 5;
+
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -33,13 +35,19 @@ export class ChatComponent implements OnInit {
     return (this.chatBox?.nativeElement.clientHeight || 0) - 59;
   }
 
+  get disallowNewMessages(): boolean {
+    return this.event?.endTime < Date.now() - FIVE_MINS;
+  }
+
   get disableChat(): boolean {
-    return !this.generals.name || this.disqualified;
+    return !this.generals.name || this.disqualified || this.disallowNewMessages;
   }
 
   get placeholder(): string {
     if (this.disqualified) {
       return 'You have been disqualified';
+    } else if (this.disallowNewMessages) {
+      return 'Chat is closed, join discord!'
     } else if (this.generals.name) {
       return 'Please be nice in chat!'
     }
