@@ -35,8 +35,8 @@
             <ion-icon name="exit"></ion-icon>
             Withdraw
           </ion-button>
-          <ion-button size="small" fill="clear" color="dark" (click)="prunePlayers()" *ngIf="showPrune">
-            Prune {{ absentPlayers?.length }} Absent Player(s)
+          <ion-button size="small" fill="clear" color="dark" (click)="finalizeTournament()" *ngIf="showFinalizeButton">
+            Finalize Results
           </ion-button>
           <app-timer [stopAt]="event.endTime" *ngIf="showTimer"></app-timer>
         </ng-container>
