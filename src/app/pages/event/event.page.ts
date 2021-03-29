@@ -68,7 +68,7 @@ export class EventPage implements OnDestroy {
           const THIRTY_SECONDS = 1000 * 30;
           if (endTime - Date.now() < THIRTY_SECONDS) {
             return EventStatus.ALMOST_DONE;
-          } else if (this.isBracket) {
+          } else {
             return EventStatus.ONGOING;
           }
         }
