@@ -67,6 +67,15 @@
             (playerClicked)="selectPlayer($event)"
             *ngIf="isBracket">
           </app-bracket-event>
+          <app-dynamic-dyp-event
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isDynamicDYP">
+          </app-dynamic-dyp-event>
         </ng-container>
       </div>
 

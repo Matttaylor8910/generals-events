@@ -30,6 +30,7 @@ export class BracketRegistrationComponent {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.players) {
       this.determineInEvent();
+      console.log(this.players, this.registrationOpen);
     }
   }
 

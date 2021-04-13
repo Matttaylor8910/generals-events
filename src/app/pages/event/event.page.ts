@@ -85,6 +85,10 @@ export class EventPage implements OnDestroy {
     return this.event.format === EventFormat.DOUBLE_ELIM;
   }
 
+  get isDynamicDYP(): boolean {
+    return this.event.format === EventFormat.DYNAMIC_DYP;
+  }
+
   get isAdmin(): boolean {
     return ADMINS.includes(this.generals.name);
   }

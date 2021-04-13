@@ -3,11 +3,13 @@ import {GeneralsServer} from './constants';
 export enum EventFormat {
   DOUBLE_ELIM = 'Double Elimination',
   ARENA = 'Arena',
+  DYNAMIC_DYP = 'Dynamic DYP',
 }
 
 export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
+  TWO_VS_TWO = '2v2',
 }
 
 export enum Visibility {
@@ -45,7 +47,7 @@ export interface IBaseEvent {
   exists?: boolean;  // client field
 }
 
-export type IEvent = IArenaEvent|IDoubleElimEvent|ILinkEvent;
+export type IEvent = IArenaEvent|IDoubleElimEvent|IDynamicDYPEvent|ILinkEvent;
 
 // the arena event object located at /events/:id
 export interface IArenaEvent extends IBaseEvent {
@@ -70,6 +72,11 @@ export interface IDoubleElimEvent extends IBaseEvent {
 
   // once the event starts this bracket will be updated live by cloud functions
   bracket?: IDoubleEliminationBracket;
+}
+
+export interface IDynamicDYPEvent extends IDoubleElimEvent {
+  // TODO: figure out what's needed here, basically the same though
+  todo?: string;
 }
 
 export interface ILinkEvent extends IBaseEvent {

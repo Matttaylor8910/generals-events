@@ -12,13 +12,13 @@
       type="text"
       placeholder="{{namePlaceholder}}"
     >
-    <label>Format</label>
-    <select [(ngModel)]="format" (change)="formatChanged($event)" name="format">
-      <option [value]="option" *ngFor="let option of formats">{{option}}</option>
-    </select>
     <label>Type</label>
-    <select [(ngModel)]="type" name="type">
+    <select [(ngModel)]="type" (change)="typeChanged($event)" name="type">
       <option [value]="option" *ngFor="let option of types">{{option}}</option>
+    </select>
+    <label>Format</label>
+    <select [(ngModel)]="format" name="format">
+      <option [value]="option" *ngFor="let option of formats">{{option}}</option>
     </select>
     <label>Visibility</label>
     <select [(ngModel)]="visibility" name="visibility">
@@ -46,11 +46,13 @@
         placeholder="# minutes"
       >
     </ng-container>
-    <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM">
+    <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM || format === EventFormat.DYNAMIC_DYP">
       <label>Check-in Time</label>
       <select [(ngModel)]="checkIn" name="type">
         <option [value]="option" *ngFor="let option of checkInOptions">{{option}}</option>
       </select>
+    </ng-container>
+    <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM">
       <label>Winners Bracket</label>
       <select [(ngModel)]="winningSets.winners" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>

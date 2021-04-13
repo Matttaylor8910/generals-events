@@ -1,6 +1,7 @@
 import {DatePipe} from '@angular/common';
 import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
+import {extend} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {EventFormat, EventType, Visibility} from 'types';
 
@@ -13,9 +14,10 @@ const eventTypes = {
   },
 };
 
-const formatTypes = {
-  [EventFormat.DOUBLE_ELIM]: [EventType.ONE_VS_ONE],
-  [EventFormat.ARENA]: [EventType.FFA, EventType.ONE_VS_ONE],
+const typeFormats = {
+  [EventType.FFA]: [EventFormat.ARENA],
+  [EventType.ONE_VS_ONE]: [EventFormat.ARENA, EventFormat.DOUBLE_ELIM],
+  [EventType.TWO_VS_TWO]: [EventFormat.DYNAMIC_DYP],
 }
 
 enum WinningSets {
@@ -62,11 +64,11 @@ export class CreateEventPage {
   visibilities = Object.values(Visibility);
   visibility = this.visibilities[0];
 
-  formats = Object.values(EventFormat);
-  format = this.formats[0];
-
-  types = formatTypes[this.format];
+  types = Object.values(EventType);
   type = this.types[0];
+
+  formats = typeFormats[this.type];
+  format = this.formats[0];
 
   date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
   time = '12:00:00';
@@ -117,65 +119,68 @@ export class CreateEventPage {
     return new Date(`${this.date}T${this.time}`);
   }
 
-  formatChanged($event: {target: {value: string}}) {
-    const format = $event.target.value as EventFormat;
-    this.types = formatTypes[format];
+  typeChanged($event: {target: {value: string}}) {
+    const type = $event.target.value as EventType;
+    this.formats = typeFormats[type];
 
-    // if the current selected type is not compatible with the newly selected
-    // format, switch to the first supported event type for this format
-    if (!this.types.includes(this.type)) {
-      this.type = this.types[0];
+    // if the current selected format is not compatible with the newly selected
+    // type, switch to the first supported format for this event type
+    if (!this.formats.includes(this.format)) {
+      this.format = this.formats[0];
     }
   }
 
   async create() {
     this.saving = true;
 
+    const event = {
+      name: this.name || this.namePlaceholder,
+      format: this.format,
+      type: this.type,
+      visibility: this.visibility,
+      startTime: this.getDate().getTime(),
+    };
+
     if (this.format === EventFormat.ARENA) {
-      this.createArenaEvent();
+      extend(event, this.getArenaEventFields(event.startTime));
     } else if (this.format === EventFormat.DOUBLE_ELIM) {
-      this.createDoubleElimEvent();
+      extend(event, this.getDoubleElimEventFields(event.startTime));
+    } else if (this.format === EventFormat.DYNAMIC_DYP) {
+      extend(event, {checkInTime: this.getCheckInTime(event.startTime)});
     }
 
+    await this.eventService.createEvent(event);
     this.modalController.dismiss();
   }
 
-  private async createArenaEvent() {
+  private getArenaEventFields(startTime: number) {
     // determine the endDate from the event duration
     const duration = Number(this.duration);
-    const startTime = this.getDate().getTime();
     const endDate = new Date(startTime + (duration * 60 * 1000));
 
-    await this.eventService.createEvent({
-      name: this.name || this.namePlaceholder,
-      format: this.format,
-      type: this.type,
-      visibility: this.visibility,
-      startTime: startTime,
+    return {
       endTime: endDate.getTime(),
       playersPerGame: eventTypes[this.type].playersPerGame,
       queue: [],
-    });
+    };
   }
 
-  private async createDoubleElimEvent() {
-    const startTime = this.getDate().getTime();
-    const checkInMinutes = checkInTimes[this.checkIn] * 60 * 1000;
-    const checkInTime = startTime - checkInMinutes;
-
-    await this.eventService.createEvent({
-      name: this.name || this.namePlaceholder,
-      format: this.format,
-      type: this.type,
-      visibility: this.visibility,
-      startTime,
-      checkInTime,
+  private getDoubleElimEventFields(startTime: number) {
+    return {
+      checkInTime: this.getCheckInTime(startTime),
       winningSets: {
         winners: winningSets[this.winningSets.winners],
         losers: winningSets[this.winningSets.losers],
         semifinals: winningSets[this.winningSets.semifinals],
         finals: winningSets[this.winningSets.finals],
       },
-    });
+    };
+  }
+
+  /**
+   * Return a unix timestamp that is the number of minutes away specified
+   */
+  private getCheckInTime(startTime: number) {
+    return startTime - checkInTimes[this.checkIn] * 60 * 1000;
   }
 }

@@ -28,6 +28,7 @@ export function getReplaysForUsername(
 const typesMap = {
   [EventType.FFA]: 'ffa',
   [EventType.ONE_VS_ONE]: 'duel',
+  [EventType.TWO_VS_TWO]: '2v2',
 };
 export function getCurrentStars(
     name: string,
