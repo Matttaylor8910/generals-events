@@ -38,7 +38,8 @@ export function getCurrentStars(
   const url =
       `${SITE_URLS[server]}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
   const generalsStars = http.get(url).then((response) => {
-    return Number(response.data.stars[typesMap[type]]) || 0;
+    const stars = Number(response.data.stars[typesMap[type]]);
+    return stars > 0 ? stars : 0;
   });
 
   return Promise.race([generalsStars, timeoutAfter(1000, 0)]);
