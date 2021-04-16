@@ -36,4 +36,9 @@ export class DynamicDYPRoundsComponent {
   isMe(player: string): boolean {
     return this.generals.name === player;
   }
+
+  showReady(match: IDynamicDYPMatch, player: string): boolean {
+    return match.status === MatchStatus.NOT_STARTED &&
+        match.ready.includes(player);
+  }
 }

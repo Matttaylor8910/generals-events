@@ -59,6 +59,8 @@
         padding: 2px 8px;
 
         .player-name {
+          display: flex;
+          align-items: center;
           white-space: nowrap;
 
           &:hover {
@@ -68,6 +70,11 @@
 
           &.highlight {
             text-decoration: underline;
+          }
+
+          .ready {
+            color: teal;
+            margin-left: 5px;
           }
         }
       }

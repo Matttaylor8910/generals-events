@@ -116,6 +116,7 @@ export class DynamicDYPEventComponent {
   startEvent() {
     this.eventService.updateEvent(this.event.id, {
       rounds: this.rounds,
+      results: {},
       startTime: Date.now(),
       playerCount: this.event.checkedInPlayers.length,
     });

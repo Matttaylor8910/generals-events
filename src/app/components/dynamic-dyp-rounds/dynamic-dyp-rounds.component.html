@@ -6,6 +6,7 @@
         <span class="team-name">
           <div class="player-name" [class.highlight]="isMe(player)" *ngFor="let player of team.players" (click)="clickPlayer(player, $event)">
             {{ player }}
+            <ion-icon class="ready" name="checkmark-circle" *ngIf="showReady(match, player)"></ion-icon>
           </div>
         </span>
         <span class="team-score" *ngIf="match.status">{{team.score}}</span>

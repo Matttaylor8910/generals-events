@@ -53,7 +53,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   get checkInOpen(): boolean {
-    return this.event?.checkInTime < Date.now() && !this.event?.bracket;
+    return this.event?.checkInTime < Date.now() && !this.event?.rounds;
   }
 
   get showCheckIn(): boolean {
@@ -69,7 +69,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   get showStatusBar(): boolean {
-    return !this.event?.bracket || this.inEvent;
+    return !this.event?.rounds || this.inEvent;
   }
 
   get message(): string {
@@ -77,8 +77,8 @@ export class DynamicDYPStatusComponent implements OnDestroy {
       return 'You have been disqualified for ruining the experience for others! Reach out to googleman on discord if you feel this is in error.';
     }
 
-    // status for after the bracket has been set, and thus the event has started
-    if (this.event.bracket) {
+    // status for after the rounds have been set, and thus the event has started
+    if (this.event.rounds) {
       if (this.readyStatus.match) {
         const {opponent, sets} = this.readyStatus;
         return `You are up against ${opponent}! As a reminder it's best ${
@@ -139,39 +139,9 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   findNextMatch() {
     let foundReady = false;
     let foundSpectate = false;
-    let foundEliminated = false;
 
     if (this.inEvent) {
-      const {winners = [], losers = []} = this.event?.bracket || {};
-      const combined = winners.concat(losers);
-
-      // iterate through all matches looking for the next one with your name
-      for (let r = 0; r < combined.length; r++) {
-        const round = combined[r];
-        for (let m = 0; m < round.matches.length; m++) {
-          const match = round.matches[m];
-          const players = match.teams.map(t => t.name);
-          const t = players.indexOf(this.generals.name);
-
-          if (t >= 0) {
-            if (match.status === MatchStatus.READY) {
-              this.setMatchReadyStatus(players, match, round.winningSets);
-              foundReady = true;
-            } else if (match.status === MatchStatus.COMPLETE) {
-              this.eliminated = foundEliminated ||
-                  match.teams[t].status === MatchTeamStatus.ELIMINATED;
-              if (this.eliminated) {
-                foundEliminated = true;
-              }
-            } else if (r > 0) {
-              // can't set the spectate status for games from the first round in
-              // the winner's bracket
-              this.setSpectateStatus(r, m, t, winners, losers);
-              foundSpectate = true;
-            }
-          }
-        }
-      }
+      // TODO: find next match!
     }
 
     // reset statuses when we don't find matches to talk about
