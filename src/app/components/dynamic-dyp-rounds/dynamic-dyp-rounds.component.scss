@@ -6,6 +6,17 @@
 
   .round {
     margin: 0 10px;
+    max-width: 500px;
+    max-height: 10000px;
+    opacity: 1;
+    transition: all 1s;
+
+    &.hide {
+      max-width: 0;
+      opacity: 0;
+      max-height: 0;
+      pointer-events: none;
+    }
 
     .match-item {
       margin: 20px 0;
@@ -117,4 +128,17 @@
       }
     }
   }
+}
+
+.actions {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ddd;
+  color: teal;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 99;
 }

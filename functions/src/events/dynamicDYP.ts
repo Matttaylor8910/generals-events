@@ -102,6 +102,11 @@ function setReadyPlayers(event: IDynamicDYPEvent) {
           }
         }
       }
+
+      // complete the round when every match is completed
+      round.complete = round.matches.every(match => {
+        return match.status === MatchStatus.COMPLETE;
+      });
     }
   }
 }

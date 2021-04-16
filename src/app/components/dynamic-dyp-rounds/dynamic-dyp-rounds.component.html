@@ -1,5 +1,5 @@
 <div class="rounds-container" *ngIf="rounds?.length">
-  <div class="round" *ngFor="let round of rounds">
+  <div class="round" [class.hide]="round.complete && hideCompletedRounds" *ngFor="let round of rounds">
     <h2>{{ round.name }}</h2>
     <div class="match-item status-{{match.status}}" *ngFor="let match of round.matches" (click)="handleClickMatch(match)">
       <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
@@ -13,4 +13,8 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="actions" (click)="toggleHideCompleted()" *ngIf="showToggle">
+  {{ toggleText }}
 </div>

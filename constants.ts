@@ -17,3 +17,5 @@ export const ADMINS = [
   'Lazerpent',
   'DavidC',
 ];
+
+export const HIDE_COMPLETED = 'generals-hide-completed';
