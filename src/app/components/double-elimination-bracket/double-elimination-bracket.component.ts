@@ -1,7 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer} from 'types';
-
-const HIDE_COMPLETED = 'generals-hide-completed';
+import {IDoubleElimEvent, IDoubleEliminationBracket} from 'types';
+import {HIDE_COMPLETED} from '../../../../constants';
 @Component({
   selector: 'app-double-elimination-bracket',
   templateUrl: './double-elimination-bracket.component.html',

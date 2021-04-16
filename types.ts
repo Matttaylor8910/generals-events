@@ -74,8 +74,12 @@ export interface IDoubleElimEvent extends IBaseEvent {
   bracket?: IDoubleEliminationBracket;
 }
 
-export interface IDynamicDYPEvent extends IDoubleElimEvent {
+export interface IDynamicDYPEvent extends IBaseEvent {
+  checkInTime: number;
+  checkedInPlayers: string[];
+
   rounds: IDynamicDYPRound[];
+  results: IMatchResults;
 }
 
 export interface ILinkEvent extends IBaseEvent {
@@ -287,10 +291,12 @@ export interface IDynamicDYPRound {
 
 export interface IDynamicDYPMatch {
   teams: IDynamicDYPTeam[];
+  ready: string[];
   number: number;
   status: MatchStatus;
 }
 
 export interface IDynamicDYPTeam {
   players: string[];
+  score: number;
 }
