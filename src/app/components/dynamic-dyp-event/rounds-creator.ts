@@ -45,6 +45,7 @@ export function getRounds(
     for (let t = 0; t < teams.length; t += 2) {
       const match = {
         teams: teams.slice(t, t + 2),
+        ready: [],
         number: matchNumber++,
         status: MatchStatus.NOT_STARTED,
       };
@@ -172,7 +173,7 @@ function getTeamsPerRound(players: string[]): IDynamicDYPTeam[][] {
  * @param {*} b
  */
 function generateTeam(a: string, b: string): IDynamicDYPTeam {
-  return {players: [a, b].sort((x, y) => x.localeCompare(y))};
+  return {players: [a, b].sort((x, y) => x.localeCompare(y)), score: 0};
 }
 
 function findTeamToSkip(teams: IDynamicDYPTeam[], map: Map<string, number>) {

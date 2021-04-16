@@ -1,0 +1,113 @@
+.rounds-container {
+  display: flex;
+  width: 100%;
+  overflow-y: hidden;
+  overflow-x: auto;
+
+  .round {
+    margin: 0 10px;
+
+    .match-item {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      line-height: 2;
+      background: #333333;
+      border: 3px solid transparent;
+      cursor: pointer;
+
+      // if the final match is in progress or ready, make it gold
+      &.status-READY,
+      &.status-COMPLETE {
+        &.final {
+          border: 5px solid gold !important;
+        }
+      }
+
+      &.status-READY {
+        color: #fff;
+        border: 3px solid teal;
+      }
+
+      &.status-COMPLETE {
+        cursor: initial;
+      }
+    }
+
+    .team-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #444444;
+      height: 44px;
+      line-height: 20px;
+      background: #333;
+      margin-right: 30px;
+      min-width: 200px;
+
+      &:first-of-type .team-name {
+        padding-bottom: 6px;
+      }
+      &:last-of-type .team-name {
+        padding-top: 6px;
+      }
+
+      .team-name {
+        text-align: left;
+        padding: 2px 8px;
+
+        .player-name {
+          white-space: nowrap;
+
+          &:hover {
+            color: teal;
+            cursor: pointer;
+          }
+
+          &.highlight {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .placeholder {
+        color: #7f7f7f;
+        padding-left: 8px;
+        white-space: nowrap;
+      }
+
+      .team-score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #777;
+        text-align: center;
+        min-width: 30px;
+        height: 100%;
+        margin-right: -30px;
+      }
+
+      &.WINNER {
+        font-weight: bold;
+      }
+
+      &.LOSER {
+        opacity: 0.5;
+      }
+
+      &.ELIMINATED .team-name {
+        text-decoration: line-through;
+      }
+
+      &:last-of-type {
+        border-bottom: none;
+
+        .team-score {
+          border-top: 1px solid #444;
+        }
+      }
+    }
+  }
+}

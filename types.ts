@@ -287,10 +287,12 @@ export interface IDynamicDYPRound {
 
 export interface IDynamicDYPMatch {
   teams: IDynamicDYPTeam[];
+  ready: string[];
   number: number;
   status: MatchStatus;
 }
 
 export interface IDynamicDYPTeam {
   players: string[];
+  score: number;
 }

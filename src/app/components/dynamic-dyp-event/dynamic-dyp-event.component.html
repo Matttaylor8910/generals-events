@@ -28,6 +28,7 @@
   <ng-container *ngIf="showAdmin">
     <ion-button class="generals-button" (click)="generateEventRounds()" [disabled]="!event.checkedInPlayers?.length">Generate Rounds</ion-button>
     <ion-button class="generals-button" (click)="checkInAll()">Check In All</ion-button>
+    <ion-button class="generals-button" (click)="startEvent()" [disabled]="!rounds">Start Event</ion-button>
     <div>
       <!-- TODO: remove -->
       <label>Players to Use: </label>
@@ -37,6 +38,14 @@
       <label>Max Rounds: </label>
       <input [(ngModel)]="maxRounds">
     </div>
+  </ng-container>
+
+  <ng-container *ngIf="showRounds">
+    <app-dynamic-dyp-rounds
+      [event]="event"
+      [rounds]="rounds"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-dynamic-dyp-rounds>
   </ng-container>
 
   <ng-container *ngIf="showRules">
