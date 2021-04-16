@@ -1,13 +1,13 @@
 <ng-container *ngIf="showRegistration">
-  <app-bracket-status
+  <app-dynamic-dyp-status
     [event]="event"
     [players]="players"
     [status]="status"
     [disqualified]="disqualified"
     *ngIf="!finished">
-  </app-bracket-status>
+  </app-dynamic-dyp-status>
 
-  <app-bracket-registration
+  <app-registration
     [event]="event"
     [players]="players"
     [status]="status"
@@ -15,5 +15,5 @@
     [disqualified]="disqualified"
     [registrationOpen]="registrationOpen"
     (playerClicked)="playerClicked.emit($event)">
-  </app-bracket-registration>
+  </app-registration>
 </ng-container>

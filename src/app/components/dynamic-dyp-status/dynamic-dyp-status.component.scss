@@ -1,0 +1,49 @@
+.bracket-status {
+  min-height: 64px;
+  margin: 10px 0 20px;
+  background: #333;
+  padding: 0 12px 0 18px;
+  border: 4px solid #333;
+  font-size: 18px;
+
+  &.dq {
+    border-color: red;
+  }
+
+  &.opponent {
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  &.checked-in,
+  &.opponent {
+    background-color: teal;
+    border-color: teal;
+  }
+
+  .checkin-checkmark {
+    font-size: 28px;
+  }
+
+  .message {
+    padding: 6px 0;
+  }
+
+  .generals-button {
+    min-width: 150px;
+  }
+
+  .starting-in {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    min-width: 100px;
+
+    b {
+      color: #7f7f7f;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+  }
+}

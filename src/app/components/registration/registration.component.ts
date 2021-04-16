@@ -5,11 +5,11 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
-  selector: 'app-bracket-registration',
-  templateUrl: './bracket-registration.component.html',
-  styleUrls: ['./bracket-registration.component.scss'],
+  selector: 'app-registration',
+  templateUrl: './registration.component.html',
+  styleUrls: ['./registration.component.scss'],
 })
-export class BracketRegistrationComponent {
+export class RegistrationComponent {
   @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];

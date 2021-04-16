@@ -14,7 +14,7 @@
   </ion-segment>
 
   <ng-container *ngIf="showRegistration">
-    <app-bracket-registration
+    <app-registration
       [event]="event"
       [players]="players"
       [status]="status"
@@ -22,7 +22,7 @@
       [disqualified]="disqualified"
       [registrationOpen]="registrationOpen"
       (playerClicked)="playerClicked.emit($event)">
-    </app-bracket-registration>
+    </app-registration>
   </ng-container>
 
   <ng-container *ngIf="showBracket">

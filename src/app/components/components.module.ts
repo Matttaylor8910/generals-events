@@ -11,7 +11,6 @@ import {ActionsPopoverComponent} from './actions-popover/actions-popover.compone
 import {ArenaLeaderboardComponent} from './arena-leaderboard/arena-leaderboard.component';
 import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
 import {BracketEventComponent} from './bracket-event/bracket-event.component';
-import {BracketRegistrationComponent} from './bracket-registration/bracket-registration.component';
 import {BracketStatusComponent} from './bracket-status/bracket-status.component';
 import {BracketComponent} from './bracket/bracket.component';
 import {ChartWinRateComponent} from './chart-win-rate/chart-win-rate';
@@ -19,6 +18,7 @@ import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
 import {DoubleEliminationBracketComponent} from './double-elimination-bracket/double-elimination-bracket.component';
 import {DynamicDYPEventComponent} from './dynamic-dyp-event/dynamic-dyp-event.component';
+import {DynamicDYPStatusComponent} from './dynamic-dyp-status/dynamic-dyp-status.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
 import {EventOverviewComponent} from './event-overview/event-overview.component';
 import {EventPlayerSummaryComponent} from './event-player-summary/event-player-summary.component';
@@ -28,6 +28,7 @@ import {EventTrophyPlayerComponent} from './event-trophy-player/event-trophy-pla
 import {GameListComponent} from './game-list/game-list.component';
 import {GameSummaryComponent} from './game-summary/game-summary.component';
 import {LoginComponent} from './login/login.component';
+import {RegistrationComponent} from './registration/registration.component';
 import {RulesComponent} from './rules/rules.component';
 import {TimerComponent} from './timer/timer.component';
 import {TwitchComponent} from './twitch/twitch.component';
@@ -40,13 +41,14 @@ import {TwitchComponent} from './twitch/twitch.component';
     ArenaQueueComponent,
     BracketComponent,
     BracketEventComponent,
-    BracketRegistrationComponent,
+    RegistrationComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
     ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     DynamicDYPEventComponent,
+    DynamicDYPStatusComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
@@ -78,13 +80,14 @@ import {TwitchComponent} from './twitch/twitch.component';
     ArenaQueueComponent,
     BracketComponent,
     BracketEventComponent,
-    BracketRegistrationComponent,
+    RegistrationComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
     ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     DynamicDYPEventComponent,
+    DynamicDYPStatusComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
