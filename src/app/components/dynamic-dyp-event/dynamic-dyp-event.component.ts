@@ -22,7 +22,7 @@ export class DynamicDYPEventComponent {
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   rounds: IDynamicDYPRound[];
-  selectedTab = 'Admin';
+  selectedTab = 'Registration';
   maxRounds: number = 10;
 
   // TODO: remove
