@@ -3,6 +3,7 @@ import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDynamicDYPEvent, IDynamicDYPRound, ILeaderboardPlayer} from 'types';
 import {ADMINS} from '../../../../constants';
+import {getRounds} from './rounds-creator';
 
 @Component({
   selector: 'app-dynamic-dyp-event',
@@ -20,6 +21,10 @@ export class DynamicDYPEventComponent {
 
   rounds: IDynamicDYPRound[];
   selectedTab = 'Registration';
+  maxRounds: number = 10;
+
+  // TODO: remove
+  playersToUse: number = 100;
 
   constructor(
       private readonly generals: GeneralsService,
@@ -86,5 +91,18 @@ export class DynamicDYPEventComponent {
 
   get finished(): boolean {
     return this.status === EventStatus.FINISHED;
+  }
+
+  generateEventRounds() {
+    const players = this.event.checkedInPlayers.slice(0, this.playersToUse);
+    this.rounds = getRounds(players, 'googleman', this.maxRounds);
+    console.log(this.rounds);
+  }
+
+  // TODO: likely remove
+  checkInAll() {
+    for (const player of this.players) {
+      this.eventService.checkInPlayer(this.event.id, player.name);
+    }
   }
 }
