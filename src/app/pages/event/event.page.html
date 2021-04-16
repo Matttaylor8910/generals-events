@@ -95,6 +95,14 @@
             (nameClicked)="selectPlayer($event)"
             *ngIf="isArena">
           </app-game-list>
+          <app-dynamic-dyp-leaderboard
+            [class.hidden]="selectedPlayer"
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isDynamicDYP">
+          </app-dynamic-dyp-leaderboard>
         </div>
       </div>
     </ng-container>
