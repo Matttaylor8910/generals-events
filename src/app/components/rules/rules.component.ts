@@ -31,6 +31,10 @@ export class RulesComponent {
     return this.event?.format === EventFormat.DOUBLE_ELIM;
   }
 
+  get isDynamicDYP(): boolean {
+    return this.event?.format === EventFormat.DYNAMIC_DYP;
+  }
+
   bestOf(winningSets: number): string {
     return `best ${winningSets} of ${winningSets * 2 - 1}`;
   }

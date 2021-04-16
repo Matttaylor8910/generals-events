@@ -22,6 +22,7 @@ export class BracketEventComponent {
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   bracket: IDoubleEliminationBracket;
+  selectedTab = 'Registration';
 
   constructor(
       private readonly generals: GeneralsService,
@@ -32,13 +33,11 @@ export class BracketEventComponent {
     if (this.event?.bracket) {
       this.bracket = this.event.bracket;
 
-      if (this.selectedTab = 'Registration') {
+      if (this.selectedTab === 'Registration') {
         this.selectedTab = 'Bracket';
       }
     }
   }
-
-  selectedTab = 'Registration';
 
   get registrationOpen(): boolean {
     return this.event?.bracket === undefined;

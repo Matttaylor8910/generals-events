@@ -75,8 +75,7 @@ export interface IDoubleElimEvent extends IBaseEvent {
 }
 
 export interface IDynamicDYPEvent extends IDoubleElimEvent {
-  // TODO: figure out what's needed here, basically the same though
-  todo?: string;
+  rounds: IDynamicDYPRound[];
 }
 
 export interface ILinkEvent extends IBaseEvent {
@@ -278,4 +277,20 @@ export interface IProfileStats {
 export interface IPlayerReplaysChunk {
   replays: IGeneralsReplay;
   order: number;
+}
+
+export interface IDynamicDYPRound {
+  name: string;
+  complete: boolean;
+  matches: IDynamicDYPMatch[];
+}
+
+export interface IDynamicDYPMatch {
+  teams: IDynamicDYPTeam[];
+  number: number;
+  status: MatchStatus;
+}
+
+export interface IDynamicDYPTeam {
+  players: string[];
 }
