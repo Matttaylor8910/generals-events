@@ -1,6 +1,8 @@
 import * as admin from 'firebase-admin';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
-import {IDynamicDYPEvent, MatchStatus} from '../../../types';
+import {flatten} from 'lodash';
+
+import {IDynamicDYPEvent, IDynamicDYPMatch, MatchStatus} from '../../../types';
 
 try {
   admin.initializeApp();
@@ -14,24 +16,9 @@ export async function handleDynamicDYPUpdate(snapshot: DocumentSnapshot):
   const event = snapshot.data() as IDynamicDYPEvent;
 
   if (event?.rounds && !event.endTime) {
-    // or each player
-    // - look at their schedule
-    // - determine first non-completed game
-    //   - array join their name in ready
-    setReadyPlayers(event);
-
-    // for each match
-    // - if a match is not complete, and it has 4 ready players
-    //   - set to ready
-    //   - generate new match
-    //     - this match will continuously look for completed games
-    // - pull score from map
-    // - if 3 games have been played (scores added together === 3)
-    //   - set match to complete
-    //   - update player stats
-
-    // for each round
-    // - round.complete = matches.every(m => m.complete)
+    // determine which players are ready to play the next match and set the
+    // match statuses
+    await crawlRounds(snapshot, event);
 
     const updates: {[key: string]: any} = {
       'rounds': event.rounds,
@@ -56,7 +43,8 @@ export async function handleDynamicDYPUpdate(snapshot: DocumentSnapshot):
   }
 }
 
-function setReadyPlayers(event: IDynamicDYPEvent) {
+async function crawlRounds(
+    snapshot: DocumentSnapshot, event: IDynamicDYPEvent) {
   const playersSet = new Set<string>();
 
   for (const round of event.rounds) {
@@ -85,7 +73,7 @@ function setReadyPlayers(event: IDynamicDYPEvent) {
         // if all players are ready, update the match status
         if (match.status === MatchStatus.NOT_STARTED &&
             match.ready.length === 4) {
-          match.status = MatchStatus.READY;
+          await setMatchReady(snapshot, match);
         }
 
         // if the match is ready, see if it's over
@@ -98,7 +86,7 @@ function setReadyPlayers(event: IDynamicDYPEvent) {
 
           // TODO: un-hardcode this "play 3 games"
           if (team1Score + team2Score === 3) {
-            match.status = MatchStatus.COMPLETE;
+            await setMatchComplete(snapshot, match);
           }
         }
       }
@@ -108,5 +96,43 @@ function setReadyPlayers(event: IDynamicDYPEvent) {
         return match.status === MatchStatus.COMPLETE;
       });
     }
+  }
+}
+
+async function setMatchReady(
+    snapshot: DocumentSnapshot,
+    match: IDynamicDYPMatch,
+) {
+  match.status = MatchStatus.READY;
+  try {
+    const now = Date.now();
+    await snapshot.ref.collection('dyp-matches')
+        .doc(String(match.number))
+        .create({
+          ...match,
+          players: flatten(match.teams.map(team => team.players)),
+          started: now,
+          updated: now,
+        });
+  } catch (e) {
+    // do nothing, it's already created
+  }
+}
+
+async function setMatchComplete(
+    snapshot: DocumentSnapshot,
+    match: IDynamicDYPMatch,
+) {
+  match.status = MatchStatus.COMPLETE;
+  try {
+    await snapshot.ref.collection('dyp-matches')
+        .doc(String(match.number))
+        .update({
+          ...match,
+          updated: Date.now(),
+        });
+  } catch (e) {
+    // when we cannot set matches as complete, it's because they were never
+    // started in the first place, meaning it was probably a bye
   }
 }

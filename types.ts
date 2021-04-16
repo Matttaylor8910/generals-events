@@ -300,3 +300,11 @@ export interface IDynamicDYPTeam {
   players: string[];
   score: number;
 }
+
+export interface IDynamicDYPMatchDocument extends IDynamicDYPMatch {
+  players: string[];
+  timesChecked: number;
+  started: number;
+  updated: number;
+  replays: IGeneralsReplay[];
+}

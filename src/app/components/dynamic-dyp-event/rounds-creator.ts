@@ -28,7 +28,7 @@ export function getRounds(
 
   // generate the dynamic dyp rounds by shuffling teams per round
   const rounds = [];
-  let matchNumber = 0;
+  let matchNumber = 1;
   const matchesCount = new Map<string, number>();
   for (let i = 0; i < teamsPerRound.length; i++) {
     // new round
@@ -176,20 +176,11 @@ function generateTeam(a: string, b: string): IDynamicDYPTeam {
   return {players: [a, b].sort((x, y) => x.localeCompare(y)), score: 0};
 }
 
+/**
+ * Return the index of a team to skip for this round based on who has played the
+ * most games
+ */
 function findTeamToSkip(teams: IDynamicDYPTeam[], map: Map<string, number>) {
-  let toSkip = 0;
-  let maxGames = 0;
-
-  for (let i = 0; i < teams.length; i++) {
-    for (const player of teams[i].players) {
-      const games = map.get(player) || 0;
-      if (games > maxGames) {
-        toSkip = i;
-        maxGames = games;
-      }
-    }
-  }
-
   const minTeams =
       teams
           .map((team, index) => {
