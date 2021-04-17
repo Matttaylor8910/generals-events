@@ -16,9 +16,13 @@ export class DynamicDYPLeaderboardComponent {
   constructor() {}
 
   get leaderboard(): ILeaderboardPlayer[] {
-    return this.players?.sort((a, b) => {
-      return b.stats?.winRate - a.stats?.winRate;
-    });
+    return this.players
+        ?.sort((a, b) => {
+          return b.stats?.winRate - a.stats?.winRate;
+        })
+        .filter(player => {
+          return this.event?.checkedInPlayers?.includes(player.name);
+        });
   }
 
   get showLeaderboard(): boolean {

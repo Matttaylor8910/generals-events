@@ -23,6 +23,8 @@ export class DynamicDYPEventComponent {
 
   rounds: IDynamicDYPRound[];
   selectedTab = 'Registration';
+  finals: boolean;
+
   maxRounds: number = 10;
 
   // TODO: remove
@@ -36,9 +38,17 @@ export class DynamicDYPEventComponent {
   ngOnChanges() {
     if (this.event?.rounds) {
       this.rounds = this.event.rounds;
+      const finals = this.rounds.every(r => r.complete);
 
+      // finals just started, move them to that tab
+      if (finals === true && this.finals === false) {
+        this.selectedTab = 'Finals';
+      }
+      this.finals = finals;
+
+      // move from registration to rounds when the event starts
       if (this.selectedTab === 'Registration') {
-        this.selectedTab = 'Rounds';
+        this.selectedTab = this.finals ? 'Finals' : 'Rounds';
         this.playerClicked.emit(null);
       }
     }
@@ -54,6 +64,10 @@ export class DynamicDYPEventComponent {
 
   get showRounds(): boolean {
     return this.selectedTab === 'Rounds' || (this.isAdmin && this.showAdmin);
+  }
+
+  get showFinals(): boolean {
+    return this.selectedTab === 'Finals';
   }
 
   get showAdmin(): boolean {
@@ -75,6 +89,10 @@ export class DynamicDYPEventComponent {
     // during the event
     else {
       tabs.push('Rounds');
+
+      if (this.finals) {
+        tabs.push('Finals');
+      }
     }
 
     // admin tab

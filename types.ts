@@ -78,8 +78,9 @@ export interface IDynamicDYPEvent extends IBaseEvent {
   checkInTime: number;
   checkedInPlayers: string[];
 
-  rounds: IDynamicDYPRound[];
+  rounds?: IDynamicDYPRound[];
   results: IMatchResults;
+  finals?: IDynamicDYPFinals;
 }
 
 export interface ILinkEvent extends IBaseEvent {
@@ -204,6 +205,8 @@ export interface IBracketMatch {
   status: MatchStatus;
 
   noRightBorder: boolean;  // helper boolean for a css class
+
+  lobby?: string;  // optional lobby to use
 }
 
 export interface IBracketMatchDocument extends IBracketMatch {
@@ -307,4 +310,14 @@ export interface IDynamicDYPMatchDocument extends IDynamicDYPMatch {
   started: number;
   updated: number;
   replays: IGeneralsReplay[];
+}
+
+export interface IDynamicDYPFinals {
+  teams: IDynamicDYPFinalsTeam[];
+  currentlyChoosing: string;  // name of player choosing the next partner
+  bracket?: IBracketRound[];
+}
+
+export interface IDynamicDYPFinalsTeam {
+  players: string[];
 }

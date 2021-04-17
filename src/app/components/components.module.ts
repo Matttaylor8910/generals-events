@@ -18,6 +18,7 @@ import {ChatComponent} from './chat/chat.component';
 import {CrownComponent} from './crown/crown.component';
 import {DoubleEliminationBracketComponent} from './double-elimination-bracket/double-elimination-bracket.component';
 import {DynamicDYPEventComponent} from './dynamic-dyp-event/dynamic-dyp-event.component';
+import {DynamicDYPFinalsTeamsComponent} from './dynamic-dyp-finals-teams/dynamic-dyp-finals-teams.component';
 import {DynamicDYPLeaderboardComponent} from './dynamic-dyp-leaderboard/dynamic-dyp-leaderboard.component';
 import {DynamicDYPRoundsComponent} from './dynamic-dyp-rounds/dynamic-dyp-rounds.component';
 import {DynamicDYPStatusComponent} from './dynamic-dyp-status/dynamic-dyp-status.component';
@@ -50,6 +51,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     DynamicDYPEventComponent,
+    DynamicDYPFinalsTeamsComponent,
     DynamicDYPLeaderboardComponent,
     DynamicDYPRoundsComponent,
     DynamicDYPStatusComponent,
@@ -91,6 +93,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     ChartWinRateComponent,
     DoubleEliminationBracketComponent,
     DynamicDYPEventComponent,
+    DynamicDYPFinalsTeamsComponent,
     DynamicDYPLeaderboardComponent,
     DynamicDYPRoundsComponent,
     DynamicDYPStatusComponent,

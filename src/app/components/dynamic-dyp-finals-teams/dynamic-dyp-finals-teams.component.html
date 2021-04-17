@@ -1,0 +1,40 @@
+<ion-card *ngIf="showTeams">
+  <ion-card-header>
+    <ion-card-title>Here are the finalists</ion-card-title>
+    <ion-card-subtitle>Finalists will pick teams then play for the champion title</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-item
+      class="finals-team"
+      [class.available]="team.players.length === 1 && currentlyChoosing && team.players[0] !== generals.name"
+      (click)="pickTeammate(i)"
+      *ngFor="let team of finals.teams; let i = index"
+    >
+      <ion-note class="team-label" slot="start">
+        <span *ngIf="i < 4">Team #{{i+1}}</span>
+      </ion-note>
+      <ion-label class="player">{{ team.players[0] }}</ion-label>
+      <ion-label class="player" slot="end">{{ team.players[1] }}</ion-label>
+    </ion-item>
+  </ion-card-content>
+</ion-card>
+
+<ion-button class="generals-button" *ngIf="showStartPicking" (click)="startPicking()">
+  Start Picking
+</ion-button>
+
+<ion-button class="generals-button" *ngIf="showFinalizeTeams" (click)="generateBracket()">
+  Generate Bracket
+</ion-button>
+
+<ion-button class="generals-button" *ngIf="showFinalizeTeams" (click)="startFinals()" [disabled]="!bracket">
+  Start Finals
+</ion-button>
+
+<ng-container *ngIf="bracket">
+  <app-bracket
+    [event]="event"
+    [bracket]="bracket"
+    (playerClicked)="playerClicked.emit($event)">
+  </app-bracket>
+</ng-container>

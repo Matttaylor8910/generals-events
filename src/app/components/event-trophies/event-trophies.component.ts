@@ -42,4 +42,8 @@ export class EventTrophiesComponent {
   get isArena(): boolean {
     return this.event?.format === EventFormat.ARENA;
   }
+
+  get dyp(): boolean {
+    return this.event?.format === EventFormat.DYNAMIC_DYP;
+  }
 }

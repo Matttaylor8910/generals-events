@@ -43,7 +43,6 @@ export class LoginComponent {
     const {eventId, status, generals: {name}} = this;
     if (name && eventId && status !== EventStatus.FINISHED &&
         !this.disqualified) {
-      this.eventService.removePlayer(eventId, name);
       this.eventService.leaveQueue(eventId, name);
     }
     this.generals.logout();

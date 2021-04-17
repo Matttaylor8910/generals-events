@@ -1,0 +1,16 @@
+.finals-team {
+  &.available {
+    cursor: pointer;
+
+    &:hover .player {
+      color: teal;
+    }
+  }
+
+  .team-label {
+    color: teal;
+    width: 88px;
+    margin-right: 5px;
+    font-size: 16px;
+  }
+}

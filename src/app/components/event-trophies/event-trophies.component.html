@@ -1,4 +1,4 @@
-<div class="trophies-container" [class.shown]="showTrophies">
+<div class="trophies-container" [class.shown]="showTrophies" *ngIf="!dyp">
   <ng-container *ngIf="first; else noWinner">
     <app-event-trophy-player
       class="other-players"

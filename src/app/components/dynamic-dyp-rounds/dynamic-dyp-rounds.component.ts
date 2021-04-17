@@ -12,6 +12,7 @@ import {HIDE_COMPLETED} from '../../../../constants';
 export class DynamicDYPRoundsComponent {
   @Input() event: IDynamicDYPEvent;
   @Input() rounds: IDynamicDYPRound[];
+  @Input() finals: boolean;
 
   @Output() playerClicked = new EventEmitter<string>();
 
@@ -26,6 +27,9 @@ export class DynamicDYPRoundsComponent {
 
   ngOnChanges() {
     this.showToggle = this.shouldShowToggle();
+    if (this.hideCompletedRounds && this.finals) {
+      this.toggleHideCompleted();
+    }
   }
 
   get toggleText() {
@@ -57,6 +61,9 @@ export class DynamicDYPRoundsComponent {
   }
 
   shouldShowToggle(): boolean {
+    if (this.finals) {
+      return false;
+    }
     if (this.rounds) {
       const roundsCompleted =
           this.rounds.filter(round => round.complete).length;

@@ -4,7 +4,7 @@
     [players]="players"
     [status]="status"
     [disqualified]="disqualified"
-    *ngIf="!finished">
+    [finals]="finals">
   </app-dynamic-dyp-status>
 
   <ion-segment [(ngModel)]="selectedTab" *ngIf="tabs.length > 1">
@@ -44,8 +44,17 @@
     <app-dynamic-dyp-rounds
       [event]="event"
       [rounds]="rounds"
+      [finals]="finals"
       (playerClicked)="handlePlayerClicked($event)">
     </app-dynamic-dyp-rounds>
+  </ng-container>
+
+  <ng-container *ngIf="showFinals">
+    <app-dynamic-dyp-finals-teams
+      [event]="event"
+      [players]="players"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-dynamic-dyp-finals-teams>
   </ng-container>
 
   <ng-container *ngIf="showRules">

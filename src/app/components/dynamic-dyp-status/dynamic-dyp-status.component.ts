@@ -15,6 +15,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
   @Input() disqualified: boolean;
+  @Input() finals: boolean;
 
   currentSubscription: string;
   redirect$: Subscription;
@@ -55,6 +56,10 @@ export class DynamicDYPStatusComponent implements OnDestroy {
     return this.readyStatus.match !== null;
   }
 
+  get showFinalsMatch(): boolean {
+    return this.event?.finals?.bracket !== undefined && !this.event?.endTime;
+  }
+
   get showStatusBar(): boolean {
     return !this.event?.rounds || this.inEvent;
   }
@@ -64,8 +69,30 @@ export class DynamicDYPStatusComponent implements OnDestroy {
       return 'You have been disqualified for ruining the experience for others! Reach out to googleman on discord if you feel this is in error.';
     }
 
+    if (this.event?.winners?.length > 0) {
+      return `The winners are ${this.event.winners.join(' and ')}!`;
+    }
+
     // status for after the rounds have been set, and thus the event has started
     if (this.event?.rounds) {
+      if (this.event.finals) {
+        const {currentlyChoosing, teams, bracket} = this.event.finals;
+        if (bracket !== undefined) {
+          return 'All finals matches will be in the same lobby! Good luck!';
+        }
+        if (teams.length === 4) {
+          return 'Teams are set, the event organizer will generate a bracket.'
+        }
+        if (currentlyChoosing === this.generals.name) {
+          return 'It\'s your turn to pick your partner!';
+        } else {
+          return `${
+              currentlyChoosing} is choosing their partner, the finals matches will start soon!`;
+        }
+      }
+      if (this.finals) {
+        return 'All prelims are done, finals time!';
+      }
       if (this.noMoreMatches) {
         return 'You have no more matches, spectate the other matches while we wait for the finals!';
       }
@@ -106,6 +133,10 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   joinMatch() {
     this.generals.joinLobby(
         `match_${this.readyStatus.match}`, this.event.server, true, false);
+  }
+
+  joinFinals() {
+    this.generals.joinLobby('match_finals', this.event.server, true, false);
   }
 
   findNextMatch() {
