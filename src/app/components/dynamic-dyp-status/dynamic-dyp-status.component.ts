@@ -111,7 +111,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   findNextMatch() {
     let foundReady = false;
 
-    if (this.inEvent) {
+    if (this.inEvent && this.event?.rounds) {
       const match = this.getNextMatchForPlayer();
       if (match === null) {
         this.noMoreMatches = true;

@@ -39,6 +39,7 @@ export class DynamicDYPEventComponent {
 
       if (this.selectedTab === 'Registration') {
         this.selectedTab = 'Rounds';
+        this.playerClicked.emit(null);
       }
     }
   }
