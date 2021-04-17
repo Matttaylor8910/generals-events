@@ -16,7 +16,7 @@ export class RulesComponent {
 
   get showRules(): boolean {
     return this._showRules || this.status === EventStatus.UPCOMING ||
-        this.isBracket;
+        this.isBracket || this.isDynamicDYP;
   }
 
   get isFFA(): boolean {
