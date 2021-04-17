@@ -3,7 +3,7 @@ import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IBracketMatch, IBracketRound, IDynamicDYPEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
+import {EventStatus, IBracketMatch, IBracketRound, IDynamicDYPEvent, IDynamicDYPMatch, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
 
 @Component({
   selector: 'app-dynamic-dyp-status',
@@ -23,10 +23,9 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   checkedIn = false;
 
   readyStatus: {
-    opponent: null|string,
-    match: null|number,
-    sets: null|number,
+    partner: null|string; opponents: null | string, match: null|number,
   };
+  noMoreMatches = false;
 
   constructor(
       private readonly generals: GeneralsService,
@@ -66,12 +65,14 @@ export class DynamicDYPStatusComponent implements OnDestroy {
     }
 
     // status for after the rounds have been set, and thus the event has started
-    if (this.event.rounds) {
+    if (this.event?.rounds) {
+      if (this.noMoreMatches) {
+        return 'You have no more matches, spectate the other matches while we wait for the finals!';
+      }
       if (this.readyStatus.match) {
-        // TODO: fix up the verbiage around the next match!
-        const {opponent, sets} = this.readyStatus;
-        return `You are up against ${opponent}! As a reminder it's best ${
-            sets} of ${sets * 2 - 1}`;
+        const {partner, opponents} = this.readyStatus;
+        return `You are paired up with ${partner} playing against ${
+            opponents}!`;
       }
 
       return 'Waiting for next match, feel free to spectate other matches while you wait!';
@@ -111,25 +112,59 @@ export class DynamicDYPStatusComponent implements OnDestroy {
     let foundReady = false;
 
     if (this.inEvent) {
-      // TODO: find next match!
+      const match = this.getNextMatchForPlayer();
+      if (match === null) {
+        this.noMoreMatches = true;
+      } else {
+        foundReady = true;
+        this.noMoreMatches = false;
+        this.setMatchReadyStatus(match);
+      }
     }
 
     // reset statuses when we don't find matches to talk about
     if (!foundReady) this.resetReadyStatus();
   }
 
-  setMatchReadyStatus(players: string[], match: IBracketMatch, sets: number) {
+  setMatchReadyStatus(match: IDynamicDYPMatch) {
     this.readyStatus.match = match.number;
-    this.readyStatus.opponent = players.find(p => p !== this.generals.name);
-    this.readyStatus.sets = sets;
+
+    let us = match.teams[0].players;
+    let them = match.teams[1].players;
+
+    if (!us.includes(this.generals.name)) {
+      let temp = us;
+      us = them;
+      them = temp;
+    }
+
+    this.readyStatus.opponents = them.join(' and ');
+    this.readyStatus.partner = us.find(p => p !== this.generals.name);
+
+    console.log(match, this.readyStatus);
   }
 
   resetReadyStatus() {
     this.readyStatus = {
-      opponent: null,
+      partner: null,
+      opponents: null,
       match: null,
-      sets: null,
     };
+  }
+
+  private getNextMatchForPlayer(): IDynamicDYPMatch|null {
+    for (const round of this.event.rounds) {
+      if (!round.complete) {
+        for (const match of round.matches) {
+          if (match.status === MatchStatus.READY) {
+            if (match.ready.includes(this.generals.name)) {
+              return match;
+            }
+          }
+        }
+      }
+    }
+    return null;
   }
 
   private unsubscribe() {
