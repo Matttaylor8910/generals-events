@@ -21,6 +21,10 @@ export class DynamicDYPLeaderboardComponent {
     });
   }
 
+  get showLeaderboard(): boolean {
+    return this.event?.rounds !== undefined;
+  }
+
   trackByFn(player: ILeaderboardPlayer) {
     return player.name;
   }
