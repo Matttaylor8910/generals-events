@@ -160,9 +160,9 @@ export class BracketEventComponent {
 //   var {duel} = week;
 //   var added = 0;
 //   var index = 0;
-//   while (added < 25) {
+//   while (added < 25 && duel[index]) {
 //     var {username} = duel[index++];
-//     if (!madeIt.has(username)) {
+//     if (username && !madeIt.has(username)) {
 //       madeIt.add(username);
 //       added++;
 //     }
