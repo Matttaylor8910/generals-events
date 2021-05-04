@@ -26,6 +26,21 @@
   </ng-container>
 
   <ng-container *ngIf="showBracket">
+    <app-double-elimination-bracket
+      [event]="event"
+      [bracket]="bracket"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-double-elimination-bracket>
+  </ng-container>
+
+  <ng-container *ngIf="showStream">
+    <app-twitch [channel]="event?.twitchChannel" [status]="status"></app-twitch>
+  </ng-container>
+
+  <ng-container *ngIf="showAdmin">
+    <textarea class="qualified" [(ngModel)]="qualified"></textarea>
+    <ion-button [disabled]="!qualified" (click)="setQualified()">Set Qualified</ion-button>
+
     <ng-container *ngIf="showBracketButtons">
       <ion-button class="generals-button" (click)="createBracket()" [disabled]="!event.checkedInPlayers?.length">New Bracket ({{ event.checkedInPlayers?.length || 0 }})</ion-button>
       <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>
@@ -36,10 +51,6 @@
       [bracket]="bracket"
       (playerClicked)="handlePlayerClicked($event)">
     </app-double-elimination-bracket>
-  </ng-container>
-
-  <ng-container *ngIf="showStream">
-    <app-twitch [channel]="event?.twitchChannel" [status]="status"></app-twitch>
   </ng-container>
 
   <ng-container *ngIf="showRules">

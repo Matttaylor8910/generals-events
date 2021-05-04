@@ -33,8 +33,15 @@
         <span *ngIf="!player.dq">{{ player.rank }}</span>
         <ion-icon name="close" color="danger" tooltip="{{player.name}} has been disqualified" *ngIf="player.dq"></ion-icon>
       </td>
-      <td class="name" (click)="playerClicked.emit(player)">
-        {{ player.name }}
+      <td (click)="playerClicked.emit(player)">
+        <span class="name">{{ player.name }}</span>
+        <span class="qualified" *ngIf="showQualified">
+          <ion-icon
+            name="checkmark-circle"
+            tooltip="Qualifies for this event!"
+            *ngIf="isQualified(player.name); else notQualified">
+          </ion-icon>
+        </span>
       </td>
       <td class="points">
         <div class="stars" *ngIf="!canCheckIn || isCheckedIn(player.name)">
@@ -43,7 +50,7 @@
             {{ player.stats?.currentStars | number:'1.0-0' }}
           </span>
         </div>
-        <ng-container *ngIf="canCheckIn && !isCheckedIn(player.name)">
+        <ng-container *ngIf="canCheckIn && isQualified(player.name) && !isCheckedIn(player.name)">
           <ion-button size="small" class="generals-button" *ngIf="generals.name === player.name" (click)="checkIn()">
             Check In
           </ion-button>
@@ -59,6 +66,10 @@
     <td colspan="4">No players to show</td>
   </tr>
 </table>
+
+<ng-template #notQualified>
+  <ion-icon name="close-circle" tooltip="Does not qualify for this event"></ion-icon>
+</ng-template>
 
 <ng-template #spinner>
   <ion-spinner></ion-spinner>

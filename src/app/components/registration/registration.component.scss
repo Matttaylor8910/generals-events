@@ -65,6 +65,20 @@ table {
       color: teal;
     }
 
+    .qualified {
+      position: relative;
+      top: 2px;
+      left: 5px;
+
+      ion-icon {
+        color: gold;
+
+        &[name="close-circle"] {
+          color: #d31c1c;
+        }
+      }
+    }
+
     .points {
       width: 15%;
       text-align: right;

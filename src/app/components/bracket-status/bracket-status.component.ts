@@ -21,6 +21,7 @@ export class BracketStatusComponent implements OnDestroy {
 
   inEvent = false;
   checkedIn = false;
+  notQualified = false;
 
   readyStatus: {
     opponent: null|string,
@@ -57,7 +58,8 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showCheckIn(): boolean {
-    return this.inEvent && !this.checkedIn && this.checkInOpen;
+    return this.inEvent && !this.checkedIn && this.checkInOpen &&
+        !this.notQualified;
   }
 
   get showJoinMatch(): boolean {
@@ -102,6 +104,9 @@ export class BracketStatusComponent implements OnDestroy {
     }
 
     // statuses before the event starts
+    if (this.notQualified) {
+      return 'You do not qualify to participate in this event';
+    }
     if (this.checkedIn) {
       return 'You are checked in! The event organizers will generate the bracket shortly, hang tight.';
     }
@@ -119,6 +124,8 @@ export class BracketStatusComponent implements OnDestroy {
     this.inEvent = this.players && !!me;
     this.checkedIn =
         this.inEvent && this.event.checkedInPlayers?.includes(me.name);
+    this.notQualified = this.inEvent && this.event?.qualified?.length > 0 &&
+        !this.event.qualified.includes(this.generals.name);
     this.findNextMatch();
   }
 

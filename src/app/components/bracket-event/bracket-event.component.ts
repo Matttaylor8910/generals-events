@@ -24,6 +24,9 @@ export class BracketEventComponent {
   bracket: IDoubleEliminationBracket;
   selectedTab = 'Registration';
 
+  // TODO: remove - temp thing for qualified
+  qualified: string;
+
   constructor(
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
@@ -59,6 +62,10 @@ export class BracketEventComponent {
     return this.selectedTab === 'Stream';
   }
 
+  get showAdmin(): boolean {
+    return this.selectedTab === 'Admin';
+  }
+
   get eventStarted(): boolean {
     return this.event?.bracket && this.status === EventStatus.ONGOING;
   }
@@ -71,7 +78,7 @@ export class BracketEventComponent {
       tabs.push('Registration');
 
       if (this.isAdmin) {
-        tabs.push('Bracket');
+        tabs.push('Admin');
       }
     }
 
@@ -125,4 +132,40 @@ export class BracketEventComponent {
     const player = this.players.find(p => p.name === name);
     this.playerClicked.emit(player);
   }
+
+  setQualified() {
+    const qualified = JSON.parse(this.qualified);
+    this.eventService.updateEvent(this.event.id, {qualified});
+    delete this.qualified;
+  }
 }
+
+// TO GET LEADERBOARD:
+// Array.from(document.getElementsByTagName('tr')).slice(1).map(row => {
+//   const [rank, name] = row.childNodes;
+//   const [span] = name.childNodes;
+//   return span.innerText;
+// });
+
+// TO GET RANKINGS:
+// var currentLeaderboard = [];
+// var madeIt = new Set();
+// var {rankings} = window.__PRELOADED_STATE__;
+// rankings.push({
+//   duel: currentLeaderboard.map(username => {
+//     return {username};
+//   })
+// });
+// for (const week of rankings.slice(1)) {
+//   var {duel} = week;
+//   var added = 0;
+//   var index = 0;
+//   while (added < 25) {
+//     var {username} = duel[index++];
+//     if (!madeIt.has(username)) {
+//       madeIt.add(username);
+//       added++;
+//     }
+//   }
+// }
+// copy(JSON.stringify(Array.from(madeIt)));

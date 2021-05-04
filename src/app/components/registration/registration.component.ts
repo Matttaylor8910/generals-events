@@ -62,7 +62,15 @@ export class RegistrationComponent {
     return this.event.checkInTime < Date.now();
   }
 
-  isCheckedIn(name: string) {
+  get showQualified(): boolean {
+    return this.event?.qualified?.length > 0;
+  }
+
+  isQualified(name: string): boolean {
+    return !this.showQualified || this.event?.qualified?.includes(name);
+  }
+
+  isCheckedIn(name: string): boolean {
     return this.event?.checkedInPlayers?.includes(name);
   }
 

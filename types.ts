@@ -72,6 +72,9 @@ export interface IDoubleElimEvent extends IBaseEvent {
 
   // once the event starts this bracket will be updated live by cloud functions
   bracket?: IDoubleEliminationBracket;
+
+  // the season tournaments will only let qualified players check in
+  qualified?: string[];
 }
 
 export interface IDynamicDYPEvent extends IBaseEvent {
