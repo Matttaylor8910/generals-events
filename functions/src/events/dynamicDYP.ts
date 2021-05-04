@@ -47,7 +47,7 @@ async function crawlRounds(
     snapshot: DocumentSnapshot, event: IDynamicDYPEvent) {
   const playersSet = new Set<string>();
 
-  for (const round of event.rounds) {
+  for (const round of event.rounds ?? []) {
     if (!round.complete) {
       for (const match of round.matches) {
         // determine which players are ready for non-complete games
