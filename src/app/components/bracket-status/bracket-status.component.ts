@@ -124,7 +124,7 @@ export class BracketStatusComponent implements OnDestroy {
     this.inEvent = this.players && !!me;
     this.checkedIn =
         this.inEvent && this.event.checkedInPlayers?.includes(me.name);
-    this.notQualified = this.event?.qualified?.length > 0 &&
+    this.notQualified = this.generals.name && this.event?.qualified?.length > 0 &&
         !this.event.qualified.includes(this.generals.name);
     this.findNextMatch();
   }
