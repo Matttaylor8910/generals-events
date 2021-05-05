@@ -124,7 +124,7 @@ export class EventService {
           });
 
           // sort players by rank, points, then win rate, then total games, then
-          // quickest win, then stars, then fallback to name
+          // quickest win, then TSP, then stars, then fallback to name
           players.sort((a, b) => {
             if (this.equal(a.dq, b.dq)) {
               if (this.equal(a.rank, b.rank)) {
@@ -134,13 +134,22 @@ export class EventService {
                       if (this.equal(
                               a.stats?.quickestWin, b.stats?.quickestWin)) {
                         if (this.equal(
-                                a.stats?.currentStars, b.stats?.currentStars)) {
-                          // fallback to name
-                          return a.name.localeCompare(b.name);
+                                a.stats?.totalSeedPoints,
+                                b.stats?.totalSeedPoints)) {
+                          if (this.equal(
+                                  a.stats?.currentStars,
+                                  b.stats?.currentStars)) {
+                            // fallback to name
+                            return a.name.localeCompare(b.name);
+                          } else {
+                            // current stars descending (b - a)
+                            return (b.stats?.currentStars || 0) -
+                                (a.stats?.currentStars || 0);
+                          }
                         } else {
-                          // current stars descending (b - a)
-                          return (b.stats?.currentStars || 0) -
-                              (a.stats?.currentStars || 0);
+                          // current TSP descending (b - a)
+                          return (b.stats?.totalSeedPoints || 0) -
+                              (a.stats?.totalSeedPoints || 0);
                         }
                       } else {
                         // quickest win ascending (a - b)

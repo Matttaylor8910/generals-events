@@ -45,9 +45,14 @@
       </td>
       <td class="points">
         <div class="stars" *ngIf="!canCheckIn || isCheckedIn(player.name)">
-          <ion-icon name="star" color="warning"></ion-icon>
-          <span *ngIf="player?.stats?.currentStars > -1; else spinner">
-            {{ player.stats?.currentStars | number:'1.0-0' }}
+          <ng-container *ngIf="!event?.tsp">
+            <ion-icon name="star" color="warning"></ion-icon>
+            <span class="star-count" *ngIf="player?.stats?.currentStars > -1; else spinner">
+              {{ player.stats?.currentStars | number:'1.0-0' }}
+            </span>
+          </ng-container>
+          <span class="tsp" *ngIf="event?.tsp && player.stats?.totalSeedPoints" tooltip="Total Seed Points are a total of the seed points you earned each week this season">
+            {{ player.stats?.totalSeedPoints }} TSP
           </span>
         </div>
         <ng-container *ngIf="canCheckIn && isQualified(player.name) && !isCheckedIn(player.name)">

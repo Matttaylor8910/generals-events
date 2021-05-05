@@ -26,6 +26,7 @@ export class BracketEventComponent {
 
   // TODO: remove - temp thing for qualified
   qualified: string;
+  tsp: string;
 
   constructor(
       private readonly generals: GeneralsService,
@@ -116,7 +117,9 @@ export class BracketEventComponent {
   // TODO: likely remove
   checkInAll() {
     for (const player of this.players) {
-      this.eventService.checkInPlayer(this.event.id, player.name);
+      if (!this.event.qualified || this.event.qualified.includes(player.name)) {
+        this.eventService.checkInPlayer(this.event.id, player.name);
+      }
     }
   }
 
@@ -133,39 +136,65 @@ export class BracketEventComponent {
     this.playerClicked.emit(player);
   }
 
+  // TODO: likely remove
   setQualified() {
     const qualified = JSON.parse(this.qualified);
     this.eventService.updateEvent(this.event.id, {qualified});
     delete this.qualified;
   }
+
+  // TODO: likely remove
+  setTSP() {
+    const tsp = JSON.parse(this.tsp);
+    this.eventService.updateEvent(this.event.id, {tsp});
+    delete this.tsp;
+  }
 }
 
 // TO GET LEADERBOARD:
-// Array.from(document.getElementsByTagName('tr')).slice(1).map(row => {
-//   const [rank, name] = row.childNodes;
-//   const [span] = name.childNodes;
-//   return span.innerText;
-// });
+`
+copy(Array.from(document.getElementsByTagName('tr')).slice(1).map(row => {
+  const [rank, name] = row.childNodes;
+  const [span] = name.childNodes;
+  return span.textContent;
+}));
+`;
 
 // TO GET RANKINGS:
-// var currentLeaderboard = [];
-// var madeIt = new Set();
-// var {rankings} = window.__PRELOADED_STATE__;
-// rankings.push({
-//   duel: currentLeaderboard.map(username => {
-//     return {username};
-//   })
-// });
-// for (const week of rankings.slice(1)) {
-//   var {duel} = week;
-//   var added = 0;
-//   var index = 0;
-//   while (added < 25 && duel[index]) {
-//     var {username} = duel[index++];
-//     if (username && !madeIt.has(username)) {
-//       madeIt.add(username);
-//       added++;
-//     }
-//   }
-// }
-// copy(JSON.stringify(Array.from(madeIt)));
+`
+var currentLeaderboard = [];
+var madeIt = new Set();
+var {rankings} = window.__PRELOADED_STATE__;
+rankings.push({
+  duel: currentLeaderboard.map(username => {
+    return {username};
+  })
+});
+for (const week of rankings.slice(1)) {
+  var {duel} = week;
+  var added = 0;
+  var index = 0;
+  while (added < 25 && duel[index]) {
+    var {username} = duel[index++];
+    if (username && !madeIt.has(username)) {
+      madeIt.add(username);
+      added++;
+    }
+  }
+}
+copy(JSON.stringify(Array.from(madeIt)));
+`;
+
+// TO GET TSP:
+`
+var TSP = {};
+Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
+  const [rank, name, tsp] = row.childNodes;
+  const [span] = name.childNodes;
+  const username = span.textContent;
+  TSP[username] = Number(tsp.textContent);
+});
+copy(JSON.stringify(TSP));
+`
+
+    // TSP['1.e4 e5  2.Ke2!!'] = TSP['1.e4 e5 2.Ke2!!'];

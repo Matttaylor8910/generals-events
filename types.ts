@@ -75,6 +75,7 @@ export interface IDoubleElimEvent extends IBaseEvent {
 
   // the season tournaments will only let qualified players check in
   qualified?: string[];
+  tsp: {[name: string]: number};
 }
 
 export interface IDynamicDYPEvent extends IBaseEvent {
@@ -117,6 +118,9 @@ export interface ILeaderboardPlayerStats {
   averageTurns: number|null;    // average turns they were alive per game
   averageRank: number|null;     // average finishing rank per game
   killDeathRatio: number|null;  // totalKills / (totalGames - totalWins)
+
+  // TSP on the generals.io rankings page for this season if applicable
+  totalSeedPoints: number|null;
 }
 
 export interface IReplayData {

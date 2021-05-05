@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {EventType, IArenaEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
+import {EventFormat, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 try {
@@ -24,9 +24,13 @@ export const onUpdatePlayer =
           const currentStars =
               await getCurrentStars(player.name, event.type, event.server);
 
+          const totalSeedPoints = getTSP(event, player);
+          console.log(`${player.name} has ${totalSeedPoints} TSP`);
+
           // generate some stats from the current record
           updates.stats = {
             currentStars,
+            totalSeedPoints,
             ...getStats(updates.record!),
           } as ILeaderboardPlayerStats;
 
@@ -148,4 +152,20 @@ function getStats(record: IPlayerHistoryRecord[]):
     averageRank: totalGames > 0 ? totalRank / totalGames : null,
     killDeathRatio: totalGames > 0 ? totalKills / totalDeaths : null,
   };
+}
+
+function getTSP(event: IEvent, player: ILeaderboardPlayer) {
+  if (event.format === EventFormat.DOUBLE_ELIM) {
+    const {tsp} = event as IDoubleElimEvent;
+
+    // in the case that the TSP map is set on the event document, fetch this
+    // player's total seed points value
+    if (tsp !== undefined) {
+      const totalSeedPoints = tsp[player.name];
+      if (totalSeedPoints >= 0) {
+        return totalSeedPoints;
+      }
+    }
+  }
+  return null;
 }

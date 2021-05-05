@@ -51,7 +51,8 @@ export class RegistrationComponent {
   }
 
   get canJoin(): boolean {
-    return !this.inEvent && this.registrationOpen;
+    return !this.inEvent && this.registrationOpen &&
+        this.isQualified(this.generals.name);
   }
 
   get canLeave(): boolean {
