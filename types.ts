@@ -237,6 +237,7 @@ export interface IMatchTeam {
   status?: MatchTeamStatus;
   dq?: boolean;          // when set to true, style the match to show DQ
   placeholder?: string;  // some matches have placeholder strings
+  tsp?: number;          // tsp for this season if applicable
 }
 
 export interface IMatchResults {

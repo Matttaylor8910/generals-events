@@ -4,7 +4,8 @@ import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, 
 export function getShuffledBracket(event: IDoubleElimEvent):
     IDoubleEliminationBracket {
   let teams: IMatchTeam[] = event.checkedInPlayers.map(name => {
-    return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false};
+    const tsp = (event.tsp ?? {})[name] ?? 0;
+    return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false, tsp};
   });
 
   teams = cloneDeep(teams);
@@ -15,21 +16,41 @@ export function getShuffledBracket(event: IDoubleElimEvent):
   // generate an empty bracket given a number of round 1 matches
   const bracket = generateEmptyBracket(round1Matches, event);
 
-  // shuffle the teams
-  teams = shuffle(teams);
+  // when tsp is present, we will seed the tournament based on total seed
+  // points for the current/last season
+  if (event.tsp) {
+    // sort the teams (players) descending by tsp
+    teams.sort((a, b) => b.tsp - a.tsp);
 
-  // pair teams in matches for the first round of the winners bracket
-  let i = 0;
-  const increment = round1Matches / (teams.length - round1Matches);
-  teams.forEach(team => {
-    const index = Math.floor(i) % round1Matches;
-    bracket.winners[0].matches[index].teams.push(team);
+    // get the seed positions for the tournament based on the number of teams,
+    // then set the matches
+    const seeds = getSeeds(teams.length);
 
-    // after we've populated each match once, we need to increment differently
-    // based on the number or remaining teams to pair so that we spread them out
-    // roughly evenly throughout the matches
-    i += (i >= round1Matches - 1 ? increment : 1);
-  });
+    for (let i = 0; i < seeds.length; i++) {
+      seeds[i].filter(seed => seed !== null).forEach(seed => {
+        const team = teams[seed - 1];
+        bracket.winners[0].matches[i].teams.push(team);
+      });
+    }
+  }
+
+  // no tsp, shuffle the teams
+  else {
+    teams = shuffle(teams);
+
+    // pair teams in matches for the first round of the winners bracket
+    let i = 0;
+    const increment = round1Matches / (teams.length - round1Matches);
+    teams.forEach(team => {
+      const index = Math.floor(i) % round1Matches;
+      bracket.winners[0].matches[index].teams.push(team);
+
+      // after we've populated each match once, we need to increment differently
+      // based on the number or remaining teams to pair so that we spread them
+      // out roughly evenly throughout the matches
+      i += (i >= round1Matches - 1 ? increment : 1);
+    });
+  }
 
   // generate the byes and the placeholders for where winners/losers will go
   generatePlaceholders(bracket);
@@ -237,8 +258,6 @@ function getMatchNumberForLoser(
 /**
  * Return the number of matches in the first round of the winners bracket from
  * the total number of teams
- * @param teamsLength
- * @param matches
  */
 function determineRound1Matches(teamsLength: number, matches = 1): number {
   if (matches * 2 >= teamsLength) {
@@ -246,4 +265,40 @@ function determineRound1Matches(teamsLength: number, matches = 1): number {
   } else {
     return determineRound1Matches(teamsLength, matches * 2);
   }
+}
+
+/**
+ * Return a list of seeds positions for a given number of participants
+ */
+function getSeeds(participantsCount: number) {
+  if (participantsCount < 2) {
+    return [];
+  }
+
+  let matches = [[1, 2]];
+  const rounds = Math.ceil(Math.log(participantsCount) / Math.log(2));
+
+  for (let round = 1; round < rounds; round++) {
+    const roundMatches = [];
+    const sum = Math.pow(2, round + 1) + 1;
+
+    for (var i = 0; i < matches.length; i++) {
+      let home = changeIntoBye(matches[i][0], participantsCount);
+      let away = changeIntoBye(sum - matches[i][0], participantsCount);
+      roundMatches.push([home, away]);
+      home = changeIntoBye(sum - matches[i][1], participantsCount);
+      away = changeIntoBye(matches[i][1], participantsCount);
+      roundMatches.push([home, away]);
+    }
+    matches = roundMatches;
+  }
+
+  return matches;
+}
+
+/**
+ * Return either a seed number or a bye for a round
+ */
+function changeIntoBye(seed: number, participantsCount: number): number|null {
+  return seed <= participantsCount ? seed : null;
 }

@@ -196,5 +196,3 @@ Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
 });
 copy(JSON.stringify(TSP));
 `
-
-    // TSP['1.e4 e5  2.Ke2!!'] = TSP['1.e4 e5 2.Ke2!!'];
