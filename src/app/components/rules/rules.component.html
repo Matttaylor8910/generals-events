@@ -81,6 +81,17 @@
 
     <h1>How do we record the result?</h1>
     <div>Match results will automatially be updated within 10 seconds of replays becoming available, and the bracket will be updated. Your next match will always be shown towards the top of the event page, so feel free to spectate other matches while you wait.</div>
+
+    <ng-container *ngIf="showQualified">
+      <h1>How do I qualify to play in this event?</h1>
+      <div class="space-after">Every 10 weeks a new season of generals.io starts. Each week during a season, the top 25 players on the leaderboard qualify for that season's championship event. If a player has already qualified in a previous week, they don't take up any more qualifying spots in future weeks. This allows people lower on the leaderboard to qualify as well if the same players keep ending up near the top.</div>
+      <div class="highlight space-after">Additionally, all former event champions automatically qualify for all future events.</div>
+
+      <h1>So who qualified this time around?</h1>
+      <div class="space-after" *ngFor="let week of [1,2,3,4,5,6,7,8,9,10]">
+        <span class="highlight">Week {{ week }}:</span> {{ getPlayers(week) }}
+      </div>
+    </ng-container>
   </ng-container>
 </ng-container>
 

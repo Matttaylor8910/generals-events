@@ -35,6 +35,16 @@ export class RulesComponent {
     return this.event?.format === EventFormat.DYNAMIC_DYP;
   }
 
+  get showQualified(): boolean {
+    return this.event?.qualified?.length > 0;
+  }
+
+  getPlayers(week: number): string {
+    const amount = 25;
+    const offset = (week - 1) * amount;
+    return this.event.qualified.slice(offset, offset + amount).join(', ');
+  }
+
   bestOf(winningSets: number): string {
     return `best ${winningSets} of ${winningSets * 2 - 1}`;
   }
