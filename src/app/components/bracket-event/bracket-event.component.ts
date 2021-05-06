@@ -170,7 +170,9 @@ rankings.push({
     return {username};
   })
 });
-for (const week of rankings.slice(1)) {
+const tsp = rankings.splice(0,1);
+rankings.push({ duel: tsp[0] });
+for (const week of rankings) {
   var {duel} = week;
   var added = 0;
   var index = 0;
