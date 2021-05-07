@@ -52,6 +52,10 @@ export class BracketComponent {
       const players = match.teams.map(team => team.name);
       const inMatch = players.includes(this.generals.name);
 
+      if (match.final) {
+        match.lobby = 'finals';
+      }
+
       const lobby = match.lobby ?? match.number;
       this.generals.joinLobby(
           `match_${lobby}`, this.event.server, true, !inMatch);
