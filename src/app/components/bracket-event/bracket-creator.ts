@@ -157,6 +157,11 @@ function generatePlaceholders(bracket: IDoubleEliminationBracket) {
         match.bye =
             match.teams.length === 1;  // set a bye boolean for base round
         match.final = winnerRound + 1 === bracket.winners.length;
+
+        if (match.final) {
+          match.lobby = 'finals';
+        }
+
         match.teams = generateWinningPlaceholder(match, match.final);
       });
       winnerRound++;

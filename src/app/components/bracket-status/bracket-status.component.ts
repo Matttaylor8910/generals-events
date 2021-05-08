@@ -25,13 +25,13 @@ export class BracketStatusComponent implements OnDestroy {
 
   readyStatus: {
     opponent: null|string,
-    match: null|number,
+    lobby: null|string,
     sets: null|number,
   };
   spectateStatus: {
     player1: null|string,
     player2: null|string,
-    match: null|number,
+    lobby: null|string,
     winner: boolean,
   };
   eliminated = false;
@@ -63,7 +63,7 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   get showJoinMatch(): boolean {
-    return this.readyStatus.match !== null;
+    return this.readyStatus.lobby !== null;
   }
 
   get showSpectateMatch(): boolean {
@@ -81,17 +81,17 @@ export class BracketStatusComponent implements OnDestroy {
 
     // status for after the bracket has been set, and thus the event has started
     if (this.event.bracket) {
-      if (this.readyStatus.match) {
+      if (this.readyStatus.lobby) {
         const {opponent, sets} = this.readyStatus;
         return `You are up against ${opponent}! As a reminder it's best ${
             sets} of ${sets * 2 - 1}`;
       }
-      if (this.spectateStatus.match) {
+      if (this.spectateStatus.lobby) {
         const {player1, player2, winner} = this.spectateStatus;
         const outcome = winner ? 'winner' : 'loser';
         if ([player1, player2].includes(undefined)) {
           return `You will play the ${outcome} of match ${
-              this.spectateStatus.match}, but it may be a while.`
+              this.spectateStatus.lobby}, but it may be a while.`
         }
         return `You will play the ${outcome} between ${player1} and ${
             player2}!`;
@@ -124,7 +124,8 @@ export class BracketStatusComponent implements OnDestroy {
     this.inEvent = this.players && !!me;
     this.checkedIn =
         this.inEvent && this.event.checkedInPlayers?.includes(me.name);
-    this.notQualified = this.generals.name && this.event?.qualified?.length > 0 &&
+    this.notQualified = this.generals.name &&
+        this.event?.qualified?.length > 0 &&
         !this.event.qualified.includes(this.generals.name);
     this.findNextMatch();
   }
@@ -135,12 +136,12 @@ export class BracketStatusComponent implements OnDestroy {
 
   joinMatch() {
     this.generals.joinLobby(
-        `match_${this.readyStatus.match}`, this.event.server, true, false);
+        `match_${this.readyStatus.lobby}`, this.event.server, true, false);
   }
 
   spectateMatch() {
     this.generals.joinLobby(
-        `match_${this.spectateStatus.match}`, this.event.server, true, true);
+        `match_${this.spectateStatus.lobby}`, this.event.server, true, true);
   }
 
   findNextMatch() {
@@ -187,9 +188,10 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   setMatchReadyStatus(players: string[], match: IBracketMatch, sets: number) {
-    this.readyStatus.match = match.number;
+    this.readyStatus.lobby = `${match.lobby ?? match.number}`;
     this.readyStatus.opponent = players.find(p => p !== this.generals.name);
     this.readyStatus.sets = sets;
+    console.log('set ready status', this.readyStatus, match);
   }
 
   setSpectateStatus(
@@ -245,14 +247,14 @@ export class BracketStatusComponent implements OnDestroy {
     }
     this.spectateStatus.player1 = waitingOn.teams[0].name;
     this.spectateStatus.player2 = waitingOn.teams[1].name;
-    this.spectateStatus.match = waitingOn.number;
+    this.spectateStatus.lobby = `${waitingOn.number}`;
     this.spectateStatus.winner = winner;
   }
 
   resetReadyStatus() {
     this.readyStatus = {
       opponent: null,
-      match: null,
+      lobby: null,
       sets: null,
     };
   }
@@ -261,7 +263,7 @@ export class BracketStatusComponent implements OnDestroy {
     this.spectateStatus = {
       player1: null,
       player2: null,
-      match: null,
+      lobby: null,
       winner: false,
     };
   }
