@@ -17,6 +17,9 @@
         <p *ngIf="event.playersPerGame as players">
           {{ players }} {{ players === 1 ? 'player' : 'players' }} per game
         </p>
+        <p *ngIf="needToQualify">
+          You must qualify to participate
+        </p>
       </ion-label>
     </ion-item>
 

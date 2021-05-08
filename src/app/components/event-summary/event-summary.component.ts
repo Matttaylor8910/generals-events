@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IArenaEvent} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -53,5 +53,10 @@ export class EventSummaryComponent {
       return `${this.completed} ${
           this.completed === 1 ? 'game' : 'games'} completed`;
     }
+  }
+
+  get needToQualify(): boolean {
+    const {qualified = []} = this.event as unknown as IDoubleElimEvent;
+    return qualified.length > 0;
   }
 }
