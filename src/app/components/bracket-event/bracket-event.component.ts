@@ -44,8 +44,11 @@ export class BracketEventComponent {
       if (['Bracket Preview', 'Admin', 'Registration'].includes(
               this.selectedTab)) {
         this.selectedTab = 'Bracket';
-        this.utilService.showToast(
-            'The event has started! Good luck have fun!', 15000);
+
+        if (!this.event.endTime) {
+          this.utilService.showToast(
+              'The event has started! Good luck have fun!', 15000);
+        }
       }
     } else if (changes['event'] !== undefined) {
       this.generatePreviewBracket();
