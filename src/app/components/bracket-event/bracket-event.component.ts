@@ -117,9 +117,16 @@ export class BracketEventComponent {
   // TODO: likely remove
   checkInAll() {
     for (const player of this.players) {
-      if (!this.event.qualified || this.event.qualified.includes(player.name)) {
+      if (!this.event.qualified?.length ||
+          this.event.qualified.includes(player.name)) {
         this.eventService.checkInPlayer(this.event.id, player.name);
       }
+    }
+  }
+
+  updateAll() {
+    for (const player of this.players) {
+      this.eventService.addPlayer(this.event.id, player.name);
     }
   }
 

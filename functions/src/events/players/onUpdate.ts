@@ -159,7 +159,7 @@ function getTSP(event: IEvent, player: ILeaderboardPlayer) {
     const {tsp, qualified = []} = event as IDoubleElimEvent;
 
     // if the user doesn't qualify, TSP is pointless
-    if (!qualified.includes(player.name)) {
+    if (qualified.length > 0 && !qualified.includes(player.name)) {
       return null;
     }
 
