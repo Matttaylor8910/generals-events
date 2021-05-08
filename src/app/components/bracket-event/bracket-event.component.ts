@@ -196,6 +196,7 @@ copy(JSON.stringify(Array.from(madeIt)));
 
 // TO GET TSP:
 `
+var currentLeaderboard = [];
 var TSP = {};
 Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
   const [rank, name, tsp] = row.childNodes;
@@ -203,5 +204,9 @@ Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
   const username = span.textContent;
   TSP[username] = Number(tsp.textContent);
 });
+for (let i = 0; i < currentLeaderboard.length; i++) {
+  const username = currentLeaderboard[i];
+  TSP[username] = (TSP[username] ?? 0) + (500 - i);
+}
 copy(JSON.stringify(TSP));
 `
