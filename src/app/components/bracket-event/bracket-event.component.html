@@ -37,9 +37,9 @@
     <div class="empty-container" *ngIf="!preview">
       Generating bracket...
     </div>
-    <h3 *ngIf="preview">
+    <div class="preview-disclaimer" *ngIf="preview">
       Below is a preview of the bracket and is subject to change. The banner at the top of the page will tell you when to play your first match.
-    </h3>
+    </div>
     <app-double-elimination-bracket
       [event]="event"
       [bracket]="preview"
