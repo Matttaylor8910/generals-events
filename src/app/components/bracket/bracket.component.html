@@ -6,7 +6,7 @@
     </h3>
     <li class="match-container" *ngFor="let match of round.matches; index as m" [class.no-right-border]="match.noRightBorder" [class.no-left-border]="shouldHide(r - 1)">
       <span class="match-number" (click)="handleClickMatchNumber(match, r, m)">{{ match.number }}</span>
-      <div class="match-item status-{{match.status}}" [class.final]="match.final" (click)="handleClickMatch(match)">
+      <div class="match-item status-{{match.status}}" [class.disabled]="disabled" [class.final]="match.final" (click)="handleClickMatch(match)">
         <div class="team-line {{ team.status }}" *ngFor="let team of match.teams">
           <span class="team-name" (click)="clickPlayer(team.name, $event)" *ngIf="team.name">
             {{ team.name }} {{ team.dq ? '(DQ)' : '' }}

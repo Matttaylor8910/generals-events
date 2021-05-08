@@ -17,6 +17,7 @@ export class BracketComponent {
   @Input() hideCompletedRounds: boolean;
   @Input() minRoundsToShow: number;
   @Input() bracketName: string;
+  @Input() disabled = false;
 
   @Output() playerClicked = new EventEmitter<string>();
 
@@ -48,7 +49,7 @@ export class BracketComponent {
   }
 
   handleClickMatch(match: IBracketMatch) {
-    if (match.status !== MatchStatus.COMPLETE) {
+    if (match.status !== MatchStatus.COMPLETE && !this.disabled) {
       const players = match.teams.map(team => team.name);
       const inMatch = players.includes(this.generals.name);
 
@@ -67,7 +68,7 @@ export class BracketComponent {
       roundIdx: number,
       matchIdx: number,
   ) {
-    if (ADMINS.includes(this.generals.name)) {
+    if (ADMINS.includes(this.generals.name) && !this.disabled) {
       const modal = await this.modalController.create({
         component: UpdateMatchPage,
         componentProps: {

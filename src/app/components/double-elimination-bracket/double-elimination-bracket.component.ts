@@ -10,6 +10,7 @@ export class DoubleEliminationBracketComponent {
   @Input() event: IDoubleElimEvent;
   @Input() bracket: IDoubleEliminationBracket;
   @Input() minRoundsToShow = 4;
+  @Input() disabled = false;
 
   @Output() playerClicked = new EventEmitter<string>();
 

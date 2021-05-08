@@ -50,7 +50,7 @@
     align-items: center;
     margin: .5rem 10px;
     position: relative;
-    min-width: 220px;
+    min-width: 222px;
 
     .match-number {
       width: 28px;
@@ -84,6 +84,7 @@
         border: 3px solid teal;
       }
 
+      &.disabled,
       &.status-COMPLETE {
         cursor: initial;
       }

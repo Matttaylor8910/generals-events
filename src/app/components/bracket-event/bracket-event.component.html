@@ -33,6 +33,21 @@
     </app-double-elimination-bracket>
   </ng-container>
 
+  <ng-container *ngIf="showBracketPreview">
+    <div class="empty-container" *ngIf="!preview">
+      Generating bracket...
+    </div>
+    <h3 *ngIf="preview">
+      Below is a preview of the bracket and is subject to change. The banner at the top of the page will tell you when to play your first match.
+    </h3>
+    <app-double-elimination-bracket
+      [event]="event"
+      [bracket]="preview"
+      [disabled]="true"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-double-elimination-bracket>
+  </ng-container>
+
   <ng-container *ngIf="showStream">
     <app-twitch [channel]="event?.twitchChannel" [status]="status"></app-twitch>
   </ng-container>

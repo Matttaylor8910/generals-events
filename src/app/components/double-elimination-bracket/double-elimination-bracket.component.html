@@ -5,6 +5,7 @@
       [bracket]="bracket.winners"
       [hideCompletedRounds]="hideCompletedRounds"
       [minRoundsToShow]="minRoundsToShow"
+      [disabled]="disabled"
       bracketName="winners"
       (playerClicked)="playerClicked.emit($event)">
     </app-bracket>
@@ -16,6 +17,7 @@
       [bracket]="bracket.losers"
       [hideCompletedRounds]="hideCompletedRounds"
       [minRoundsToShow]="minRoundsToShow"
+      [disabled]="disabled"
       bracketName="losers"
       (playerClicked)="playerClicked.emit($event)">
     </app-bracket>

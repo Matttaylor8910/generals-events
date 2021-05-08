@@ -1,6 +1,8 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output, SimpleChange} from '@angular/core';
+import {cloneDeep} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {UtilService} from 'src/app/services/util.service';
 import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer} from 'types';
 
 import {ADMINS} from '../../../../constants';
@@ -22,6 +24,7 @@ export class BracketEventComponent {
   @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
 
   bracket: IDoubleEliminationBracket;
+  preview: IDoubleEliminationBracket;
   selectedTab = 'Registration';
 
   // TODO: remove - temp thing for qualified
@@ -31,15 +34,21 @@ export class BracketEventComponent {
   constructor(
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
+      private readonly utilService: UtilService,
   ) {}
 
-  ngOnChanges() {
+  ngOnChanges(changes: SimpleChange) {
     if (this.event?.bracket) {
       this.bracket = this.event.bracket;
 
-      if (this.selectedTab === 'Registration') {
+      if (['Bracket Preview', 'Admin', 'Registration'].includes(
+              this.selectedTab)) {
         this.selectedTab = 'Bracket';
+        this.utilService.showToast(
+            'The event has started! Good luck have fun!', 15000);
       }
+    } else if (changes['event'] !== undefined) {
+      this.generatePreviewBracket();
     }
   }
 
@@ -53,6 +62,10 @@ export class BracketEventComponent {
 
   get showBracket(): boolean {
     return this.selectedTab === 'Bracket';
+  }
+
+  get showBracketPreview(): boolean {
+    return this.selectedTab === 'Bracket Preview';
   }
 
   get showRules(): boolean {
@@ -77,6 +90,10 @@ export class BracketEventComponent {
     // before the event starts
     if (this.registrationOpen) {
       tabs.push('Registration');
+
+      if (this.event?.tsp) {
+        tabs.push('Bracket Preview');
+      }
 
       if (this.isAdmin) {
         tabs.push('Admin');
@@ -155,6 +172,26 @@ export class BracketEventComponent {
     const tsp = JSON.parse(this.tsp);
     this.eventService.updateEvent(this.event.id, {tsp});
     delete this.tsp;
+  }
+
+  generatePreviewBracket() {
+    if (this.event?.tsp && this.players) {
+      const cloned = cloneDeep(this.event);
+      if (cloned.checkedInPlayers.length < 3) {
+        if (this.event?.qualified?.length > 0) {
+          cloned.checkedInPlayers =
+              this.players.filter(p => this.event.qualified.includes(p.name))
+                  .map(p => p.name);
+        } else {
+          cloned.checkedInPlayers = this.players.map(p => p.name);
+        }
+      }
+      const bracket = getShuffledBracket(cloned);
+      delete this.preview;
+      setTimeout(() => {
+        this.preview = bracket;
+      }, 500);
+    }
   }
 }
 
