@@ -119,7 +119,10 @@
   }
 
   .disclaimer {
-    border-top: 1px solid #333;
     padding-top: 8px;
+
+    &:first-of-type {
+      border-top: 1px solid #333;
+    }
   }
 }

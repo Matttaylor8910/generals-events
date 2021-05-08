@@ -2,9 +2,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {Router} from '@angular/router';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IArenaEvent, ILeaderboardPlayer} from 'types';
-
-import {GeneralsServer} from '../../../../constants';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
 
 @Component({
   selector: 'app-event-player-summary',
@@ -35,6 +33,30 @@ export class EventPlayerSummaryComponent {
 
   get isArena(): boolean {
     return this.event?.format === EventFormat.ARENA;
+  }
+
+  get showDisclaimers(): boolean {
+    return !this.player?.stats?.totalGames || this.upcoming;
+  }
+
+  get playerQualifyString(): string {
+    if (this.event?.format === EventFormat.DOUBLE_ELIM) {
+      const {qualified = []} = this.event as unknown as IDoubleElimEvent;
+
+      // only show this qualified string if this event requires being qualified
+      if (qualified.length > 0) {
+        const index = qualified.indexOf(this.player?.name);
+        if (index >= 0) {
+          const week = Math.floor(index / 25) + 1;
+          return 'Qualified for this event ' +
+              (week > 10 ? 'because of total seed points.' :
+                           `week ${week} of the season.`);
+        } else {
+          return 'Does not qualify for this event.'
+        }
+      }
+    }
+    return '';
   }
 
   /**

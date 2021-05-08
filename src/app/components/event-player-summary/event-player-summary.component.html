@@ -122,14 +122,19 @@
       </div>
     </ng-container>
 
-    <!-- player isn't in the event -->
-    <p class="disclaimer" *ngIf="!player.rank">
-      {{ player.name }} has not joined this event!
+    <!-- message about qualifying to show before the event -->
+    <p class="disclaimer" *ngIf="playerQualifyString && showDisclaimers">
+      {{ playerQualifyString }}
     </p>
 
     <!-- the event hasn't started -->
-    <p class="disclaimer" *ngIf="player.rank && (!player.stats?.totalGames || upcoming)">
+    <p class="disclaimer" *ngIf="player.rank && showDisclaimers">
       More stats will be available after {{ player.name }} has played some games.
+    </p>
+
+    <!-- player isn't in the event -->
+    <p class="disclaimer" *ngIf="!player.rank">
+      {{ player.name }} has not joined this event!
     </p>
 
   </ion-card-content>
