@@ -191,7 +191,6 @@ export class BracketStatusComponent implements OnDestroy {
     this.readyStatus.lobby = `${match.lobby ?? match.number}`;
     this.readyStatus.opponent = players.find(p => p !== this.generals.name);
     this.readyStatus.sets = sets;
-    console.log('set ready status', this.readyStatus, match);
   }
 
   setSpectateStatus(
