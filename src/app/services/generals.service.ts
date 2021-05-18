@@ -31,12 +31,18 @@ export class GeneralsService {
       server = GeneralsServer.NA,
       newTab = false,
       spectate = true,
+      spectateOnDefeat = false,
   ) {
-    let url = `${SITE_URLS[server]}/games/${name}?spectate_defeat=false`;
-
+    // always turn on spectator chat
+    let url = `${SITE_URLS[server]}/games/${name}?spectate_chat=true`;
+        
+    // sets you as a spectator in the lobby
     if (spectate) {
       url += '&spectate=true';
     }
+
+    // show the map when you are defeated
+    url += `&defeat_spectate=${spectateOnDefeat}`;
 
     if (newTab) {
       window.open(url, '_blank');
