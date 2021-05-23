@@ -19,7 +19,7 @@ export const onUpdatePlayer =
           const event = (eventSnap.data() || {}) as IArenaEvent;
 
           const updates: Partial<ILeaderboardPlayer> =
-              recordSanityCheck(player.record, event);
+              recordSanityCheck(player.record, event, player.dq);
 
           const currentStars =
               await getCurrentStars(player.name, event.type, event.server);
@@ -53,9 +53,10 @@ export const onUpdatePlayer =
 export function recordSanityCheck(
     record: IPlayerHistoryRecord[],
     event: IArenaEvent,
+    currentDq = false,
     ): Partial<ILeaderboardPlayer> {
   record.sort((a, b) => a.finished - b.finished);
-  let dq = false;
+  let dq = currentDq;
 
   // compare the original and the newly sorted games in the record to see if
   // there are any streaks/points to fix up
