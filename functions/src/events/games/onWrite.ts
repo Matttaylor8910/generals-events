@@ -180,13 +180,19 @@ async function saveReplayToGame(
       await simulator.getReplayStats(replay.id, event.server);
 
   // determine if the winner is on a streak
-  const winner = scores[0];
+  const [winner, second] = scores;
   const snapshot = await eventRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
 
   // don't do streaks for FFA, instead just give a 5 point bonus for 1st
   if (event.type === EventType.FFA) {
     winner.points += 5;
+
+    // to encourage long battles, award extra points to first and second so they
+    // can duke it out
+    const mins = Math.floor(turns / 60);
+    winner.points += mins;
+    second.points += Math.floor(mins / 2);
   }
   // all other types, double points from the 3rd win in a row onward
   // we use the number 2 here because currentStreak is about to be updated to
