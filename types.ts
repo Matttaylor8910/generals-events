@@ -31,16 +31,29 @@ export enum GameStatus {
   TOO_LATE = 'TOO_LATE',
 }
 
+export enum GameSpeed {
+  SPEED_0_25X = '0.25x',
+  SPEED_0_5X = '0.5x',
+  SPEED_0_75X = '0.75x',
+  SPEED_1X = '1x',
+  SPEED_1_5X = '1.5x',
+  SPEED_2X = '2x',
+  SPEED_3X = '3x',
+  SPEED_4X = '4x',
+}
+
 export interface IBaseEvent {
   name: string;
   format: EventFormat;
   type: EventType;
   visibility: Visibility;
+  speed: GameSpeed;         // the speed to play the game at, defaults to 1x
   startTime: number;        // unix timestamp of start of event
   endTime?: number;         // unix timestamp of end of event
   playerCount: number;      // total players in the event
   replays: string[];        // a list of all replays that are tracked so far
   winners: string[];        // a list of the winner(s)
+  mapURL?: string;          // optional map to use
   server?: GeneralsServer;  // optional server override
 
   id?: string;       // client field
@@ -328,4 +341,24 @@ export interface IDynamicDYPFinals {
 
 export interface IDynamicDYPFinalsTeam {
   players: string[];
+}
+
+export interface IGeneralsGameOptions {
+  // show the map when you are defeated when this value is true
+  defeat_spectate?: boolean;
+
+  // join the game lobby as a spectator when true
+  // as of 6/14/21 providing this param with either value sets you as a
+  // spectator since it is just checking for the param being present
+  spectate?: boolean;
+
+  // allows spectators messages to not being visible to players when true
+  spectate_chat?: boolean;
+
+  // the map name from a map URL e.g. super%20duper%20fan%20mape to use the map
+  // from https://generals.io/maps/super%20duper%20fan%20mape
+  map?: string;
+
+  // the speed at which the game should be run
+  speed?: GameSpeed;
 }

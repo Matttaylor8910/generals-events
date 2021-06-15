@@ -38,6 +38,15 @@
       type="time"
       placeholder="hh:mm"
     >
+    <label>Speed</label>
+    <select [(ngModel)]="speed" name="speed">
+      <option [value]="option" *ngFor="let option of speeds">{{option}}</option>
+    </select>
+    <label>Map URL</label>
+    <input
+      [(ngModel)]="mapURL"
+      placeholder="optional"
+    >
     <ng-container *ngIf="format === EventFormat.ARENA">
       <label>Duration</label>
       <input

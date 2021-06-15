@@ -149,7 +149,7 @@ export class UtilService {
     for (let i = 0; i < entries.length; i++) {
       const [key, value] = entries[i];
       str += i === 0 ? '?' : '&';
-      str += `${key}=${value}`;
+      str += `${key}=${value ?? ''}`;
     }
 
     console.log(str);

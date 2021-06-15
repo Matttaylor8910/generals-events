@@ -1,9 +1,13 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
-import {IGeneralsReplay} from 'types';
+import {GameSpeed, IEvent, IGeneralsGameOptions, IGeneralsReplay} from 'types';
 import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {UtilService} from './util.service';
+
+const DEFAULT_GAME_OPTIONS: IGeneralsGameOptions = {
+  spectate_chat: true,
+}
 
 const GENERALS_NAME = 'generals-name';
 @Injectable({providedIn: 'root'})
@@ -28,21 +32,31 @@ export class GeneralsService {
 
   joinLobby(
       name: string,
-      server = GeneralsServer.NA,
+      event: IEvent,
       newTab = false,
-      spectate = true,
-      spectateOnDefeat = false,
+      options: IGeneralsGameOptions = {},
   ) {
-    // always turn on spectator chat
-    let url = `${SITE_URLS[server]}/games/${name}?spectate_chat=true`;
-        
-    // sets you as a spectator in the lobby
-    if (spectate) {
-      url += '&spectate=true';
+    const {
+      speed = GameSpeed.SPEED_1X,
+      mapURL = '',
+      server = GeneralsServer.NA,
+    } = event;
+
+    // if a map URL is provided on the event, use that map in the lobby
+    if (mapURL) {
+      const [base, mapName] = mapURL.split('/maps/');
+      options.map = mapName;
     }
 
-    // show the map when you are defeated
-    url += `&defeat_spectate=${spectateOnDefeat}`;
+    // override any default game options with those provided
+    const queryParams = this.utilService.getParamString({
+      ...DEFAULT_GAME_OPTIONS,
+      ...options,
+      speed,
+    });
+
+    // append the query params to the game lobby url
+    const url = `${SITE_URLS[server]}/games/${name}${queryParams}`;
 
     if (newTab) {
       window.open(url, '_blank');

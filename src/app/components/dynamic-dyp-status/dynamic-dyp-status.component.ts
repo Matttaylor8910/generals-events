@@ -132,11 +132,11 @@ export class DynamicDYPStatusComponent implements OnDestroy {
 
   joinMatch() {
     this.generals.joinLobby(
-        `match_${this.readyStatus.match}`, this.event.server, true, false);
+        `match_${this.readyStatus.match}`, this.event, true);
   }
 
   joinFinals() {
-    this.generals.joinLobby('match_finals', this.event.server, true, false);
+    this.generals.joinLobby('match_finals', this.event, true);
   }
 
   findNextMatch() {

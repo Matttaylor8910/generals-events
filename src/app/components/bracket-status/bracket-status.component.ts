@@ -136,12 +136,14 @@ export class BracketStatusComponent implements OnDestroy {
 
   joinMatch() {
     this.generals.joinLobby(
-        `match_${this.readyStatus.lobby}`, this.event.server, true, false);
+        `match_${this.readyStatus.lobby}`, this.event, true);
   }
 
   spectateMatch() {
     this.generals.joinLobby(
-        `match_${this.spectateStatus.lobby}`, this.event.server, true, true);
+        `match_${this.spectateStatus.lobby}`, this.event, true, {
+          spectate: true,
+        });
   }
 
   findNextMatch() {

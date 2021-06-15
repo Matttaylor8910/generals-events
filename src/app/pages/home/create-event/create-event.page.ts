@@ -3,9 +3,9 @@ import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {extend} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
-import {EventFormat, EventType, Visibility} from 'types';
+import {EventFormat, EventType, GameSpeed, Visibility} from 'types';
 
-const eventTypes = {
+const arenaEventTypes = {
   [EventType.FFA]: {
     playersPerGame: 8,
   },
@@ -73,6 +73,10 @@ export class CreateEventPage {
   date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
   time = '12:00:00';
 
+  speeds = Object.values(GameSpeed);
+  speed = GameSpeed.SPEED_1X;
+  mapURL = '';
+
   name: string;
   duration: number;
 
@@ -139,6 +143,8 @@ export class CreateEventPage {
       type: this.type,
       visibility: this.visibility,
       startTime: this.getDate().getTime(),
+      speed: this.speed,
+      mapURL: this.mapURL,
     };
 
     if (this.format === EventFormat.ARENA) {
@@ -160,7 +166,7 @@ export class CreateEventPage {
 
     return {
       endTime: endDate.getTime(),
-      playersPerGame: eventTypes[this.type].playersPerGame,
+      playersPerGame: arenaEventTypes[this.type].playersPerGame,
       queue: [],
     };
   }
