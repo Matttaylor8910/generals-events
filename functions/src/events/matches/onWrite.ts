@@ -7,7 +7,7 @@ import {GeneralsServer} from '../../../../constants';
 import {IArenaEvent, IBracketMatchDocument, IGeneralsReplay, MatchStatus} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
-import {timeoutAfter} from '../../util/util';
+import {getFinishedTime, timeoutAfter} from '../../util/util';
 
 try {
   admin.initializeApp();
@@ -184,7 +184,7 @@ async function saveReplayToMatch(
     replays: admin.firestore.FieldValue.arrayUnion({
       replayId: replay.id,
       started: replay.started,
-      finished: replay.started + (turns * 1000),
+      finished: getFinishedTime(replay.started, turns, event.speed),
       replay: {scores, summary, turns},
     }),
   });
@@ -202,7 +202,7 @@ async function saveReplayToMatch(
     const record = {
       replayId: replay.id,
       started: replay.started,
-      finished: replay.started + (player.lastTurn * 1000),
+      finished: getFinishedTime(replay.started, player.lastTurn, event.speed),
       ...player,
 
       // TODO make this an offical object at some point

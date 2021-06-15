@@ -59,4 +59,9 @@ export class EventSummaryComponent {
     const {qualified = []} = this.event as unknown as IDoubleElimEvent;
     return qualified.length > 0;
   }
+
+  get mapName(): string {
+    const [base, map] = this.event?.mapURL?.split('/maps/');
+    return decodeURI(map);
+  }
 }

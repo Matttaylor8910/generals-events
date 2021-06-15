@@ -16,6 +16,7 @@ export const ADMINS = [
   'googleman',
   'Lazerpent',
   'DavidC',
+  'matt',
 ];
 
 export const HIDE_COMPLETED = 'generals-hide-completed';

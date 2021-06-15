@@ -112,8 +112,7 @@ export class ArenaQueueComponent implements OnDestroy {
                     const {id, lobby} = redirect;
                     await this.eventService.clearRedirect(
                         this.event.id, id, this.generals.name);
-                    this.generals.joinLobby(
-                        lobby, this.event.server, false, false, false);
+                    this.generals.joinLobby(lobby, this.event, false);
                   }
                 });
       }

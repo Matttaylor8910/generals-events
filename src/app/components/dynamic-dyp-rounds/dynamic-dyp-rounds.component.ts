@@ -46,8 +46,9 @@ export class DynamicDYPRoundsComponent {
       const players = flatten(match.teams.map(team => team.players));
       const inMatch = players.includes(this.generals.name);
 
+      const options = inMatch ? {} : {spectate: true};
       this.generals.joinLobby(
-          `match_${match.number}`, this.event.server, true, !inMatch);
+          `match_${match.number}`, this.event, true, options);
     }
   }
 
