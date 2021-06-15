@@ -7,7 +7,7 @@ import {GeneralsServer} from '../../../../constants';
 import {EventType, GameStatus, IArenaEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
-import {timeoutAfter} from '../../util/util';
+import {getFinishedTime, timeoutAfter} from '../../util/util';
 
 try {
   admin.initializeApp();
@@ -203,7 +203,7 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const finished = replay.started + (turns * 1000);
+  const finished = getFinishedTime(replay.started, turns, event.speed);
   const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
@@ -227,7 +227,7 @@ async function saveReplayToGame(
       const record = {
         replayId: replay.id,
         started: replay.started,
-        finished: replay.started + (player.lastTurn * 1000),
+        finished: getFinishedTime(replay.started, player.lastTurn, event.speed),
         ...player,
       };
 
