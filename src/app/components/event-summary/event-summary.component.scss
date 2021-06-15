@@ -1,3 +1,17 @@
 .event-summary {
   width: 100%;
+
+  .align-center {
+    display: flex;
+    align-items: center;
+    color: var(--ion-color-step-600);
+
+    &:hover {
+      color: teal;
+    }
+
+    ion-icon {
+      margin-left: 5px;
+    }
+  }
 }

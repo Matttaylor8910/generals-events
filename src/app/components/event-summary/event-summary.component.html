@@ -23,6 +23,19 @@
       </ion-label>
     </ion-item>
 
+    <!-- using custom map -->
+    <ion-item *ngIf="event.mapURL">
+      <ion-icon slot="start" name="map-sharp"></ion-icon>
+      <ion-label>
+        <h2>Custom Map</h2>
+        <p>
+          <a class="align-center" [href]="event.mapURL" target="_blank">
+            {{ mapName }} <ion-icon name="link"></ion-icon>
+          </a>
+        </p>
+      </ion-label>
+    </ion-item>
+
     <!-- arena items -->
     <ng-container *ngIf="isArena">
       <ion-item>
