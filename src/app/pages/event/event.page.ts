@@ -248,6 +248,10 @@ export class EventPage implements OnDestroy {
 
       this.setEvent(firstUnfinished ?? events[0]);
     }
+
+    // if a child is already selected, update the event whenever it changes
+    const selected = events.find(event => event.id === this.event?.id);
+    if (selected) this.setEvent(selected);
   }
 
   goHome() {
