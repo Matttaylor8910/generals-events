@@ -18,6 +18,7 @@ const typeFormats = {
   [EventType.FFA]: [EventFormat.ARENA],
   [EventType.ONE_VS_ONE]: [EventFormat.ARENA, EventFormat.DOUBLE_ELIM],
   [EventType.TWO_VS_TWO]: [EventFormat.DYNAMIC_DYP],
+  [EventType.MULTI_STAGE_EVENT]: [EventFormat.MULTI_STAGE_EVENT],
 }
 
 enum WinningSets {

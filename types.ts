@@ -1,15 +1,17 @@
 import {GeneralsServer} from './constants';
 
-export enum EventFormat {
-  DOUBLE_ELIM = 'Double Elimination',
-  ARENA = 'Arena',
-  DYNAMIC_DYP = 'Dynamic DYP',
-}
-
 export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
   TWO_VS_TWO = '2v2',
+  MULTI_STAGE_EVENT = 'Multi-Stage Event',
+}
+
+export enum EventFormat {
+  DOUBLE_ELIM = 'Double Elimination',
+  ARENA = 'Arena',
+  DYNAMIC_DYP = 'Dynamic DYP',
+  MULTI_STAGE_EVENT = '',
 }
 
 export enum Visibility {
@@ -60,7 +62,8 @@ export interface IBaseEvent {
   exists?: boolean;  // client field
 }
 
-export type IEvent = IArenaEvent|IDoubleElimEvent|IDynamicDYPEvent|ILinkEvent;
+export type IEvent =
+    IArenaEvent|IDoubleElimEvent|IDynamicDYPEvent|IMultiStageEvent|ILinkEvent;
 
 // the arena event object located at /events/:id
 export interface IArenaEvent extends IBaseEvent {
@@ -98,6 +101,12 @@ export interface IDynamicDYPEvent extends IBaseEvent {
   rounds?: IDynamicDYPRound[];
   results: IMatchResults;
   finals?: IDynamicDYPFinals;
+}
+
+export interface IMultiStageEvent extends IBaseEvent {
+  eventIds: string[];          // ids for other events in this multi-stage event
+  ongoingGameCount: number;    // total games currently in progress
+  completedGameCount: number;  // total completed games
 }
 
 export interface ILinkEvent extends IBaseEvent {

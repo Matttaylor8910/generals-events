@@ -6,24 +6,35 @@
 
 <ion-content>
   <div class="create-event">
+    <!-- name of event -->
     <label>Name</label>
     <input
       [(ngModel)]="name"
       type="text"
       placeholder="{{namePlaceholder}}"
     >
+
+    <!-- event type, dictates event formats -->
     <label>Type</label>
     <select [(ngModel)]="type" (change)="typeChanged($event)" name="type">
       <option [value]="option" *ngFor="let option of types">{{option}}</option>
     </select>
-    <label>Format</label>
-    <select [(ngModel)]="format" name="format">
-      <option [value]="option" *ngFor="let option of formats">{{option}}</option>
-    </select>
+
+    <!-- show event formats for all types other than multi stage events -->
+    <ng-container  *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
+      <label>Format</label>
+      <select [(ngModel)]="format" name="format">
+        <option [value]="option" *ngFor="let option of formats">{{option}}</option>
+      </select>
+    </ng-container>
+
+    <!-- event visibility on the home page -->
     <label>Visibility</label>
     <select [(ngModel)]="visibility" name="visibility">
       <option [value]="option" *ngFor="let option of visibilities">{{option}}</option>
     </select>
+
+    <!-- date the event starts -->
     <label>Date</label>
     <input
       [ngModel]="date"
@@ -32,21 +43,32 @@
       type="date"
       placeholder="yyyy-mm-dd"
     >
+
+    <!-- time the event starts -->
     <label>Start Time</label>
     <input
       [(ngModel)]="time"
       type="time"
       placeholder="hh:mm"
     >
-    <label>Speed</label>
-    <select [(ngModel)]="speed" name="speed">
-      <option [value]="option" *ngFor="let option of speeds">{{option}}</option>
-    </select>
-    <label>Map URL</label>
-    <input
-      [(ngModel)]="mapURL"
-      placeholder="optional"
-    >
+
+    <!-- custom options for the event lobby -->
+    <ng-container *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
+      <!-- speed at which to play the game at -->
+      <label>Speed</label>
+      <select [(ngModel)]="speed" name="speed">
+        <option [value]="option" *ngFor="let option of speeds">{{option}}</option>
+      </select>
+
+      <!-- map each game will be played on -->
+      <label>Map URL</label>
+      <input
+        [(ngModel)]="mapURL"
+        placeholder="optional"
+      >
+    </ng-container>
+
+    <!-- the duration for an arena event -->
     <ng-container *ngIf="format === EventFormat.ARENA">
       <label>Duration</label>
       <input
@@ -55,25 +77,36 @@
         placeholder="# minutes"
       >
     </ng-container>
+
+    <!-- the check in time for the event, if it's an event in which you check in -->
     <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM || format === EventFormat.DYNAMIC_DYP">
       <label>Check-in Time</label>
       <select [(ngModel)]="checkIn" name="type">
         <option [value]="option" *ngFor="let option of checkInOptions">{{option}}</option>
       </select>
     </ng-container>
+
+    <!-- the number of games you need to win per round for different parts of the bracket -->
     <ng-container *ngIf="format === EventFormat.DOUBLE_ELIM">
+      <!-- used in the winners bracket, except semis and finals -->
       <label>Winners Bracket</label>
       <select [(ngModel)]="winningSets.winners" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
       </select>
+
+      <!-- used in the losers bracket, except the semis -->
       <label>Losers Bracket</label>
       <select [(ngModel)]="winningSets.losers" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
       </select>
+
+      <!-- used for semifinals matches -->
       <label>Semifinals</label>
       <select [(ngModel)]="winningSets.semifinals" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
       </select>
+
+      <!-- used for the finals -->
       <label>Finals</label>
       <select [(ngModel)]="winningSets.finals" name="type">
         <option [value]="option" *ngFor="let option of setsOptions">{{option}}</option>
