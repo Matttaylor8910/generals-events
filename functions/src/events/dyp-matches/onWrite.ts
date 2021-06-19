@@ -211,7 +211,6 @@ async function saveReplayToMatch(
     }
 
     // determine finished for this player based on their last turn
-    const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
     const record = {
       replayId: replay.id,
       started: replay.started,
