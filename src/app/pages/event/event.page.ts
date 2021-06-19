@@ -123,7 +123,6 @@ export class EventPage implements OnDestroy {
   }
 
   setPlayers(eventId: string) {
-    console.log(`getting players for ${eventId}`);
     this.players$ = this.eventService.getPlayers(eventId).pipe(tap(players => {
       this.players = players;
       this.checkJoinQueue();
