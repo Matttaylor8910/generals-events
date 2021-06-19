@@ -34,6 +34,16 @@
       <option [value]="option" *ngFor="let option of visibilities">{{option}}</option>
     </select>
 
+    <!-- ask for parent event id when adding an event to a multi-stage event -->
+    <ng-container *ngIf="visibility === Visibility.MULTI_STAGE_EVENT">
+      <label>Parent Event Id</label>
+      <input
+        [(ngModel)]="parentId"
+        type="text"
+        placeholder="required"
+      >
+    </ng-container>
+
     <!-- date the event starts -->
     <label>Date</label>
     <input

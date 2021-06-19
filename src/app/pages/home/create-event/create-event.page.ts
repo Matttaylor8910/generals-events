@@ -3,7 +3,7 @@ import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {extend} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
-import {EventFormat, EventType, GameSpeed, Visibility} from 'types';
+import {EventFormat, EventType, GameSpeed, IEvent, Visibility} from 'types';
 
 const arenaEventTypes = {
   [EventType.FFA]: {
@@ -61,6 +61,7 @@ const months = [
 })
 export class CreateEventPage {
   EventFormat = EventFormat;
+  Visibility = Visibility;
 
   visibilities = Object.values(Visibility);
   visibility = this.visibilities[0];
@@ -80,6 +81,7 @@ export class CreateEventPage {
 
   name: string;
   duration: number;
+  parentId: string;
 
   checkInOptions = Object.values(CheckInTimes);
   checkIn = this.checkInOptions[0];
@@ -116,8 +118,13 @@ export class CreateEventPage {
     return this.format !== EventFormat.ARENA || !!this.duration;
   }
 
+  get parentValid(): boolean {
+    return this.visibility !== Visibility.MULTI_STAGE_EVENT || !!this.parentId;
+  }
+
   get invalid(): boolean {
-    return this.invalidDate || !this.arenaValid || this.saving;
+    return this.invalidDate || !this.arenaValid || !this.parentValid ||
+        this.saving;
   }
 
   getDate(): Date {
@@ -138,7 +145,7 @@ export class CreateEventPage {
   async create() {
     this.saving = true;
 
-    const event = {
+    const event: Partial<IEvent> = {
       name: this.name || this.namePlaceholder,
       format: this.format,
       type: this.type,
@@ -147,6 +154,11 @@ export class CreateEventPage {
       speed: this.speed,
       mapURL: this.mapURL,
     };
+
+    // attach parentId for events that provide it
+    if (this.visibility === Visibility.MULTI_STAGE_EVENT) {
+      event.parentId = this.parentId;
+    }
 
     if (this.format === EventFormat.ARENA) {
       extend(event, this.getArenaEventFields(event.startTime));

@@ -17,6 +17,7 @@ export enum EventFormat {
 export enum Visibility {
   PUBLIC = 'Public',
   PRIVATE = 'Private',
+  MULTI_STAGE_EVENT = 'Part of Multi-Stage Event'
 }
 
 export enum EventStatus {
@@ -57,6 +58,7 @@ export interface IBaseEvent {
   winners: string[];        // a list of the winner(s)
   mapURL?: string;          // optional map to use
   server?: GeneralsServer;  // optional server override
+  parentId?: string;        // eventId for this event's parent, for multi-stage
 
   id?: string;       // client field
   exists?: boolean;  // client field
@@ -104,7 +106,6 @@ export interface IDynamicDYPEvent extends IBaseEvent {
 }
 
 export interface IMultiStageEvent extends IBaseEvent {
-  eventIds: string[];          // ids for other events in this multi-stage event
   ongoingGameCount: number;    // total games currently in progress
   completedGameCount: number;  // total completed games
 }
