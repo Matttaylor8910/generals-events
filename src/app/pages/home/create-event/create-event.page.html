@@ -51,15 +51,24 @@
       type="time"
       placeholder="hh:mm"
     >
-    <label>Speed</label>
-    <select [(ngModel)]="speed" name="speed">
-      <option [value]="option" *ngFor="let option of speeds">{{option}}</option>
-    </select>
-    <label>Map URL</label>
-    <input
-      [(ngModel)]="mapURL"
-      placeholder="optional"
-    >
+
+    <!-- custom options for the event lobby -->
+    <ng-container *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
+      <!-- speed at which to play the game at -->
+      <label>Speed</label>
+      <select [(ngModel)]="speed" name="speed">
+        <option [value]="option" *ngFor="let option of speeds">{{option}}</option>
+      </select>
+
+      <!-- map each game will be played on -->
+      <label>Map URL</label>
+      <input
+        [(ngModel)]="mapURL"
+        placeholder="optional"
+      >
+    </ng-container>
+
+    <!-- the duration for an arena event -->
     <ng-container *ngIf="format === EventFormat.ARENA">
       <label>Duration</label>
       <input
