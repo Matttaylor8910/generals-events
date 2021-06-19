@@ -44,7 +44,21 @@ export class EventService {
     return eventId;
   }
 
-  getEvents(finished: boolean): Observable<IEvent[]> {
+  /**
+   * Get a list of events. You can filter down to those that are or are not
+   * finished, or just get child events for a multi-stage event
+   *
+   * @param finished
+   *  true = only finished events
+   *  false = only unfinished events
+   *  null = both
+   *
+   * @param parentEventId optional parent event fi looking for children
+   *
+   * @returns an observable of a list of events
+   */
+  getEvents(finished: boolean|null, parentEventId?: string):
+      Observable<IEvent[]> {
     // admins can see private events too
     const visibilities = [Visibility.PUBLIC];
     if (ADMINS.includes(this.generals.name)) {
@@ -55,8 +69,16 @@ export class EventService {
         .collection<IEvent>(
             'events',
             ref => {
-              return ref.where('visibility', 'in', visibilities)
-                  .orderBy('startTime', 'desc');
+              // support looking for children with a given parent eventId, we
+              // don't care about the event visibility here
+              if (parentEventId) {
+                return ref.where('parentId', '==', parentEventId);
+              }
+
+              // otherwise, show only those with visibilities you can see
+              else {
+                return ref.where('visibility', 'in', visibilities)
+              }
             })
         .snapshotChanges()
         .pipe(map(actions => {
@@ -66,6 +88,10 @@ export class EventService {
                 return {...doc.data(), id: doc.id, exists: doc.exists};
               })
               .filter(event => {
+                // if finished is null, we want to see all, do not filter
+                if (finished === null) return event;
+
+                // otherwise look at endTime to determine if it has finished yet
                 return finished ? event.endTime < Date.now() :
                                   event.endTime > Date.now() || !event.endTime;
               })

@@ -22,6 +22,10 @@ export class EventPage implements OnDestroy {
 
   eventId: string;
   event: IEvent;
+  parent: IEvent;
+
+  children$: Observable<IEvent[]>;
+
   players: ILeaderboardPlayer[];
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
@@ -36,19 +40,20 @@ export class EventPage implements OnDestroy {
       private readonly utilService: UtilService,
   ) {
     this.eventId = this.route.snapshot.params.id;
-    this.players$ =
-        this.eventService.getPlayers(this.eventId).pipe(tap(players => {
-          this.players = players;
-          this.checkJoinQueue();
-          this.determineSelectPlayer(true);
-          this.determineDisqualified();
-        }));
 
     this.eventService.getEvent(this.eventId)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(event => {
-          this.event = event;
+          this.parent = event;
+          this.setEvent(event);
           this.determineSelectPlayer();
+
+          // if multi-stage, load the events that are part of this event and
+          // select the first one
+          if (this.event.format === EventFormat.MULTI_STAGE_EVENT) {
+            this.children$ = this.eventService.getEvents(null, this.eventId)
+                                 .pipe(tap(this.selectChild.bind(this)));
+          }
         });
   }
 
@@ -78,15 +83,23 @@ export class EventPage implements OnDestroy {
   }
 
   get isArena(): boolean {
-    return this.event.format === EventFormat.ARENA;
+    return this.event?.format === EventFormat.ARENA;
   }
 
   get isBracket(): boolean {
-    return this.event.format === EventFormat.DOUBLE_ELIM;
+    return this.event?.format === EventFormat.DOUBLE_ELIM;
   }
 
   get isDynamicDYP(): boolean {
-    return this.event.format === EventFormat.DYNAMIC_DYP;
+    return this.event?.format === EventFormat.DYNAMIC_DYP;
+  }
+
+  /**
+   * Base the event being multi-stage off of the parent format, because the
+   * event will change as they select from the top bar
+   */
+  get isMultiStage(): boolean {
+    return this.parent?.format === EventFormat.MULTI_STAGE_EVENT;
   }
 
   get isAdmin(): boolean {
@@ -107,6 +120,25 @@ export class EventPage implements OnDestroy {
 
   get inEvent(): boolean {
     return this.players?.some(p => p.name === this.generals.name);
+  }
+
+  setPlayers(eventId: string) {
+    console.log(`getting players for ${eventId}`);
+    this.players$ = this.eventService.getPlayers(eventId).pipe(tap(players => {
+      this.players = players;
+      this.checkJoinQueue();
+      this.determineSelectPlayer(true);
+      this.determineDisqualified();
+    }));
+  }
+
+  setEvent(event: IEvent) {
+    // only update the players if we have changed to a new event
+    if (this.event?.id !== event.id) {
+      this.setPlayers(event.id);
+    }
+
+    this.event = event;
   }
 
   async checkJoinQueue() {
@@ -204,6 +236,18 @@ export class EventPage implements OnDestroy {
 
       this.disqualified = disqualified;
       localStorage.setItem('generals-dq', String(this.disqualified));
+    }
+  }
+
+  selectChild(events: IEvent[] = []) {
+    // only select a child if the current event is the multi stage event as this
+    // means we haven't selected a child event yet
+    if (this.event.format === EventFormat.MULTI_STAGE_EVENT) {
+      const firstUnfinished = events.find(event => {
+        return !event.endTime || event.endTime > Date.now();
+      });
+
+      this.setEvent(firstUnfinished ?? events[0]);
     }
   }
 

@@ -17,22 +17,6 @@
       ]
     },
     {
-      "collectionGroup": "events",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "visibility", "order": "ASCENDING"},
-        {"fieldPath": "endTime", "order": "ASCENDING"}
-      ]
-    },
-    {
-      "collectionGroup": "events",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "visibility", "order": "ASCENDING"},
-        {"fieldPath": "startTime", "order": "DESCENDING"}
-      ]
-    },
-    {
       "collectionGroup": "matches",
       "queryScope": "COLLECTION",
       "fields": [

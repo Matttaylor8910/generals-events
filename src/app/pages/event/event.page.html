@@ -5,7 +5,22 @@
         <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>{{ event?.name }}</ion-title>
+
+    <!-- determine if there are children events -->
+    <ng-container *ngIf="isMultiStage; else title">
+      <ng-container *ngIf="children$ | async as children">
+        <ng-container *ngIf="children?.length > 0">
+          <ion-toolbar>
+            <ion-segment>
+              <ion-segment-button [class.segment-button-checked]="tab.id === event.id" [value]="tab" *ngFor="let tab of children" (click)="setEvent(tab)">
+                <ion-label>{{ tab.name }}</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </ion-toolbar>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
     <ion-buttons slot="end">
       <ng-container *ngIf="isAdmin">
         <ion-button tooltip="Delete Event" (click)="deleteEvent()">
@@ -35,6 +50,7 @@
           </app-event-summary>
           <app-chat
             [event]="event"
+            [parentEvent]="parent"
             [disqualified]="disqualified"
             (nameClicked)="selectPlayer($event)">
           </app-chat>
@@ -42,7 +58,7 @@
       </div>
 
       <div class="main-panel">
-        <ng-container *ngIf="players$ | async as players">
+        <ng-container *ngIf="players$ | async as players; else loading">
           <app-event-trophies
             [event]="event"
             [players]="players"
@@ -108,6 +124,10 @@
     </ng-container>
   </div>
 </ion-content>
+
+<ng-template #title>
+  <ion-title>{{ event?.name }}</ion-title>
+</ng-template>
 
 <ng-template #empty>
   <div class="empty-container">
