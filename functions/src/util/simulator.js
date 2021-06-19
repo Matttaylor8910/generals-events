@@ -157,7 +157,7 @@ function deserialize(serialized) {
 
   if (!obj) return;
 
-  const replay = new GameReplay();
+  const replay = {};
   let i = 0;
   replay.version = obj[i++];
   replay.id = obj[i++];
