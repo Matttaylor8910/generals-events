@@ -17,7 +17,7 @@ export function handleArenaEventUpdate(snapshot: DocumentSnapshot):
 
 async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
   const event = snapshot.data() as IArenaEvent;
-  const {endTime, queue, playersPerGame} = event;
+  const {endTime, queue, playersPerGame, parentId} = event;
 
   // if the event isn't over, start a new game if there are enough players
   // in the queue to do so
@@ -35,7 +35,7 @@ async function checkQueue(snapshot: DocumentSnapshot, eventId: string) {
         queue: admin.firestore.FieldValue.arrayRemove(...players),
       });
       batch.create(snapshot.ref.collection('redirect').doc(id), {
-        lobby: `event_${eventId}_${started}`,
+        lobby: `event_${parentId ?? eventId}_${started}`,
         started,
         players,
       });
