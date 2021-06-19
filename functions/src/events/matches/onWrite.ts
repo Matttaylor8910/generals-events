@@ -203,7 +203,7 @@ async function saveReplayToMatch(
     const record = {
       replayId: replay.id,
       started: replay.started,
-      finished: getFinishedTime(replay.started, player.lastTurn, event.speed),
+      finished: getFinishedTime(replay.started, player.lastTurn, speed),
       ...player,
 
       // TODO make this an offical object at some point
