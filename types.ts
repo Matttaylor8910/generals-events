@@ -17,7 +17,7 @@ export enum EventFormat {
 export enum Visibility {
   PUBLIC = 'Public',
   PRIVATE = 'Private',
-  MULTI_STAGE_EVENT = 'Part of Multi-Stage Event'
+  MULTI_STAGE_EVENT = 'Part of Multi-Stage Event',
 }
 
 export enum EventStatus {
