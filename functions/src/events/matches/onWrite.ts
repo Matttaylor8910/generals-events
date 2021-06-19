@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {IArenaEvent, IBracketMatchDocument, IGeneralsReplay, MatchStatus} from '../../../../types';
+import {GameSpeed, IArenaEvent, IBracketMatchDocument, IGeneralsReplay, MatchStatus} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 import {getFinishedTime, timeoutAfter} from '../../util/util';
@@ -179,12 +179,13 @@ async function saveReplayToMatch(
   });
 
   // save the replay to the match doc
+  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
   batch.update(matchSnapshot.ref, {
     updated: Date.now(),
     replays: admin.firestore.FieldValue.arrayUnion({
       replayId: replay.id,
       started: replay.started,
-      finished: getFinishedTime(replay.started, turns, event.speed),
+      finished: getFinishedTime(replay.started, turns, speed),
       replay: {scores, summary, turns},
     }),
   });

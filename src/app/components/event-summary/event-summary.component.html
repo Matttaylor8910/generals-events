@@ -24,12 +24,12 @@
     </ion-item>
 
     <!-- using custom map -->
-    <ion-item *ngIf="event.mapURL">
+    <ion-item *ngIf="event.options?.map">
       <ion-icon slot="start" name="map-sharp"></ion-icon>
       <ion-label>
         <h2>Custom Map</h2>
         <p>
-          <a class="align-center" [href]="event.mapURL" target="_blank">
+          <a class="align-center" href="https://generals.io/maps/{{ event.options.map }}" target="_blank">
             {{ mapName }} <ion-icon name="link"></ion-icon>
           </a>
         </p>

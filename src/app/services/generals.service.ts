@@ -37,22 +37,15 @@ export class GeneralsService {
       options: IGeneralsGameOptions = {},
   ) {
     const {
-      speed = GameSpeed.SPEED_1X,
-      mapURL = '',
       server = GeneralsServer.NA,
+      options: lobbyOptions,
     } = event;
-
-    // if a map URL is provided on the event, use that map in the lobby
-    if (mapURL) {
-      const [base, mapName] = mapURL.split('/maps/');
-      options.map = mapName;
-    }
 
     // override any default game options with those provided
     const queryParams = this.utilService.getParamString({
       ...DEFAULT_GAME_OPTIONS,
+      ...lobbyOptions,
       ...options,
-      speed,
     });
 
     // append the query params to the game lobby url

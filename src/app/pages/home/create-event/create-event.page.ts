@@ -78,6 +78,11 @@ export class CreateEventPage {
   speeds = Object.values(GameSpeed);
   speed = GameSpeed.SPEED_1X;
   mapURL = '';
+  width = .75;
+  height = .75;
+  cities = .5;
+  mountains = .5;
+  swamps = 0;
 
   name: string;
   duration: number;
@@ -145,14 +150,25 @@ export class CreateEventPage {
   async create() {
     this.saving = true;
 
+    const [base, map = ''] = this.mapURL?.split('/maps/');
+
     const event: Partial<IEvent> = {
       name: this.name || this.namePlaceholder,
       format: this.format,
       type: this.type,
       visibility: this.visibility,
       startTime: this.getDate().getTime(),
-      speed: this.speed,
-      mapURL: this.mapURL,
+
+      // custom options for the lobby
+      options: {
+        width: this.width,
+        height: this.height,
+        cities: this.cities,
+        mountains: this.mountains,
+        swamps: this.swamps,
+        speed: this.speed,
+        map: map,
+      }
     };
 
     // attach parentId for events that provide it

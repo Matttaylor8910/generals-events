@@ -50,15 +50,15 @@ export interface IBaseEvent {
   format: EventFormat;
   type: EventType;
   visibility: Visibility;
-  speed: GameSpeed;         // the speed to play the game at, defaults to 1x
   startTime: number;        // unix timestamp of start of event
   endTime?: number;         // unix timestamp of end of event
   playerCount: number;      // total players in the event
   replays: string[];        // a list of all replays that are tracked so far
   winners: string[];        // a list of the winner(s)
-  mapURL?: string;          // optional map to use
   server?: GeneralsServer;  // optional server override
   parentId?: string;        // eventId for this event's parent, for multi-stage
+
+  options: Partial<IGeneralsGameOptions>;  // all possible options
 
   id?: string;       // client field
   exists?: boolean;  // client field
@@ -371,4 +371,19 @@ export interface IGeneralsGameOptions {
 
   // the speed at which the game should be run
   speed?: GameSpeed;
+
+  // the width of the map, between 0 and 1, e.g. 0.75
+  width?: number;
+
+  // the height of the map, between 0 and 1, e.g. 0.75
+  height?: number;
+
+  // the city density, between 0 and 1, e.g. 0.75
+  cities?: number;
+
+  // the mountain density, between 0 and 1, e.g. 0.75
+  mountains?: number;
+
+  // the swamp density, between 0 and 1, e.g. 0.75
+  swamps?: number;
 }

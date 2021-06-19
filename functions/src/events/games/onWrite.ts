@@ -4,7 +4,7 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {EventType, GameStatus, IArenaEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
+import {EventType, GameSpeed, GameStatus, IArenaEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
 import {getFinishedTime, timeoutAfter} from '../../util/util';
@@ -203,7 +203,8 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const finished = getFinishedTime(replay.started, turns, event.speed);
+  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
+  const finished = getFinishedTime(replay.started, turns, speed);
   const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
@@ -223,11 +224,13 @@ async function saveReplayToGame(
       if (!playerDoc.exists) continue;
 
       const recordId = `${replay.id}_${player.name}`;
+
       // determine finished for this player based on their last turn
+      const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
       const record = {
         replayId: replay.id,
         started: replay.started,
-        finished: getFinishedTime(replay.started, player.lastTurn, event.speed),
+        finished: getFinishedTime(replay.started, player.lastTurn, speed),
         ...player,
       };
 

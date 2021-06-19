@@ -61,7 +61,6 @@ export class EventSummaryComponent {
   }
 
   get mapName(): string {
-    const [base, map] = this.event?.mapURL?.split('/maps/');
-    return decodeURI(map);
+    return decodeURI(this.event?.options?.map);
   }
 }
