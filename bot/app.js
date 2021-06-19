@@ -3,7 +3,7 @@ const io = require('socket.io-client');
 const config = require('./config.js');
 const Bot = require('./scripts/bot.js');
 
-let socket = io('http://bot.generals.io');
+let socket = io('https://bot.generals.io');
 const args = process.argv.slice(2);
 
 const BASE_URL =
@@ -74,7 +74,7 @@ socket.on('game_start', function(data) {
   playerIndex = data.playerIndex;
   started = false;
   replay_url =
-      'http://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
+      'https://bot.generals.io/replays/' + encodeURIComponent(data.replay_id);
   usernames = data.usernames;
   teams = data.teams;
   chatRoom = data.chat_room;
@@ -107,7 +107,7 @@ function joinCustomGameQueue(lobbyId) {
     socket.emit('set_force_start', lobbyId, true);
   }, 5000);
   console.log(
-      name + '\tjoining lobby: http://bot.generals.io/games/' +
+      name + '\tjoining lobby: https://bot.generals.io/games/' +
       encodeURIComponent(lobbyId));
 }
 
