@@ -29,6 +29,11 @@ const typesMap = {
   [EventType.FFA]: 'ffa',
   [EventType.ONE_VS_ONE]: 'duel',
   [EventType.TWO_VS_TWO]: '2v2',
+
+  // multi stage events themselves can be composed of several different events
+  // with different formats, but for the purpose of showing stars during
+  // registration, just use their duel (1v1) rating
+  [EventType.MULTI_STAGE_EVENT]: 'duel',
 };
 export function getCurrentStars(
     name: string,
