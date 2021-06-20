@@ -40,6 +40,10 @@ export class ChatComponent implements OnInit {
   }
 
   get disallowNewMessages(): boolean {
+    if (!this.parentEvent?.endTime) {
+      return false;
+    }
+
     const endTime = this.parentEvent?.endTime ?? this.event?.endTime;
     return endTime < Date.now() - FIVE_MINS;
   }
