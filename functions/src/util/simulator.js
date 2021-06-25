@@ -67,7 +67,7 @@ function simulate(replay) {
   let turn = 0;
 
   // Simulate the game!
-  while (!game.isOver() && game.turn < 2000) {
+  while (!game.isOver()) {
     nextTurn();
 
     const alive = game.generals.filter(g => g >= 0).length;
