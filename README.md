@@ -2,7 +2,7 @@
 
 This is a tournament webapp for running events for the game [generals.io](http://generals.io/). Tournament formats are developed as we need them. The available ones are documented below.
 
-## Event Formats
+## Tournament Formats
 
 ### Arena
 #### Supports: FFA, 1v1
