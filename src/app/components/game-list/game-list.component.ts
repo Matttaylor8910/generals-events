@@ -13,13 +13,21 @@ export class GameListComponent {
 
   @Output() nameClicked = new EventEmitter<string>();
 
+  eventId: string;
   games$: Observable<IGame[]>;
 
   constructor(
       private readonly eventService: EventService,
   ) {}
 
-  ngOnInit() {
-    this.games$ = this.eventService.getGames(this.event.id, 15);
+  ngOnChanges() {
+    if (this.eventId !== this.event?.id) {
+      this.eventId = this.event?.id;
+      this.games$ = this.eventService.getGames(this.eventId, 15);
+    }
+  }
+
+  trackByFn(game: IGame) {
+    return game.id;
   }
 }

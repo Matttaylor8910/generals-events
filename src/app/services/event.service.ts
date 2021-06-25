@@ -275,13 +275,7 @@ export class EventService {
 
               return query;
             })
-        .snapshotChanges()
-        .pipe(map(actions => {
-          return actions.map(action => {
-            const {doc} = action.payload;
-            return {...doc.data(), id: doc.id};
-          });
-        }));
+        .valueChanges({idField: 'id'});
   }
 
   checkInPlayer(eventId: string, name: string) {
