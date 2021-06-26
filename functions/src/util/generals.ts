@@ -14,8 +14,8 @@ export function getLastReplayForUsername(
 
 export function getReplaysForUsername(
     name: string,
-    offset: number,
-    count: number,
+    offset = 0,
+    count = 200,
     server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
   const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${
@@ -28,6 +28,12 @@ export function getReplaysForUsername(
 const typesMap = {
   [EventType.FFA]: 'ffa',
   [EventType.ONE_VS_ONE]: 'duel',
+  [EventType.TWO_VS_TWO]: '2v2',
+
+  // multi stage events themselves can be composed of several different events
+  // with different formats, but for the purpose of showing stars during
+  // registration, just use their duel (1v1) rating
+  [EventType.MULTI_STAGE_EVENT]: 'duel',
 };
 export function getCurrentStars(
     name: string,
@@ -37,7 +43,8 @@ export function getCurrentStars(
   const url =
       `${SITE_URLS[server]}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
   const generalsStars = http.get(url).then((response) => {
-    return Number(response.data.stars[typesMap[type]]);
+    const stars = Number(response.data.stars[typesMap[type]]);
+    return stars > 0 ? stars : 0;
   });
 
   return Promise.race([generalsStars, timeoutAfter(1000, 0)]);

@@ -1,0 +1,66 @@
+<div class="dynamic-dyp-container">
+  <app-dynamic-dyp-status
+    [event]="event"
+    [players]="players"
+    [status]="status"
+    [disqualified]="disqualified"
+    [finals]="finals">
+  </app-dynamic-dyp-status>
+
+  <ion-segment [(ngModel)]="selectedTab" *ngIf="tabs.length > 1">
+    <ion-segment-button [value]="tab" *ngFor="let tab of tabs">
+      <ion-label>{{ tab }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <ng-container *ngIf="showRegistration">
+    <app-registration
+      [event]="event"
+      [players]="players"
+      [status]="status"
+      [selectedPlayer]="selectedPlayer"
+      [disqualified]="disqualified"
+      [registrationOpen]="registrationOpen"
+      (playerClicked)="playerClicked.emit($event)">
+    </app-registration>
+  </ng-container>
+
+  <ng-container *ngIf="showAdmin">
+    <ion-button class="generals-button" (click)="generateEventRounds()" [disabled]="!event.checkedInPlayers?.length">Generate Rounds</ion-button>
+    <ion-button class="generals-button" (click)="checkInAll()">Check In All</ion-button>
+    <ion-button class="generals-button" (click)="startEvent()" [disabled]="!rounds">Start Event</ion-button>
+    <div>
+      <!-- TODO: remove -->
+      <label>Players to Use: </label>
+      <input [(ngModel)]="playersToUse">
+    </div>
+    <div>
+      <label>Max Rounds: </label>
+      <input [(ngModel)]="maxRounds">
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="showRounds">
+    <app-dynamic-dyp-rounds
+      [event]="event"
+      [rounds]="rounds"
+      [finals]="finals"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-dynamic-dyp-rounds>
+  </ng-container>
+
+  <ng-container *ngIf="showFinals">
+    <app-dynamic-dyp-finals-teams
+      [event]="event"
+      [players]="players"
+      (playerClicked)="handlePlayerClicked($event)">
+    </app-dynamic-dyp-finals-teams>
+  </ng-container>
+
+  <ng-container *ngIf="showRules">
+    <app-rules
+      [event]="event"
+      [status]="status">
+    </app-rules>
+  </ng-container>
+</div>

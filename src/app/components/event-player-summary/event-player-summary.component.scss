@@ -87,7 +87,8 @@
           font-weight: bold;
         }
 
-        .points {
+        .points,
+        .result {
           width: 25px;
           font-weight: bold;
           white-space: nowrap;
@@ -101,6 +102,14 @@
         .summary {
           color: #fff;
         }
+
+        .result {
+          color: red;
+
+          &.win {
+            color: teal;
+          }
+        }
       }
 
       ion-button {
@@ -110,7 +119,10 @@
   }
 
   .disclaimer {
-    border-top: 1px solid #333;
     padding-top: 8px;
+
+    &:first-of-type {
+      border-top: 1px solid #333;
+    }
   }
 }

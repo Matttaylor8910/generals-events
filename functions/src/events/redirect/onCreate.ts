@@ -5,7 +5,7 @@ import {GameStatus} from '../../../../types';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 const db = admin.firestore();
 

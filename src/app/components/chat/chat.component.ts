@@ -4,7 +4,9 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
 
 import {ADMINS} from '../../../../constants';
-import {IChatMessage, IEvent} from '../../../../types';
+import {IChatMessage, IEvent, IMultiStageEvent} from '../../../../types';
+
+const FIVE_MINS = 1000 * 60 * 5;
 
 @Component({
   selector: 'app-chat',
@@ -16,6 +18,10 @@ export class ChatComponent implements OnInit {
 
   @Input() event: IEvent;
   @Input() disqualified: boolean;
+
+  // in the case of a multi stage event, we want to use one eventId for a
+  // unified chat box across events
+  @Input() parentEvent?: IMultiStageEvent;
 
   @Output() nameClicked = new EventEmitter<string>();
 
@@ -33,22 +39,41 @@ export class ChatComponent implements OnInit {
     return (this.chatBox?.nativeElement.clientHeight || 0) - 59;
   }
 
+  get disallowNewMessages(): boolean {
+    if (!this.parentEvent?.endTime) {
+      return false;
+    }
+
+    const endTime = this.parentEvent?.endTime ?? this.event?.endTime;
+    return endTime < Date.now() - FIVE_MINS;
+  }
+
   get disableChat(): boolean {
-    return !this.generals.name || this.disqualified;
+    return !this.generals.name || this.disqualified || this.disallowNewMessages;
   }
 
   get placeholder(): string {
     if (this.disqualified) {
       return 'You have been disqualified';
+    } else if (this.disallowNewMessages) {
+      return 'Chat is closed, join discord!'
     } else if (this.generals.name) {
       return 'Please be nice in chat!'
     }
     return 'You must login to chat';
   }
 
+  /**
+   * The event id to use for chat messages. Use the parent's eventId in the case
+   * of this event being part of a multi-stage event
+   */
+  get eventId(): string {
+    return this.parentEvent?.id ?? this.event?.id;
+  }
+
   ngOnInit() {
-    if (this.event?.id) {
-      this.messages$ = this.messageService.getEventMessages(this.event.id);
+    if (this.eventId) {
+      this.messages$ = this.messageService.getEventMessages(this.eventId);
     }
   }
 
@@ -58,7 +83,7 @@ export class ChatComponent implements OnInit {
 
   submit() {
     if (this.text) {
-      this.messageService.addEventMessage(this.event.id, this.text);
+      this.messageService.addEventMessage(this.eventId, this.text);
       delete this.text;
     }
   }

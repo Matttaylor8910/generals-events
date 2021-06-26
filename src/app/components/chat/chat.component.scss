@@ -34,7 +34,8 @@
       }
     }
 
-    input {
+    input,
+    .chat-closed {
       position: absolute;
       bottom: 12px;
       left: 16px;
@@ -48,6 +49,28 @@
 
       &:focus {
         outline: none;
+      }
+    }
+
+    .chat-closed {
+      color: #aaa;
+      display: flex;
+      align-items: center;
+
+      .discord-link {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin-left: 5px;
+
+        &:hover {
+          color: #7289da;
+        }
+
+        ion-icon {
+          font-size: 20px;
+          margin-left: 5px;
+        }
       }
     }
   }

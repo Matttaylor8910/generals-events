@@ -25,9 +25,20 @@ ion-content {
     input,
     select,
     label,
-    ion-button {
+    ion-button,
+    ion-item {
       width: 100%;
       max-width: 250px;
+    }
+
+    ion-item {
+      --background: transparent;
+      --inner-padding-end: 0;
+      --padding-start: 0;
+
+      ion-range {
+        padding: 0;
+      }
     }
   }
 }

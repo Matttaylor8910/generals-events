@@ -1,0 +1,129 @@
+table {
+  width: 100%;
+
+  .table-header {
+    background: teal;
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 36px;
+      padding: 0 10px;
+
+      .page-control {
+        display: flex;
+        align-items: center;
+
+        .control-text {
+          margin: 0 10px;
+        }
+      }
+    }
+  }
+
+  tr {
+    background: #333;
+
+    &:not(.table-header) {
+      height: 42px;
+    }
+
+    &.even {
+      background: #444;
+    }
+
+    td {
+      padding: 8px 10px;
+    }
+
+    .marker {
+      width: 8px;
+      padding: 0;
+
+      &.selected {
+        background: teal;
+      }
+      &.you {
+        background: purple;
+      }
+    }
+
+    .rank {
+      width: 20px;
+
+      ion-icon[name="close"] {
+        font-size: 24px;
+        position: relative;
+        top: 3px;
+        left: -3px;
+      }
+    }
+
+    .name:hover {
+      cursor: pointer;
+      color: teal;
+    }
+
+    .qualified {
+      position: relative;
+      top: 2px;
+      left: 5px;
+
+      ion-icon {
+        color: gold;
+
+        &[name="close-circle"] {
+          color: #d31c1c;
+        }
+      }
+    }
+
+    .points {
+      width: 15%;
+      text-align: right;
+      font-weight: bold;
+      font-size: 16px;
+      padding-right: 16px;
+      white-space: nowrap;
+
+      .stars {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        .tsp {
+          font-family: var(--ion-font-family);
+          letter-spacing: .5px;
+          font-weight: normal;
+        }
+
+        .star-count,
+        ion-spinner {
+          width: 18px;
+          margin-left: 5px;
+          text-align: center;
+        }
+      }
+
+      .generals-button {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .checkin {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        ion-icon {
+          margin-right: 10px;
+        }
+      }
+    }
+
+    &.small-devices {
+      display: none;
+    }
+  }
+}

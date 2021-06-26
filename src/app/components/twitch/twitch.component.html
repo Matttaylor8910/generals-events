@@ -1,0 +1,9 @@
+<div id="twitch-embed"></div>
+
+<div class="empty" *ngIf="finished">
+  <h1>This event was casted by {{ channel }}. It's now over, but please go follow their channel!</h1>
+  <ion-button class="generals-button" href="https://www.twitch.tv/{{channel}}" target="_blank">
+    <ion-icon name="logo-twitch"></ion-icon>
+    Twitch Channel
+  </ion-button>
+</div>

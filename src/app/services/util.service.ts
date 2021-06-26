@@ -88,20 +88,37 @@ export class UtilService {
     return loading;
   }
 
-  async promptForText(): Promise<string> {
-    const ionAlert = await this.alertCtrl.create({
-      cssClass: 'my-custom-class',
-      header: 'Enter your generals.io username',
-      message: 'Your username must exactly match or your games won\'t count!',
-      inputs:
-          [{name: 'name', type: 'text', placeholder: 'generals.io username'}],
-      buttons: [{text: 'Cancel', role: 'cancel'}, {text: 'Join'}]
-    });
+  async promptForText(
+      header: string,
+      message: string,
+      placeholder: string,
+      confirmText: string,
+      cancelText: string,
+      ): Promise<string|null> {
+    return new Promise(async resolve => {
+      const ionAlert = await this.alertCtrl.create({
+        cssClass: 'my-custom-class',
+        header,
+        message,
+        inputs: [{name: 'name', type: 'text', placeholder}],
+        buttons: [
+          {
+            text: cancelText,
+            role: 'cancel',
+            handler: () => {
+              resolve(null);
+            }
+          },
+          {
+            text: confirmText,
+            handler: (response) => {
+              resolve(response.name || null)
+            }
+          }
+        ]
+      });
 
-    await ionAlert.present();
-
-    return ionAlert.onDidDismiss().then(response => {
-      return response?.data?.values?.name;
+      await ionAlert.present();
     });
   }
 
@@ -120,5 +137,23 @@ export class UtilService {
       ${mins ? mins + 'm' : ''}
       ${secs ? secs + 's' : ''}
     `.trim();
+  }
+
+  getParamString(params: {[key: string]: any}): string {
+    if (!params) return '';
+
+    console.log(params);
+
+    let str = '';
+    const entries = Object.entries(params);
+    for (let i = 0; i < entries.length; i++) {
+      const [key, value] = entries[i];
+      str += i === 0 ? '?' : '&';
+      str += `${key}=${value ?? ''}`;
+    }
+
+    console.log(str);
+
+    return str;
   }
 }

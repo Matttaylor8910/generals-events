@@ -4,15 +4,15 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {EventType, GameStatus, IEvent, IGame, IGeneralsReplay} from '../../../../types';
+import {EventType, GameSpeed, GameStatus, IArenaEvent, IGame, IGeneralsReplay} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
-import {timeoutAfter} from '../../util/util';
+import {getFinishedTime, timeoutAfter} from '../../util/util';
 
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 const db = admin.firestore();
 
@@ -64,7 +64,7 @@ async function lookForFinishedGame(
   if (!game.replayId && players?.length) {
     // get list of tracked replays for a event
     const eventSnap = await eventRef.get();
-    const event = (eventSnap.data() || {}) as IEvent;
+    const event = (eventSnap.data() || {}) as IArenaEvent;
     const trackedReplays = event.replays || [];
 
     console.log(`${trackedReplays.length} tracked replays for ${eventSnap.id}`);
@@ -164,7 +164,7 @@ async function saveReplayToGame(
     replay: IGeneralsReplay,
     gameSnapshot: DocumentSnapshot,
     eventRef: admin.firestore.DocumentReference,
-    event: IEvent,
+    event: IArenaEvent,
     ): Promise<void> {
   const batch = db.batch();
   batch.update(eventRef, {
@@ -180,13 +180,19 @@ async function saveReplayToGame(
       await simulator.getReplayStats(replay.id, event.server);
 
   // determine if the winner is on a streak
-  const winner = scores[0];
+  const [winner, second] = scores;
   const snapshot = await eventRef.collection('players').doc(winner.name).get();
   const {currentStreak} = snapshot.data() || {};
 
   // don't do streaks for FFA, instead just give a 5 point bonus for 1st
   if (event.type === EventType.FFA) {
     winner.points += 5;
+
+    // to encourage long battles, award extra points to first and second so they
+    // can duke it out
+    const mins = Math.floor(turns / 60);
+    winner.points += mins;
+    second.points += Math.floor(mins / 2);
   }
   // all other types, double points from the 3rd win in a row onward
   // we use the number 2 here because currentStreak is about to be updated to
@@ -197,7 +203,8 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const finished = replay.started + (turns * 1000);
+  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
+  const finished = getFinishedTime(replay.started, turns, speed);
   const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replay.id,
@@ -217,11 +224,12 @@ async function saveReplayToGame(
       if (!playerDoc.exists) continue;
 
       const recordId = `${replay.id}_${player.name}`;
+
       // determine finished for this player based on their last turn
       const record = {
         replayId: replay.id,
         started: replay.started,
-        finished: replay.started + (player.lastTurn * 1000),
+        finished: getFinishedTime(replay.started, player.lastTurn, speed),
         ...player,
       };
 

@@ -6,7 +6,7 @@
         <b [title]="message.timestamp | date:'M/d/yyyy h:mm a'" [style.color]="message.color" (click)="nameClicked.emit(message.sender)">
           {{ message.sender }}:
         </b>
-        {{ message.text }}
+        <span [innerHtml]="message.text | http"></span>
       </p>
     </div>
     <input
@@ -14,6 +14,13 @@
       [placeholder]="placeholder"
       (keyup.enter)="submit()"
       [disabled]="disableChat"
+      *ngIf="!disallowNewMessages"
     >
+    <div class="chat-closed" *ngIf="disallowNewMessages">
+      Chat is now closed.
+      <a class="discord-link" href="https://discord.com/invite/QP63V5Y" target="_blank">
+        Join discord <ion-icon name="logo-discord"></ion-icon>
+      </a>
+    </div>
   </ion-card-content>
 </ion-card>

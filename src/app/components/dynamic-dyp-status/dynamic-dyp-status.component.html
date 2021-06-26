@@ -1,0 +1,32 @@
+<div
+  class="bracket-status space-between"
+  [class.dq]="disqualified"
+  [class.opponent]="readyStatus?.opponents"
+  [class.checked-in]="checkedIn && checkInOpen"
+  *ngIf="showStatusBar"
+>
+  <div class="message">
+    {{ message }}
+  </div>
+
+  <ion-button class="generals-button" (click)="checkIn()" *ngIf="showCheckIn">
+    Check In
+  </ion-button>
+
+  <ion-button class="generals-button" (click)="joinMatch()" *ngIf="showJoinMatch">
+    Join Match
+  </ion-button>
+
+  <ion-button class="generals-button" (click)="joinFinals()" *ngIf="showFinalsMatch">
+    Join Finals Lobby
+  </ion-button>
+
+  <ion-icon class="checkin-checkmark" name="checkmark-circle" *ngIf="checkedIn && checkInOpen"></ion-icon>
+
+  <div class="starting-in" *ngIf="showTimer">
+    <b>
+      Check in opens
+    </b>
+    <app-timer [stopAt]="event.checkInTime"></app-timer>
+  </div>
+</div>

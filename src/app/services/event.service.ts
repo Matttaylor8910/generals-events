@@ -19,34 +19,46 @@ export class EventService {
     this.db = firebase.default.firestore();
   }
 
-  async createEvent(event: Partial<IEvent>) {
-    event = {
-      queue: [],
-      replays: [],
-      playerCount: 0,
-      visibility: Visibility.PUBLIC,
-      ...event,
-    };
+  async createEvent(event: Partial<IEvent>): Promise<string> {
+    const defaults = {visibility: Visibility.PUBLIC};
+    const reset = {replays: [], playerCount: 0};
+    event = {...defaults, ...event, ...reset};
 
     // assign this event a human readable id that doesn't clash with an
     // existing event
     let counter;
-    let value;
-    while (!value) {
-      let id = this.getId(event.name, counter);
+    let eventId;
+    let id;
+    while (!eventId) {
+      id = this.getId(event.name, counter);
       const doc = await this.db.collection('events').doc(id).get();
 
       if (doc.exists) {
         counter = (counter || 0) + 1;
       } else {
-        value = this.afs.collection('events').doc(id).set(event);
+        await this.afs.collection('events').doc(id).set(event);
+        eventId = id;
       }
     }
 
-    return value;
+    return eventId;
   }
 
-  getEvents(finished: boolean): Observable<IEvent[]> {
+  /**
+   * Get a list of events. You can filter down to those that are or are not
+   * finished, or just get child events for a multi-stage event
+   *
+   * @param finished
+   *  true = only finished events
+   *  false = only unfinished events
+   *  null = both
+   *
+   * @param parentEventId optional parent event fi looking for children
+   *
+   * @returns an observable of a list of events
+   */
+  getEvents(finished: boolean|null, parentEventId?: string):
+      Observable<IEvent[]> {
     // admins can see private events too
     const visibilities = [Visibility.PUBLIC];
     if (ADMINS.includes(this.generals.name)) {
@@ -57,9 +69,16 @@ export class EventService {
         .collection<IEvent>(
             'events',
             ref => {
-              return ref.where('endTime', finished ? '<' : '>=', Date.now())
-                  .where('visibility', 'in', visibilities)
-                  .limit(10);
+              // support looking for children with a given parent eventId, we
+              // don't care about the event visibility here
+              if (parentEventId) {
+                return ref.where('parentId', '==', parentEventId);
+              }
+
+              // otherwise, show only those with visibilities you can see
+              else {
+                return ref.where('visibility', 'in', visibilities)
+              }
             })
         .snapshotChanges()
         .pipe(map(actions => {
@@ -67,6 +86,14 @@ export class EventService {
               .map(action => {
                 const {doc} = action.payload;
                 return {...doc.data(), id: doc.id, exists: doc.exists};
+              })
+              .filter(event => {
+                // if finished is null, we want to see all, do not filter
+                if (finished === null) return event;
+
+                // otherwise look at endTime to determine if it has finished yet
+                return finished ? event.endTime < Date.now() :
+                                  event.endTime > Date.now() || !event.endTime;
               })
               .sort((a, b) => {
                 return finished ? b.endTime - a.endTime :
@@ -122,41 +149,57 @@ export class EventService {
             return action.payload.doc.data();
           });
 
-          // sort players by points, then win rate, then total games, then
-          // quickest win, then stars, then fallback to name
+          // sort players by rank, points, then win rate, then total games, then
+          // quickest win, then TSP, then stars, then fallback to name
           players.sort((a, b) => {
             if (this.equal(a.dq, b.dq)) {
-              if (this.equal(a.points, b.points)) {
-                if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
-                  if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
-                    if (this.equal(
-                            a.stats?.quickestWin, b.stats?.quickestWin)) {
+              if (this.equal(a.rank, b.rank)) {
+                if (this.equal(a.points, b.points)) {
+                  if (this.equal(a.stats?.winRate, b.stats?.winRate)) {
+                    if (this.equal(a.stats?.totalGames, b.stats?.totalGames)) {
                       if (this.equal(
-                              a.stats?.currentStars, b.stats?.currentStars)) {
-                        // fallback to name
-                        return a.name.localeCompare(b.name);
+                              a.stats?.quickestWin, b.stats?.quickestWin)) {
+                        if (this.equal(
+                                a.stats?.totalSeedPoints,
+                                b.stats?.totalSeedPoints)) {
+                          if (this.equal(
+                                  a.stats?.currentStars,
+                                  b.stats?.currentStars)) {
+                            // fallback to name
+                            return a.name.localeCompare(b.name);
+                          } else {
+                            // current stars descending (b - a)
+                            return (b.stats?.currentStars || 0) -
+                                (a.stats?.currentStars || 0);
+                          }
+                        } else {
+                          // current TSP descending (b - a)
+                          return (b.stats?.totalSeedPoints || 0) -
+                              (a.stats?.totalSeedPoints || 0);
+                        }
                       } else {
-                        // current stars descending (b - a)
-                        return (b.stats?.currentStars || 0) -
-                            (a.stats?.currentStars || 0);
+                        // quickest win ascending (a - b)
+                        return (a.stats?.quickestWin || 999) -
+                            (b.stats?.quickestWin || 999);
                       }
                     } else {
-                      // quickest win ascending (a - b)
-                      return (a.stats?.quickestWin || 999) -
-                          (b.stats?.quickestWin || 999);
+                      // total games descending (b - a)
+                      return (b.stats?.totalGames || 0) -
+                          (a.stats?.totalGames || 0);
                     }
                   } else {
-                    // total games descending (b - a)
-                    return (b.stats?.totalGames || 0) -
-                        (a.stats?.totalGames || 0);
+                    // win rate descending (b - a)
+                    return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
                   }
                 } else {
-                  // win rate descending (b - a)
-                  return (b.stats?.winRate || 0) - (a.stats?.winRate || 0);
+                  // points descending (b - a)
+                  return b.points - a.points;
                 }
               } else {
-                // points descending (b - a)
-                return b.points - a.points;
+                // rank ascending (a - b)
+                const ar = a.rank || Number.MAX_SAFE_INTEGER;
+                const br = b.rank || Number.MAX_SAFE_INTEGER;
+                return ar - br;
               }
             } else {
               // DQ status ascending, non-DQ'd will be first
@@ -232,13 +275,21 @@ export class EventService {
 
               return query;
             })
-        .snapshotChanges()
-        .pipe(map(actions => {
-          return actions.map(action => {
-            const {doc} = action.payload;
-            return {...doc.data(), id: doc.id};
-          });
-        }));
+        .valueChanges({idField: 'id'});
+  }
+
+  checkInPlayer(eventId: string, name: string) {
+    return this.afs.collection('events').doc(eventId).update({
+      checkedInPlayers: firebase.default.firestore.FieldValue.arrayUnion(name)
+    });
+  }
+
+  updateEvent(eventId: string, data: Partial<IEvent>) {
+    return this.afs.collection('events').doc(eventId).update(data);
+  }
+
+  deleteEvent(eventId: string) {
+    return this.afs.collection('events').doc(eventId).delete();
   }
 
   /**

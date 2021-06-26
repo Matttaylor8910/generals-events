@@ -1,12 +1,14 @@
 import {Component, OnDestroy} from '@angular/core';
-import {AngularFirestore} from '@angular/fire/firestore';
 import {ActivatedRoute, Router} from '@angular/router';
+import {cloneDeep} from 'lodash';
 import {Observable, Subject} from 'rxjs';
-import {take, takeUntil, tap} from 'rxjs/operators';
+import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IChatMessage, IEvent, IGame, ILeaderboardPlayer} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, Visibility} from 'types';
+
+import {ADMINS} from '../../../../constants';
 
 @Component({
   selector: 'app-event',
@@ -20,6 +22,10 @@ export class EventPage implements OnDestroy {
 
   eventId: string;
   event: IEvent;
+  parent: IEvent;
+
+  children$: Observable<IEvent[]>;
+
   players: ILeaderboardPlayer[];
   players$: Observable<ILeaderboardPlayer[]>;
   selectedPlayer?: Partial<ILeaderboardPlayer>;
@@ -32,22 +38,22 @@ export class EventPage implements OnDestroy {
       private readonly router: Router,
       private readonly eventService: EventService,
       private readonly utilService: UtilService,
-      private readonly afs: AngularFirestore,
   ) {
     this.eventId = this.route.snapshot.params.id;
-    this.players$ =
-        this.eventService.getPlayers(this.eventId).pipe(tap(players => {
-          this.players = players;
-          this.checkJoinQueue(players);
-          this.determineSelectPlayer(true);
-          this.determineDisqualified();
-        }));
 
     this.eventService.getEvent(this.eventId)
         .pipe(takeUntil(this.destroyed$))
         .subscribe(event => {
-          this.event = event;
+          this.parent = event;
+          this.setEvent(event);
           this.determineSelectPlayer();
+
+          // if multi-stage, load the events that are part of this event and
+          // select the first one
+          if (this.event.format === EventFormat.MULTI_STAGE_EVENT) {
+            this.children$ = this.eventService.getEvents(null, this.eventId)
+                                 .pipe(tap(this.selectChild.bind(this)));
+          }
         });
   }
 
@@ -59,7 +65,9 @@ export class EventPage implements OnDestroy {
       if (endTime < now) {
         return EventStatus.FINISHED;
       } else {
-        if (startTime > now) {
+        const {bracket} = this.event as IDoubleElimEvent;
+
+        if (startTime > now || (this.isBracket && !bracket)) {
           return EventStatus.UPCOMING;
         } else {
           const THIRTY_SECONDS = 1000 * 30;
@@ -74,19 +82,86 @@ export class EventPage implements OnDestroy {
     return EventStatus.UNKNOWN;
   }
 
-  async checkJoinQueue(players: ILeaderboardPlayer[]) {
+  get isArena(): boolean {
+    return this.event?.format === EventFormat.ARENA;
+  }
+
+  get isBracket(): boolean {
+    return this.event?.format === EventFormat.DOUBLE_ELIM;
+  }
+
+  get isDynamicDYP(): boolean {
+    return this.event?.format === EventFormat.DYNAMIC_DYP;
+  }
+
+  /**
+   * Base the event being multi-stage off of the parent format, because the
+   * event will change as they select from the top bar
+   */
+  get isMultiStage(): boolean {
+    return this.parent?.format === EventFormat.MULTI_STAGE_EVENT;
+  }
+
+  get isAdmin(): boolean {
+    return ADMINS.includes(this.generals.name);
+  }
+
+  get showWide(): boolean {
+    if (this.isBracket) {
+      const event = this.event as IDoubleElimEvent;
+      return !!event.bracket;
+    }
+    return false;
+  }
+
+  get showRightPanel(): boolean {
+    return !!this.selectedPlayer || this.event?.endTime > 0;
+  }
+
+  get inEvent(): boolean {
+    return this.players?.some(p => p.name === this.generals.name);
+  }
+
+  setPlayers(eventId: string) {
+    this.players$ = this.eventService.getPlayers(eventId).pipe(tap(players => {
+      this.players = players;
+      this.checkJoinQueue();
+      this.determineSelectPlayer(true);
+      this.determineDisqualified();
+    }));
+  }
+
+  setEvent(event: IEvent) {
+    // only update the players if we have changed to a new event
+    if (this.event?.id !== event.id) {
+      this.setPlayers(event.id);
+    }
+
+    this.event = event;
+  }
+
+  async checkJoinQueue() {
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
     if (location.href.includes('join=true')) {
       const {name} = this.generals;
-      if (name && this.status !== EventStatus.FINISHED) {
+
+      // add the player to the event if registration is open
+      // for arena: any time, so long as the tournament isn't over
+      // for brackets: up until the bracket has been generated
+      const registrationOpen = this.isArena ?
+          this.status !== EventStatus.FINISHED :
+          !(this.event as IDoubleElimEvent)?.bracket;
+
+      if (name && registrationOpen) {
         // join the event if you haven't already
-        if (!players.some(p => p.name === name)) {
+        if (!this.inEvent) {
           await this.eventService.addPlayer(this.eventId, name);
         }
 
         // only add to queue if the event is ongoing
-        if (this.status === EventStatus.ONGOING) {
+        // and this event type is arena
+        if (this.status === EventStatus.ONGOING && this.isArena) {
           this.eventService.joinQueue(this.eventId, name);
         }
       }
@@ -109,11 +184,22 @@ export class EventPage implements OnDestroy {
             this.selectedPlayer = updated;
           }
         }
-      } else {
-        // before the event starts, if there is no selected player show the
-        // player summary for the logged in player
-        if (this.status === EventStatus.UPCOMING && this.generals.name) {
-          this.selectedPlayer = this.findPlayer(this.generals.name);
+      }
+
+      // if no player is selected, be smart about automatically selecting one
+      else {
+        if (this.inEvent) {
+          // select your own player if the event is upcoming or finished
+          if (this.status === EventStatus.UPCOMING ||
+              this.status === EventStatus.FINISHED) {
+            this.selectedPlayer = this.findPlayer(this.generals.name);
+          }
+        } else {
+          // if you're not logged in, and the event is over, select the winner
+          // of the event
+          if (this.status === EventStatus.FINISHED && this.isBracket) {
+            this.selectedPlayer = this.findPlayer(this.event.winners[0]);
+          }
         }
       }
     }
@@ -152,8 +238,75 @@ export class EventPage implements OnDestroy {
     }
   }
 
+  selectChild(events: IEvent[] = []) {
+    // only select a child if the current event is the multi stage event as this
+    // means we haven't selected a child event yet
+    if (this.event.format === EventFormat.MULTI_STAGE_EVENT) {
+      const firstUnfinished = events.find(event => {
+        return !event.endTime || event.endTime > Date.now();
+      });
+
+      this.setEvent(firstUnfinished ?? events[0]);
+    }
+
+    // if a child is already selected, update the event whenever it changes
+    const selected = events.find(event => event.id === this.event?.id);
+    if (selected) this.setEvent(selected);
+  }
+
   goHome() {
     this.router.navigate(['/']);
+  }
+
+  async cloneEvent() {
+    const name = await this.utilService.promptForText(
+        'Event Name',
+        'Enter a new name for the cloned event',
+        'New Name',
+        'Clone',
+        'Cancel',
+    );
+
+    if (name) {
+      let cloned = cloneDeep(this.event) as IEvent;
+      cloned.name = name;
+      cloned.visibility = Visibility.PRIVATE;
+
+      // handle deleting special cases
+      if (cloned.format === EventFormat.DOUBLE_ELIM) {
+        cloned = cloned as IDoubleElimEvent;
+        cloned.checkedInPlayers = [];
+        delete cloned.bracket;
+        delete cloned.endTime;
+      } else {
+        cloned = cloned as IArenaEvent;
+        cloned.ongoingGameCount = 0;
+        cloned.completedGameCount = 0;
+      }
+
+      // add all of the players to this event
+      const eventId = await this.eventService.createEvent(cloned);
+      for (const player of this.players) {
+        this.eventService.addPlayer(eventId, player.name);
+      }
+
+      // nav there
+      this.router.navigate(['/', eventId]);
+    }
+  }
+
+  async deleteEvent() {
+    const confirm = await this.utilService.confirm(
+        'Delete Event',
+        `Are you sure you want to delete ${
+            this.event.name}? This cannot be undone.`,
+        'Delete',
+        'Cancel',
+    );
+    if (confirm) {
+      this.eventService.deleteEvent(this.event.id);
+      this.goHome();
+    }
   }
 
   ngOnDestroy() {

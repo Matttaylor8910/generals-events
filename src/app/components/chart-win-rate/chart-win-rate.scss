@@ -1,0 +1,13 @@
+.chart-container {
+  padding: 0px 10px 15px;
+  margin-bottom: 5px;
+  margin-top: -10px;
+  height: 450px;
+  pointer-events: none;
+
+  ion-spinner {
+    position: absolute;
+    left: calc(50% - 14px);
+    top: 150px;
+  }
+}

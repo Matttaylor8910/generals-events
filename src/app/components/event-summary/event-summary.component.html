@@ -10,20 +10,51 @@
         <p>{{ event.startTime | date:'h:mm a' }}</p>
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="event.playersPerGame as players">
+    <ion-item>
       <ion-icon slot="start" name="people"></ion-icon>
       <ion-label>
-        <h2>{{ event.type }}</h2>
-        <p>{{ players }} {{ players === 1 ? 'player' : 'players' }} per game</p>
+        <h2>{{ event.type }} {{ event.format }}</h2>
+        <p *ngIf="event.playersPerGame as players">
+          {{ players }} {{ players === 1 ? 'player' : 'players' }} per game
+        </p>
+        <p *ngIf="needToQualify">
+          You must qualify to participate
+        </p>
       </ion-label>
     </ion-item>
-    <ion-item>
-      <ion-icon slot="start" name="stopwatch"></ion-icon>
+
+    <!-- using custom map -->
+    <ion-item *ngIf="event.options?.map">
+      <ion-icon slot="start" name="map-sharp"></ion-icon>
       <ion-label>
-        <h2>Time Limit</h2>
-        <p>{{ duration }}</p>
+        <h2>Custom Map</h2>
+        <p>
+          <a class="align-center" href="https://generals.io/maps/{{ event.options.map }}" target="_blank">
+            {{ mapName }} <ion-icon name="link"></ion-icon>
+          </a>
+        </p>
       </ion-label>
     </ion-item>
+
+    <!-- arena items -->
+    <ng-container *ngIf="isArena">
+      <ion-item>
+        <ion-icon slot="start" name="stopwatch"></ion-icon>
+        <ion-label>
+          <h2>Time Limit</h2>
+          <p>{{ duration }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="showGames">
+        <ion-icon slot="start" name="pulse"></ion-icon>
+        <ion-label>
+          <h2>{{ boldText }}</h2>
+          <p *ngIf="extraText">{{ extraText }}</p>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+
+    <!-- override -->
     <ion-item *ngIf="event.server">
       <ion-icon slot="start" name="server"></ion-icon>
       <ion-label>
@@ -31,12 +62,10 @@
         <p>Using <b>{{ event.server }}</b> server</p>
       </ion-label>
     </ion-item>
-    <ion-item *ngIf="showGames">
-      <ion-icon slot="start" name="pulse"></ion-icon>
-      <ion-label>
-        <h2>{{ boldText }}</h2>
-        <p *ngIf="extraText">{{ extraText }}</p>
-      </ion-label>
-    </ion-item>
+
+    <ion-button expand="block" class="generals-button color-secondary" href="https://discord.gg/QP63V5Y" target="_blank">
+      <ion-icon slot="start" name="logo-discord"></ion-icon>
+      Join our discord
+    </ion-button>
   </ion-card>
 </div>

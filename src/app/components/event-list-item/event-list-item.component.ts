@@ -1,7 +1,8 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
+import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {IEvent} from 'types';
+import {EventFormat, IEvent, ILinkEvent, Visibility} from 'types';
 
 @Component({
   selector: 'app-event-list-item',
@@ -14,9 +15,14 @@ export class EventListItemComponent {
   constructor(
       private readonly router: Router,
       private readonly utilService: UtilService,
+      private readonly generals: GeneralsService,
   ) {}
 
   get duration(): string {
+    if (this.event.format === EventFormat.DOUBLE_ELIM) {
+      return '';
+    }
+
     return this.utilService.getDurationString(
         this.event?.startTime, this.event?.endTime);
   }
@@ -25,7 +31,21 @@ export class EventListItemComponent {
     return this.event?.endTime < Date.now();
   }
 
+  get private(): boolean {
+    return this.event.visibility === Visibility.PRIVATE;
+  }
+
   navToEvent() {
-    this.router.navigate(['/', this.event.id]);
+    const {url} = this.event as ILinkEvent;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      this.router.navigate(['/', this.event.id]);
+    }
+  }
+
+  goToProfile(name: string, $event: Event) {
+    $event.stopPropagation();
+    this.router.navigate(['/', 'profiles', name]);
   }
 }

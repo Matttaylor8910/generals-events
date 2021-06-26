@@ -5,8 +5,31 @@
         <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>{{ event?.name }}</ion-title>
+
+    <!-- determine if there are children events -->
+    <ng-container *ngIf="isMultiStage; else title">
+      <ng-container *ngIf="children$ | async as children">
+        <ng-container *ngIf="children?.length > 0">
+          <ion-toolbar>
+            <ion-segment>
+              <ion-segment-button [class.segment-button-checked]="tab.id === event.id" [value]="tab" *ngFor="let tab of children" (click)="setEvent(tab)">
+                <ion-label>{{ tab.name }}</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </ion-toolbar>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
     <ion-buttons slot="end">
+      <ng-container *ngIf="isAdmin">
+        <ion-button tooltip="Delete Event" (click)="deleteEvent()">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+        <ion-button tooltip="Clone Event" (click)="cloneEvent()">
+          <ion-icon name="copy-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
       <app-login
         [eventId]="eventId"
         [status]="status"
@@ -17,7 +40,7 @@
 </ion-header>
 
 <ion-content>
-  <div class="page-container" *ngIf="event; else loading">
+  <div class="page-container" [class.bracket]="showWide" *ngIf="event; else loading">
     <ng-container *ngIf="event.exists; else empty">
       <div class="left-panel">
         <div class="panel-container">
@@ -27,6 +50,7 @@
           </app-event-summary>
           <app-chat
             [event]="event"
+            [parentEvent]="parent"
             [disqualified]="disqualified"
             (nameClicked)="selectPlayer($event)">
           </app-chat>
@@ -34,51 +58,81 @@
       </div>
 
       <div class="main-panel">
-        <ng-container *ngIf="players$ | async as players">
+        <ng-container *ngIf="players$ | async as players; else loading">
           <app-event-trophies
-            [server]="event.server"
+            [event]="event"
             [players]="players"
             [status]="status"
             (playerClicked)="selectPlayer($event)">
           </app-event-trophies>
-          <app-event-leaderboard
+          <app-arena-leaderboard
             [event]="event"
             [players]="players"
             [status]="status"
             [selectedPlayer]="selectedPlayer"
             [disqualified]="disqualified"
-            (playerClicked)="selectPlayer($event)">
-          </app-event-leaderboard>
-          <app-rules
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isArena">
+          </app-arena-leaderboard>
+          <app-bracket-event
             [event]="event"
-            [status]="status">
-          </app-rules>
+            [players]="players"
+            [status]="status"
+            [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isBracket">
+          </app-bracket-event>
+          <app-dynamic-dyp-event
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            [selectedPlayer]="selectedPlayer"
+            [disqualified]="disqualified"
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isDynamicDYP">
+          </app-dynamic-dyp-event>
         </ng-container>
       </div>
 
-      <div class="right-panel">
+      <div class="right-panel" [class.show]="showRightPanel">
         <div class="panel-container">
           <app-event-player-summary
             [player]="selectedPlayer"
             [event]="event"
             [status]="status"
+            [showRank]="isArena"
             (close)="selectPlayer()"
             *ngIf="selectedPlayer">
           </app-event-player-summary>
           <app-game-list
             [class.hidden]="selectedPlayer"
             [event]="event"
-            (nameClicked)="selectPlayer($event)">
+            (nameClicked)="selectPlayer($event)"
+            *ngIf="isArena">
           </app-game-list>
+          <app-dynamic-dyp-leaderboard
+            [class.hidden]="selectedPlayer"
+            [event]="event"
+            [players]="players"
+            [status]="status"
+            (playerClicked)="selectPlayer($event)"
+            *ngIf="isDynamicDYP">
+          </app-dynamic-dyp-leaderboard>
         </div>
       </div>
     </ng-container>
   </div>
 </ion-content>
 
+<ng-template #title>
+  <ion-title>{{ event?.name }}</ion-title>
+</ng-template>
+
 <ng-template #empty>
   <div class="empty-container">
     <h1>This event doesn't seem to exist 🤔</h1>
+    <ion-button class="generals-button" (click)="goHome()">Go Home</ion-button>
   </div>
 </ng-template>
 

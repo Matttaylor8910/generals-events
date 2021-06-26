@@ -62,12 +62,12 @@ function simulate(replay) {
   let {afks, usernames} = replay;
   let currentAFK = new Set();
   let players = replay.usernames.map(name => {
-    return {name, kills: 0, lastTurn: 0};
+    return {name, kills: 0, lastTurn: 0, killed: [], killedBy: []};
   });
   let turn = 0;
 
   // Simulate the game!
-  while (!game.isOver() && game.turn < 2000) {
+  while (!game.isOver()) {
     nextTurn();
 
     const alive = game.generals.filter(g => g >= 0).length;
@@ -82,13 +82,15 @@ function simulate(replay) {
           if (killer !== undefined) {
             summary.push(`${killer} killed ${usernames[i]} on turn ${turn}`);
             players[killerIndex].kills++;
+            players[killerIndex].killed.push(usernames[i]);
 
             // only set lastTurn if it isn't already set, otherwise players who
             // surrender then immediately jump into a new game will look like
             // they were in two games at once, even though they already
             // surrendered and left
-            if (players[i].lastTurn === undefined) {
+            if (players[i].lastTurn === 0) {
               players[i].lastTurn = turn;
+              players[i].killedBy.push(killer);
             }
           }
         }
@@ -129,10 +131,19 @@ function simulate(replay) {
 
   // scoring right now is a combination of rank + # of kills
   const scores = game.scores.map((score, index) => {
-    const {name, kills, lastTurn} = players[score.i];
+    const {name, kills, lastTurn, killed, killedBy} = players[score.i];
     const rank = index + 1;
     const points = game.generals.length - rank + kills;
-    return {name, kills, rank, points, lastTurn, streak: false};
+    return {
+      name,
+      kills,
+      rank,
+      points,
+      lastTurn,
+      killed,
+      killedBy,
+      streak: false
+    };
   });
 
   return {scores, summary, turns: turn};
@@ -141,11 +152,13 @@ function simulate(replay) {
 // Returns an object that represents the replay.
 // @param serialized A serialized replay Buffer.
 function deserialize(serialized) {
-  var obj =
+  const obj =
       JSON.parse(LZString.decompressFromUint8Array(new Uint8Array(serialized)));
 
-  var replay = {};
-  var i = 0;
+  if (!obj) return;
+
+  const replay = {};
+  let i = 0;
   replay.version = obj[i++];
   replay.id = obj[i++];
   replay.mapWidth = obj[i++];
@@ -153,13 +166,28 @@ function deserialize(serialized) {
   replay.usernames = obj[i++];
   replay.stars = obj[i++];
   replay.cities = obj[i++];
-  replay.cityArmies = obj[i++]
+  replay.cityArmies = obj[i++];
   replay.generals = obj[i++];
-  replay.mountains = obj[i++];
+  replay.mountains = obj[i++] || [];
   replay.moves = obj[i++].map(deserializeMove);
   replay.afks = obj[i++].map(deserializeAFK);
   replay.teams = obj[i++];
-  replay.map_title = obj[i++];  // only available when version >= 7
+  replay.map = obj[i++];
+  replay.neutrals = obj[i++] || [];
+  replay.neutralArmies = obj[i++] || [];
+  replay.swamps = obj[i++] || [];
+  replay.chat = (obj[i++] || []).map(deserializeChat);
+  replay.playerColors = obj[i++] || replay.usernames.map((u, i) => i);
+  replay.lights = obj[i++] || [];
+  const options = (obj[i++] || [
+    1, Constants.DEFAULT_CITY_DENSITY_OPTION,
+    Constants.DEFAULT_MOUNTAIN_DENSITY_OPTION,
+    Constants.DEFAULT_SWAMP_DENSITY_OPTION
+  ]);
+  replay.speed = options[0];
+  replay.city_density = options[1];
+  replay.mountain_density = options[2];
+  replay.swamp_density = options[3];
 
   return replay;
 };
@@ -178,6 +206,15 @@ function deserializeAFK(serialized) {
   return {
     index: serialized[0],
     turn: serialized[1],
+  };
+}
+
+function deserializeChat(serialized) {
+  return {
+    text: serialized[0],
+    prefix: serialized[1],
+    playerIndex: serialized[2],
+    turn: serialized[3],
   };
 }
 

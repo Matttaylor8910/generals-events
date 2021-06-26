@@ -1,8 +1,13 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
+import {GameSpeed, IEvent, IGeneralsGameOptions, IGeneralsReplay} from 'types';
 import {GeneralsServer, SITE_URLS} from '../../../constants';
 import {UtilService} from './util.service';
+
+const DEFAULT_GAME_OPTIONS: IGeneralsGameOptions = {
+  spectate_chat: true,
+}
 
 const GENERALS_NAME = 'generals-name';
 @Injectable({providedIn: 'root'})
@@ -25,8 +30,32 @@ export class GeneralsService {
     window.open(`${SITE_URLS[server]}/replays/${replayId}`, '_blank');
   }
 
-  joinLobby(name: string, server = GeneralsServer.NA) {
-    location.href = `${SITE_URLS[server]}/games/${name}`, '_blank';
+  joinLobby(
+      name: string,
+      event: IEvent,
+      newTab = false,
+      options: IGeneralsGameOptions = {},
+  ) {
+    const {
+      server = GeneralsServer.NA,
+      options: lobbyOptions,
+    } = event;
+
+    // override any default game options with those provided
+    const queryParams = this.utilService.getParamString({
+      ...DEFAULT_GAME_OPTIONS,
+      ...lobbyOptions,
+      ...options,
+    });
+
+    // append the query params to the game lobby url
+    const url = `${SITE_URLS[server]}/games/${name}${queryParams}`;
+
+    if (newTab) {
+      window.open(url, '_blank');
+    } else {
+      location.href = url;
+    }
   }
 
   setName(name: string) {
@@ -48,7 +77,13 @@ export class GeneralsService {
     }
 
     if (location.href.includes('localhost')) {
-      const name = await this.utilService.promptForText();
+      const name = await this.utilService.promptForText(
+          'Enter your generals.io username',
+          'Your username must exactly match or your games won\'t count!',
+          'generals.io username',
+          'Join',
+          'Cancel',
+      );
       if (name) {
         this.handleDidLogin(name);
         setTimeout(() => {
@@ -102,5 +137,11 @@ export class GeneralsService {
     localStorage.removeItem(GENERALS_NAME);
     delete this.name;
     this.nameChanged$.emit();
+  }
+
+  async getReplaysForUser(encryptedString: string): Promise<IGeneralsReplay[]> {
+    const getReplaysForUser =
+        this.aff.httpsCallable<string, IGeneralsReplay[]>('getReplaysForUser');
+    return getReplaysForUser(encryptedString).toPromise();
   }
 }

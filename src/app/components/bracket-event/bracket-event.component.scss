@@ -1,0 +1,29 @@
+.bracket-event-container {
+  ion-segment {
+    margin-bottom: 20px;
+
+    ion-segment-button {
+      --color: #aaa;
+      --color-checked: teal;
+
+      &.segment-button-checked {
+        font-weight: bold;
+      }
+    }
+  }
+
+  .qualified {
+    color: #f7f7f7;
+    background: #333;
+  }
+
+  .preview-disclaimer {
+    background: #00808080;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid teal;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+}

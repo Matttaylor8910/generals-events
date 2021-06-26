@@ -5,9 +5,9 @@ export enum GeneralsServer {
 }
 
 export const SITE_URLS = {
-  [GeneralsServer.NA]: 'http://generals.io',
-  [GeneralsServer.EU]: 'http://eu.generals.io',
-  [GeneralsServer.BOT]: 'http://bot.generals.io',
+  [GeneralsServer.NA]: 'https://generals.io',
+  [GeneralsServer.EU]: 'https://eu.generals.io',
+  [GeneralsServer.BOT]: 'https://bot.generals.io',
 };
 
 export const ADMINS = [
@@ -16,4 +16,7 @@ export const ADMINS = [
   'googleman',
   'Lazerpent',
   'DavidC',
+  'matt',
 ];
+
+export const HIDE_COMPLETED = 'generals-hide-completed';

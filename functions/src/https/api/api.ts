@@ -8,7 +8,7 @@ import * as simulator from '../../util/simulator';
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 const db: admin.firestore.Firestore = admin.firestore();
 
@@ -37,6 +37,29 @@ app.get('/replays/:replayId', async (request, response) => {
     if (!replayId) throw new Error('replayId is blank');
     const replay = await simulator.getReplay(replayId, server);
     response.json(replay);
+  } catch (error) {
+    response.status(500).send({
+      error: `could not retrieve replay (${replayId}) from ${server} server`,
+    });
+  }
+});
+
+app.get('/replays/:replayId/stats', async (request, response) => {
+  const {replayId} = request.params;
+  const server = (request.query.server || GeneralsServer.NA) as string;
+
+  try {
+    if (!replayId) throw new Error('replayId is blank');
+    const {scores, summary, turns} =
+        await simulator.getReplayStats(replayId, server);
+    response.json({
+      scores: scores.map(score => {
+        const {name, kills, rank, lastTurn, killed, killedBy} = score;
+        return {name, kills, rank, lastTurn, killed, killedBy};
+      }),
+      summary,
+      turns
+    });
   } catch (error) {
     response.status(500).send({
       error: `could not retrieve replay (${replayId}) from ${server} server`,

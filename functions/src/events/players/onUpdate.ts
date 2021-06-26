@@ -1,13 +1,13 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {EventType, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
+import {EventFormat, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 try {
   admin.initializeApp();
 } catch (e) {
-  console.log(e);
+  // do nothing, this is fine
 }
 
 export const onUpdatePlayer =
@@ -16,17 +16,21 @@ export const onUpdatePlayer =
           console.log(`${doc.after.id} updated`);
           const player = doc.after.data() as ILeaderboardPlayer;
           const eventSnap = await doc.after.ref.parent.parent!.get();
-          const event = (eventSnap.data() || {}) as IEvent;
+          const event = (eventSnap.data() || {}) as IArenaEvent;
 
           const updates: Partial<ILeaderboardPlayer> =
-              recordSanityCheck(player.record, event);
+              recordSanityCheck(player.record, event, player.dq);
 
           const currentStars =
               await getCurrentStars(player.name, event.type, event.server);
 
+          const totalSeedPoints = getTSP(event, player);
+          console.log(`${player.name} has ${totalSeedPoints} TSP`);
+
           // generate some stats from the current record
           updates.stats = {
             currentStars,
+            totalSeedPoints,
             ...getStats(updates.record!),
           } as ILeaderboardPlayerStats;
 
@@ -48,10 +52,11 @@ export const onUpdatePlayer =
 
 export function recordSanityCheck(
     record: IPlayerHistoryRecord[],
-    event: IEvent,
+    event: IArenaEvent,
+    currentDq = false,
     ): Partial<ILeaderboardPlayer> {
   record.sort((a, b) => a.finished - b.finished);
-  let dq = false;
+  let dq = currentDq;
 
   // compare the original and the newly sorted games in the record to see if
   // there are any streaks/points to fix up
@@ -148,4 +153,25 @@ function getStats(record: IPlayerHistoryRecord[]):
     averageRank: totalGames > 0 ? totalRank / totalGames : null,
     killDeathRatio: totalGames > 0 ? totalKills / totalDeaths : null,
   };
+}
+
+function getTSP(event: IEvent, player: ILeaderboardPlayer) {
+  if (event.format === EventFormat.DOUBLE_ELIM) {
+    const {tsp, qualified = []} = event as IDoubleElimEvent;
+
+    // if the user doesn't qualify, TSP is pointless
+    if (qualified.length > 0 && !qualified.includes(player.name)) {
+      return null;
+    }
+
+    // in the case that the TSP map is set on the event document, fetch this
+    // player's total seed points value
+    if (tsp !== undefined) {
+      const totalSeedPoints = tsp[player.name];
+      if (totalSeedPoints >= 0) {
+        return totalSeedPoints;
+      }
+    }
+  }
+  return null;
 }

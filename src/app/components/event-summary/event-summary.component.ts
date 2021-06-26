@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IEvent} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -8,12 +8,16 @@ import {EventStatus, IEvent} from 'types';
   styleUrls: ['./event-summary.component.scss'],
 })
 export class EventSummaryComponent {
-  @Input() event: IEvent;
+  @Input() event: IArenaEvent;
   @Input() status: EventStatus;
 
   constructor(
       private readonly utilService: UtilService,
   ) {}
+
+  get isArena(): boolean {
+    return this.event.format === EventFormat.ARENA;
+  }
 
   get duration(): string {
     return this.utilService.getDurationString(
@@ -49,5 +53,14 @@ export class EventSummaryComponent {
       return `${this.completed} ${
           this.completed === 1 ? 'game' : 'games'} completed`;
     }
+  }
+
+  get needToQualify(): boolean {
+    const {qualified = []} = this.event as unknown as IDoubleElimEvent;
+    return qualified.length > 0;
+  }
+
+  get mapName(): string {
+    return decodeURI(this.event?.options?.map);
   }
 }

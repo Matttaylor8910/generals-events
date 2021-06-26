@@ -17,11 +17,11 @@
       ]
     },
     {
-      "collectionGroup": "events",
+      "collectionGroup": "matches",
       "queryScope": "COLLECTION",
       "fields": [
-        {"fieldPath": "visibility", "order": "ASCENDING"},
-        {"fieldPath": "endTime", "order": "ASCENDING"}
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "updated", "order": "DESCENDING"}
       ]
     }
   ],

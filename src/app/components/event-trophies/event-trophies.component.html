@@ -1,20 +1,23 @@
-<div class="trophies-container" [class.shown]="showTrophies">
+<div class="trophies-container" [class.shown]="showTrophies" *ngIf="!dyp">
   <ng-container *ngIf="first; else noWinner">
     <app-event-trophy-player
       class="other-players"
       [player]="second"
+      [isArena]="isArena"
       place="second"
       (playerClicked)="playerClicked.emit(second)"
       *ngIf="showOtherPlaces">
     </app-event-trophy-player>
     <app-event-trophy-player
       [player]="first"
+      [isArena]="isArena"
       (playerClicked)="playerClicked.emit(first)"
       place="first">
     </app-event-trophy-player>
     <app-event-trophy-player
       class="other-players"
       [player]="third"
+      [isArena]="isArena"
       place="third"
       (playerClicked)="playerClicked.emit(third)"
       *ngIf="showOtherPlaces">

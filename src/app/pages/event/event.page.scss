@@ -1,3 +1,14 @@
+ion-toolbar ion-segment-button {
+  color: var(--ion-color-medium);
+  font-weight: bold;
+  font-size: 16px;
+
+  &.segment-button-checked {
+    font-size: 18px;
+    color: teal;
+  }
+}
+
 .page-container {
   display: flex;
   height: 100%;
@@ -48,6 +59,25 @@
 
   .hidden {
     display: none;
+  }
+
+  &.bracket {
+    .left-panel {
+      min-width: 350px;
+    }
+    .main-panel {
+      max-width: 100%;
+      width: 100%;
+      flex-grow: 1;
+    }
+    .right-panel {
+      flex: 0;
+
+      &.show {
+        min-width: 350px;
+        flex: 1;
+      }
+    }
   }
 }
 

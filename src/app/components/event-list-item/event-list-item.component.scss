@@ -9,4 +9,34 @@
       margin-right: 5px;
     }
   }
+
+  .private {
+    color: teal;
+  }
+
+  .winners {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+
+    ion-icon {
+      color: gold;
+      margin-right: 5px;
+    }
+
+    .winner {
+      b, span {
+        margin-right: 3px;
+      }
+
+      b {
+        cursor: pointer;
+        color: teal;
+
+        &:hover {
+          opacity: .9;
+        }
+      }
+    }
+  }
 }

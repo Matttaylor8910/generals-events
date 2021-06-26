@@ -4,6 +4,6 @@
     [game]="game"
     [server]="event.server"
     (nameClicked)="nameClicked.emit($event)"
-    *ngFor="let game of games">
+    *ngFor="let game of games; let i = index; trackBy: trackByFn">
   </app-game-summary>
 </div>

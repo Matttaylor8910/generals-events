@@ -20,13 +20,13 @@ module.exports = {
 };
 ```
 
-Have the bot join and play in a tournament:
+Have the bot join and play in an event:
 ```
-node app.js --tournament FFA-Jan-2021 --bot 0
+node app.js --event FFA-Jan-2021 --bot 0
 ```
-Spawn 30 bots from your `config.js` file to play in a tournament:
+Spawn 30 bots from your `config.js` file to play in an event:
 ```
-for i in {0..29}; do node app.js --tournament FFA-Jan-2021 --bot $i &; done
+for i in {0..29}; do node app.js --event FFA-Jan-2021 --bot $i &; done
 ```
 Have the first bot from your `config.js` file join a lobby:
 ```
