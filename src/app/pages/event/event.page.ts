@@ -141,6 +141,12 @@ export class EventPage implements OnDestroy {
   }
 
   async checkJoinQueue() {
+    // skip the join param for now since it's not working
+    // TODO: fix this to the root:
+    if (this.parent?.format === EventFormat.MULTI_STAGE_EVENT) {
+      return;
+    }
+
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
     if (location.href.includes('join=true')) {
