@@ -85,7 +85,8 @@ async function lookForFinishedGame(
     if (count > players.length / 2) {
       // if over half (but not exactly half) of the og players were in this
       // game, and we have not tracked it already, count the game
-      await saveReplayToGame(replay, snapshot, eventRef, event);
+      await saveReplayToGame(
+          replay.id, replay.started, snapshot, eventRef, event);
     } else {
       // otherwise, gotta keep looking, start in 10 seconds
       await keepLookingIn10Seconds(snapshot);
@@ -161,23 +162,24 @@ function getMostPrevalentReplay(replays: IGeneralsReplay[]):
 }
 
 async function saveReplayToGame(
-    replay: IGeneralsReplay,
+    replayId: string,
+    started: number,
     gameSnapshot: DocumentSnapshot,
     eventRef: admin.firestore.DocumentReference,
     event: IArenaEvent,
     ): Promise<void> {
   const batch = db.batch();
   batch.update(eventRef, {
-    replays: admin.firestore.FieldValue.arrayUnion(replay.id),
+    replays: admin.firestore.FieldValue.arrayUnion(replayId),
     completedGameCount: admin.firestore.FieldValue.increment(1),
     ongoingGameCount: admin.firestore.FieldValue.increment(-1),
   });
 
-  console.log(`getting replay stats for ${replay.id}`);
+  console.log(`getting replay stats for ${replayId}`);
 
   // pull down the replay and save it to the game doc
   const {scores, summary, turns} =
-      await simulator.getReplayStats(replay.id, event.server);
+      await simulator.getReplayStats(replayId, event.server);
 
   // determine if the winner is on a streak
   const [winner, second] = scores;
@@ -204,11 +206,11 @@ async function saveReplayToGame(
 
   // save the replay to the game doc
   const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
-  const finished = getFinishedTime(replay.started, turns, speed);
+  const finished = getFinishedTime(started, turns, speed);
   const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
-    replayId: replay.id,
-    started: replay.started,
+    replayId: replayId,
+    started: started,
     finished: finished,
     replay: {scores, summary, turns},
     status: tooLate ? GameStatus.TOO_LATE : GameStatus.FINISHED,
@@ -223,13 +225,13 @@ async function saveReplayToGame(
       const playerDoc = await playerRef.get();
       if (!playerDoc.exists) continue;
 
-      const recordId = `${replay.id}_${player.name}`;
+      const recordId = `${replayId}_${player.name}`;
 
       // determine finished for this player based on their last turn
       const record = {
-        replayId: replay.id,
-        started: replay.started,
-        finished: getFinishedTime(replay.started, player.lastTurn, speed),
+        replayId: replayId,
+        started: started,
+        finished: getFinishedTime(started, player.lastTurn, speed),
         ...player,
       };
 
