@@ -31,50 +31,62 @@ Game.prototype.addMountain = function(index) {
   this.map.setTile(index, Map.TILE_MOUNTAIN);
 };
 
+Game.prototype.addSwamp = function(index) {
+  this.swamps.push(index);
+};
+
 Game.prototype.addCity = function(index, army) {
   this.cities.push(index);
   this.map.setArmy(index, army);
 };
 
-Game.prototype.addGeneral =
-    function(index) {
+Game.prototype.addGeneral = function(index) {
   this.generals.push(index);
-  this.map.setTile(index, this.generals.length - 1);
-  this.map.setArmy(index, 1);
-}
+  if (index !== null) {
+    this.map.setTile(index, this.generals.length - 1);
+    this.map.setArmy(index, 1);
+  }
+};
 
-    Game.createFromReplay = function(gameReplay) {
-  var sockets = gameReplay.generals.map(function(g, i) {
-    return {
-      emit: function() {},
-      gio_username: gameReplay.usernames[i],
-      gio_stars: gameReplay.stars ? (gameReplay.stars[i] || 0) : '',
-    };
-  });
-  var game = new Game(sockets, gameReplay.teams);
+Game.prototype.addNeutral = function(index, army) {
+  if (!this.neutrals) this.neutrals = [];
+  this.neutrals.push(index);
+  this.map.setArmy(index, army);
+};
+
+Game.createFromReplay = function(gameReplay) {
+  const sockets = gameReplay.generals.map(
+      (g, i) => ({
+        emit: function() {},
+        gio_username: gameReplay.usernames[i],
+        gio_stars: gameReplay.stars ? (gameReplay.stars[i] || 0) : '',
+        gio_playerColor: gameReplay.playerColors[i],
+      }));
+  const game = new Game(sockets, gameReplay.teams);
 
   game.cities = [];
   game.generals = [];
+  game.swamps = [];
+  game.lights = gameReplay.lights;
 
   // Init the game map from the replay.
   game.map =
       new Map(gameReplay.mapWidth, gameReplay.mapHeight, gameReplay.teams);
-  for (var i = 0; i < gameReplay.mountains.length; i++) {
-    game.addMountain(gameReplay.mountains[i]);
-  }
-  for (var i = 0; i < gameReplay.cities.length; i++) {
-    game.addCity(gameReplay.cities[i], gameReplay.cityArmies[i]);
-  }
-  for (var i = 0; i < gameReplay.generals.length; i++) {
-    game.addGeneral(gameReplay.generals[i]);
-  }
-
-  // For replay versions < 6, city regeneration is enabled.
-  // City regeneration is when cities "heal" themselves back to 40 after
-  // dropping below 40 army.
-  if (gameReplay.version < 6) {
-    game.city_regen = true;
-  }
+  gameReplay.mountains.forEach(m => {
+    game.addMountain(m);
+  });
+  gameReplay.swamps.forEach(s => {
+    game.addSwamp(s);
+  });
+  gameReplay.cities.forEach((city, i) => {
+    game.addCity(city, gameReplay.cityArmies[i]);
+  });
+  gameReplay.generals.forEach(g => {
+    game.addGeneral(g);
+  });
+  gameReplay.neutrals.forEach((n, i) => {
+    game.addNeutral(n, gameReplay.neutralArmies[i]);
+  });
 
   return game;
 };
@@ -98,18 +110,20 @@ Game.prototype.update = function() {
 
   this.turn++;
 
-  // Increment armies at generals and cities.
+  // Increment armies at generals and cities, decrement armies at swamps.
   if (this.turn % Constants.RECRUIT_RATE === 0) {
-    for (var i = 0; i < this.generals.length; i++) {
+    for (i = 0; i < this.generals.length; i++) {
       this.map.incrementArmyAt(this.generals[i]);
     }
-    for (var i = 0; i < this.cities.length; i++) {
-      // Increment owned cities + unowned cities below the min threshold if
-      // city_regen is enabled.
-      if (this.map.tileAt(this.cities[i]) >= 0 ||
-          (this.city_regen &&
-           this.map.armyAt(this.cities[i]) < Constants.MIN_CITY_ARMY)) {
+    for (i = 0; i < this.cities.length; i++) {
+      // Increment owned cities.
+      if (this.map.tileAt(this.cities[i]) >= 0) {
         this.map.incrementArmyAt(this.cities[i]);
+      }
+    }
+    for (i = 0; i < this.swamps.length; i++) {
+      if (this.map.tileAt(this.swamps[i]) >= 0) {
+        this.map.decrementArmyAt(this.swamps[i]);
       }
     }
   }

@@ -57,6 +57,20 @@ Map.prototype.incrementArmyAt = function(index) {
   this._armies[index]++;
 };
 
+// Used by swamp handler ONLY. If the new army value is 0 (e.g. from a swamp),
+// reset the tile to empty.
+Map.prototype.decrementArmyAt = function(index) {
+  this._armies[index]--;
+  if (this._armies[index] <= 0) {
+    this._map[index] = Map.TILE_EMPTY;
+
+    // To make sure it does not end with -1 on it, set army to 0 if it is empty
+    if (this._armies[index] < 0) {
+      this._armies[index] = 0;
+    }
+  }
+};
+
 // Attacks from start to end. Always leaves 1 unit left at start.
 Map.prototype.attack = function(start, end, is50, generals) {
   // Verify that the attack starts from a valid tile.
@@ -79,6 +93,11 @@ Map.prototype.attack = function(start, end, is50, generals) {
 
   // Check if the attack goes to a mountain.
   if (this.tileAt(end) === Map.TILE_MOUNTAIN) {
+    return false;
+  }
+
+  // You cannot attack with a 0 tile
+  if (this._armies[start] === 0) {
     return false;
   }
 
@@ -108,6 +127,13 @@ Map.prototype.attack = function(start, end, is50, generals) {
 
   // Attacking an Ally.
   else {
+    // If you are attacking yourself with a 1 tile (and the destination is >= 1,
+    // then the attack fails
+    if (this._armies[start] === 1 && this._armies[start] >= 1 &&
+        this.tileAt(start) === this.tileAt(end)) {
+      return false;
+    }
+
     this._armies[end] += this._armies[start] - reserve;
     if (generals.indexOf(end) < 0) {
       // Attacking a non-general allied tile.
