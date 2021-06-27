@@ -59,14 +59,19 @@ async function lookForFinishedGame(
     return await snapshot.ref.delete();
   }
 
+  // get the event data
+  const eventSnap = await eventRef.get();
+  const event = (eventSnap.data() || {}) as IArenaEvent;
+
+  const {replayId, started} = game;
+  console.log(`looking at game ${snapshot.id}, replayId: ${
+      replayId}, started: ${started}`);
+
   // if we have a game with some players, and we haven't set a replayId yet,
   // find games for these players
-  if (!game.replayId && players?.length) {
-    // get list of tracked replays for a event
-    const eventSnap = await eventRef.get();
-    const event = (eventSnap.data() || {}) as IArenaEvent;
+  if (!replayId && players?.length) {
+    // get the list of tracked replays for this event
     const trackedReplays = event.replays || [];
-
     console.log(`${trackedReplays.length} tracked replays for ${eventSnap.id}`);
 
     // wait for all of those replays to load so we can compare those replays to
@@ -91,6 +96,13 @@ async function lookForFinishedGame(
       // otherwise, gotta keep looking, start in 10 seconds
       await keepLookingIn10Seconds(snapshot);
     }
+  }
+
+  // in the case of there being no replay, but there is a replayId and started
+  // timestamp, we can pull down the replay and calculate scores for this game
+  else if (!game.replay && (replayId && started)) {
+    console.log('we have a replayId and started, save replay to game');
+    await saveReplayToGame(replayId, started, snapshot, eventRef, event);
   }
 }
 
@@ -236,7 +248,7 @@ async function saveReplayToGame(
       };
 
       // save the record in case we ever build features around this
-      batch.create(eventRef.collection('records').doc(recordId), record);
+      batch.set(eventRef.collection('records').doc(recordId), record);
 
       // set lastThreeOpponents if this is a 1v1 event
       let opponents: string[] = [];
