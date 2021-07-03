@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, PartnerStatus} from '../../../../types';
 
 @Component({
   selector: 'app-registration',
@@ -105,6 +105,10 @@ export class RegistrationComponent {
   determineInEvent() {
     this.inEvent =
         this.players && !!this.players.find(p => p.name === this.generals.name);
+  }
+
+  showPartner(player: ILeaderboardPlayer): boolean {
+    return player.partnerStatus === PartnerStatus.CONFIRMED && !!player.partner;
   }
 
   trackByFn(player: ILeaderboardPlayer) {

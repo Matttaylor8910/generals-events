@@ -14,6 +14,12 @@
   </ion-segment>
 
   <ng-container *ngIf="showRegistration">
+    <app-choose-partners
+      [event]="event"
+      [players]="players"
+      [status]="status"
+      [disqualified]="disqualified">
+    </app-choose-partners>
     <app-registration
       [event]="event"
       [players]="players"

@@ -21,10 +21,17 @@
     </select>
 
     <!-- show event formats for all types other than multi stage events -->
-    <ng-container  *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
+    <ng-container *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
       <label>Format</label>
       <select [(ngModel)]="format" name="format">
         <option [value]="option" *ngFor="let option of formats">{{option}}</option>
+      </select>
+    </ng-container>
+
+    <ng-container *ngIf="showPairingStrategies">
+      <label>Pairing Strategy</label>
+      <select [(ngModel)]="pairingStrategy" name="pairingStrategy">
+        <option [value]="option" *ngFor="let option of pairingStrategies">{{option}}</option>
       </select>
     </ng-container>
 

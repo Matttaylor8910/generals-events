@@ -35,6 +35,9 @@
       </td>
       <td (click)="playerClicked.emit(player)">
         <span class="name">{{ player.name }}</span>
+        <span class="partner-status" *ngIf="showPartner(player)">
+          + {{ player.partner }}
+        </span>
         <span class="qualified" *ngIf="showQualified">
           <ion-icon
             name="checkmark-circle"

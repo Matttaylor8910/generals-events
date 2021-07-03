@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IEvent, IGame, ILeaderboardPlayer, Visibility} from '../../../types';
+import {GameStatus, IEvent, IGame, ILeaderboardPlayer, PartnerStatus, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -282,6 +282,41 @@ export class EventService {
     return this.afs.collection('events').doc(eventId).update({
       checkedInPlayers: firebase.default.firestore.FieldValue.arrayUnion(name)
     });
+  }
+
+  selectPartner(eventId: string, name: string, partner: string): Promise<void> {
+    return this.afs.collection('events')
+        .doc(eventId)
+        .collection('players')
+        .doc(name)
+        .update({partner, partnerStatus: PartnerStatus.PENDING});
+  }
+
+  confirmPartner(eventId: string, name: string, partner: string):
+      Promise<void[]> {
+    // for both the name of this player and the partner, set them to each
+    // other's partner's and confirm the status
+    return Promise.all([name, partner].map(player => {
+      return this.afs.collection('events')
+          .doc(eventId)
+          .collection('players')
+          .doc(player)
+          .update({
+            partner: name === player ? partner : name,
+            partnerStatus: PartnerStatus.CONFIRMED,
+          });
+    }));
+  }
+
+  async clearPartner(eventId: string, name: string, currentPartner: string):
+      Promise<void> {
+    await this.afs.collection('events')
+        .doc(eventId)
+        .collection('players')
+        .doc(name)
+        .update({partner: '', partnerStatus: PartnerStatus.NONE});
+
+    return this.selectPartner(eventId, currentPartner, name);
   }
 
   updateEvent(eventId: string, data: Partial<IEvent>) {

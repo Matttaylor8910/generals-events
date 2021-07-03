@@ -14,6 +14,11 @@ export enum EventFormat {
   MULTI_STAGE_EVENT = '',
 }
 
+export enum DoublesPairingStrategy {
+  BRING_YOUR_PARTNER = 'Bring Your Partner',
+  // DRAW_YOUR_PARTNER = 'Draw Your Partner',
+}
+
 export enum Visibility {
   PUBLIC = 'Public',
   PRIVATE = 'Private',
@@ -32,6 +37,12 @@ export enum GameStatus {
   STARTED = 'STARTED',
   FINISHED = 'FINISHED',
   TOO_LATE = 'TOO_LATE',
+}
+
+export enum PartnerStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  NONE = '',
 }
 
 export enum GameSpeed {
@@ -94,6 +105,9 @@ export interface IDoubleElimEvent extends IBaseEvent {
   // the season tournaments will only let qualified players check in
   qualified?: string[];
   tsp: {[name: string]: number};
+
+  // brackets played as 2v2 will need a pairing strategy
+  doublesPairingStrategy?: DoublesPairingStrategy;
 }
 
 export interface IDynamicDYPEvent extends IBaseEvent {
@@ -127,6 +141,10 @@ export interface ILeaderboardPlayer {
   stats?: ILeaderboardPlayerStats;
   lastThreeOpponents?: string[];  // names of last 3 recent opponents, most
                                   // recent at the beginning
+
+  // fields for 2v2 events
+  partner?: string;
+  partnerStatus?: PartnerStatus;
 }
 
 export interface ILeaderboardPlayerStats {

@@ -15,6 +15,7 @@ import {BracketStatusComponent} from './bracket-status/bracket-status.component'
 import {BracketComponent} from './bracket/bracket.component';
 import {ChartWinRateComponent} from './chart-win-rate/chart-win-rate';
 import {ChatComponent} from './chat/chat.component';
+import {ChoosePartnersComponent} from './choose-partners/choose-partners.component';
 import {CrownComponent} from './crown/crown.component';
 import {DoubleEliminationBracketComponent} from './double-elimination-bracket/double-elimination-bracket.component';
 import {DynamicDYPEventComponent} from './dynamic-dyp-event/dynamic-dyp-event.component';
@@ -42,9 +43,9 @@ import {TwitchComponent} from './twitch/twitch.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    ChoosePartnersComponent,
     BracketComponent,
     BracketEventComponent,
-    RegistrationComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
@@ -64,6 +65,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     GameListComponent,
     GameSummaryComponent,
     LoginComponent,
+    RegistrationComponent,
     RulesComponent,
     TimerComponent,
     TwitchComponent,
@@ -86,7 +88,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     ArenaQueueComponent,
     BracketComponent,
     BracketEventComponent,
-    RegistrationComponent,
+    ChoosePartnersComponent,
     BracketStatusComponent,
     ChatComponent,
     CrownComponent,
@@ -106,6 +108,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     GameListComponent,
     GameSummaryComponent,
     LoginComponent,
+    RegistrationComponent,
     RulesComponent,
     TimerComponent,
     TwitchComponent,

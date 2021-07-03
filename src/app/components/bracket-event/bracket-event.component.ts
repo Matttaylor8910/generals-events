@@ -3,7 +3,7 @@ import {cloneDeep} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer} from 'types';
+import {DoublesPairingStrategy, EventFormat, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, PartnerStatus} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -130,8 +130,42 @@ export class BracketEventComponent {
     return this.status === EventStatus.FINISHED;
   }
 
+  getConfirmedTeams(): string[][] {
+    if (this.event.doublesPairingStrategy !==
+        DoublesPairingStrategy.BRING_YOUR_PARTNER) {
+      return [];
+    }
+
+    const teams = [];
+    const paired = new Set<string>();
+
+    // create the teams
+    for (const player of this.players) {
+      if (!paired.has(player.name) &&
+          player.partnerStatus === PartnerStatus.CONFIRMED && player.partner) {
+        teams.push([player.name, player.partner].sort());
+        paired.add(player.name);
+        paired.add(player.partner);
+      }
+    }
+
+    return teams;
+  }
+
   createBracket() {
-    const teams = this.event.checkedInPlayers.map(player => [player]);
+    let teams = [];
+
+    // 1v1 just passes the list of checked in players
+    if (this.event.type === EventType.ONE_VS_ONE) {
+      teams = this.event.checkedInPlayers.map(player => [player]);
+    }
+
+    // 2v2 passes the list of confirmed teams
+    // TODO: support DYP!
+    else {
+      teams = this.getConfirmedTeams();
+    }
+
     this.bracket = getShuffledBracket(this.event, teams);
   }
 

@@ -3,7 +3,7 @@ import {Component} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {extend} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
-import {EventFormat, EventType, GameSpeed, IEvent, Visibility} from 'types';
+import {DoublesPairingStrategy, EventFormat, EventType, GameSpeed, IDoubleElimEvent, IEvent, Visibility} from 'types';
 
 const arenaEventTypes = {
   [EventType.FFA]: {
@@ -17,7 +17,7 @@ const arenaEventTypes = {
 const typeFormats = {
   [EventType.FFA]: [EventFormat.ARENA],
   [EventType.ONE_VS_ONE]: [EventFormat.ARENA, EventFormat.DOUBLE_ELIM],
-  [EventType.TWO_VS_TWO]: [EventFormat.DYNAMIC_DYP],
+  [EventType.TWO_VS_TWO]: [EventFormat.DOUBLE_ELIM, EventFormat.DYNAMIC_DYP],
   [EventType.MULTI_STAGE_EVENT]: [EventFormat.MULTI_STAGE_EVENT],
 }
 
@@ -71,6 +71,9 @@ export class CreateEventPage {
 
   formats = typeFormats[this.type];
   format = this.formats[0];
+
+  pairingStrategies = Object.values(DoublesPairingStrategy);
+  pairingStrategy = this.pairingStrategies[0];
 
   date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
   time = '12:00:00';
@@ -130,6 +133,15 @@ export class CreateEventPage {
   get invalid(): boolean {
     return this.invalidDate || !this.arenaValid || !this.parentValid ||
         this.saving;
+  }
+
+  /**
+   * When we do a team double elimination bracket, we need to determine how to
+   * pair teams, so show that control
+   */
+  get showPairingStrategies(): boolean {
+    return this.format === EventFormat.DOUBLE_ELIM &&
+        this.type === EventType.TWO_VS_TWO;
   }
 
   getDate(): Date {
@@ -201,7 +213,7 @@ export class CreateEventPage {
   }
 
   private getDoubleElimEventFields(startTime: number) {
-    return {
+    const eventFields: Partial<IDoubleElimEvent> = {
       checkInTime: this.getCheckInTime(startTime),
       winningSets: {
         winners: winningSets[this.winningSets.winners],
@@ -210,6 +222,13 @@ export class CreateEventPage {
         finals: winningSets[this.winningSets.finals],
       },
     };
+
+    // if this is a 2v2 double elim event, show the pairing strategies
+    if (this.showPairingStrategies) {
+      eventFields.doublesPairingStrategy = this.pairingStrategy;
+    }
+
+    return eventFields;
   }
 
   /**

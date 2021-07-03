@@ -1,0 +1,37 @@
+<div class="partners-container" *ngIf="showPartners">
+
+  <!-- confirmed teams -->
+  <h3>Confirmed Teams:</h3>
+  <div class="team" *ngFor="let team of confirmedTeams; let i = index; trackBy: trackByFn">
+    <span>{{ team.join(' and ') }} </span>
+    <ion-button *ngIf="onTeam(team)" (click)="leaveTeam()">Leave Team</ion-button>
+  </div>
+  <p *ngIf="confirmedTeams.length === 0">
+    No confirmed teams just yet
+  </p>
+
+  <!-- only show the choosing partner logic if this player is taking requests -->
+  <ng-container *ngIf="takingRequests">
+    <!-- available partners to choose from -->
+    <h3>Available Partners (click to choose):</h3>
+    <div class="available-partners">
+      <ion-button *ngFor="let player of availablePartners; let i = index; trackBy: trackByFn" (click)="choosePartner(player)">
+        {{ player.name }}
+      </ion-button>
+
+      <p *ngIf="availablePartners.length === 0">
+        No partners to choose from
+      </p>
+    </div>
+
+    <!-- available partners to choose from -->
+    <ng-container *ngIf="partnerRequests.length > 0">
+      <h3>Partner Requests:</h3>
+      <div class="partner-request" *ngFor="let player of partnerRequests; let i = index; trackBy: trackByFn">
+        <span>Play with <b>{{ player.name }}</b>?</span>
+        <ion-button (click)="acceptPartner(player)">Accept</ion-button>
+      </div>
+    </ng-container>
+  </ng-container>
+
+</div>
