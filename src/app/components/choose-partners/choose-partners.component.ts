@@ -24,7 +24,7 @@ export class ChoosePartnersComponent {
   }
 
   get showPartners(): boolean {
-    return this.status === EventStatus.UPCOMING &&
+    return !this.disqualified && this.status === EventStatus.UPCOMING &&
         this.event?.checkedInPlayers?.includes(this.generals.name);
   }
 
