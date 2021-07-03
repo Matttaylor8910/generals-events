@@ -24,7 +24,7 @@ export class BracketStatusComponent implements OnDestroy {
   notQualified = false;
 
   readyStatus: {
-    opponent: null|string,
+    opponents: null|string[],
     lobby: null|string,
     sets: null|number,
   };
@@ -82,9 +82,10 @@ export class BracketStatusComponent implements OnDestroy {
     // status for after the bracket has been set, and thus the event has started
     if (this.event.bracket) {
       if (this.readyStatus.lobby) {
-        const {opponent, sets} = this.readyStatus;
-        return `You are up against ${opponent}! As a reminder it's best ${
-            sets} of ${sets * 2 - 1}`;
+        const {opponents, sets} = this.readyStatus;
+        return `You are up against ${
+            opponents.join(
+                ' and ')}! As a reminder it's best ${sets} of ${sets * 2 - 1}`;
       }
       if (this.spectateStatus.lobby) {
         const {player1, player2, winner} = this.spectateStatus;
@@ -160,12 +161,12 @@ export class BracketStatusComponent implements OnDestroy {
         const round = combined[r];
         for (let m = 0; m < round.matches.length; m++) {
           const match = round.matches[m];
-          const players = match.teams.map(t => t.name);
-          const t = players.indexOf(this.generals.name);
+          const t = match.teams.findIndex(
+              team => team.players?.includes(this.generals.name));
 
           if (t >= 0) {
             if (match.status === MatchStatus.READY) {
-              this.setMatchReadyStatus(players, match, round.winningSets);
+              this.setMatchReadyStatus(match, round.winningSets);
               foundReady = true;
             } else if (match.status === MatchStatus.COMPLETE) {
               this.eliminated = foundEliminated ||
@@ -189,10 +190,13 @@ export class BracketStatusComponent implements OnDestroy {
     if (!foundSpectate) this.resetSpectateStatus();
   }
 
-  setMatchReadyStatus(players: string[], match: IBracketMatch, sets: number) {
+  setMatchReadyStatus(match: IBracketMatch, sets: number) {
     this.readyStatus.lobby = `${match.lobby ?? match.number}`;
-    this.readyStatus.opponent = players.find(p => p !== this.generals.name);
     this.readyStatus.sets = sets;
+
+    const opposingTeam =
+        match.teams.find(team => !team.players.includes(this.generals.name));
+    this.readyStatus.opponents = opposingTeam?.players ?? [];
   }
 
   setSpectateStatus(
@@ -254,7 +258,7 @@ export class BracketStatusComponent implements OnDestroy {
 
   resetReadyStatus() {
     this.readyStatus = {
-      opponent: null,
+      opponents: null,
       lobby: null,
       sets: null,
     };

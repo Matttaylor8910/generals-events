@@ -1,7 +1,7 @@
 <div
   class="bracket-status space-between"
   [class.dq]="disqualified"
-  [class.opponent]="readyStatus?.opponent"
+  [class.opponent]="readyStatus?.opponents?.length"
   [class.checked-in]="checkedIn && checkInOpen"
   *ngIf="showStatusBar"
 >
