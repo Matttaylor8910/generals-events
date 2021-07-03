@@ -131,7 +131,8 @@ export class BracketEventComponent {
   }
 
   createBracket() {
-    this.bracket = getShuffledBracket(this.event);
+    const teams = this.event.checkedInPlayers.map(player => [player]);
+    this.bracket = getShuffledBracket(this.event, teams);
   }
 
   // TODO: likely remove
@@ -189,7 +190,8 @@ export class BracketEventComponent {
           cloned.checkedInPlayers = this.players.map(p => p.name);
         }
       }
-      const bracket = getShuffledBracket(cloned);
+      const teams = this.event.checkedInPlayers.map(player => [player]);
+      const bracket = getShuffledBracket(cloned, teams);
       delete this.preview;
       setTimeout(() => {
         this.preview = bracket;

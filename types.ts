@@ -255,12 +255,13 @@ export enum MatchTeamStatus {
 }
 
 export interface IMatchTeam {
-  name?: string;
-  score?: number;
-  status?: MatchTeamStatus;
-  dq?: boolean;          // when set to true, style the match to show DQ
-  placeholder?: string;  // some matches have placeholder strings
-  tsp?: number;          // tsp for this season if applicable
+  name?: string;             // the name of the team to display
+  players?: string[];        // the list of players in this team
+  score?: number;            // the current # of games won in this match
+  status?: MatchTeamStatus;  // status for styling the team in the bracket
+  dq?: boolean;              // when set to true, style the match to show DQ
+  placeholder?: string;      // some matches have placeholder strings
+  tsp?: number;              // tsp for this season if applicable
 }
 
 export interface IMatchResults {

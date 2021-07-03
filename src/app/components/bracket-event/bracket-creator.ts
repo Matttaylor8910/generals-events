@@ -1,17 +1,25 @@
 import {cloneDeep, map, shuffle} from 'lodash';
 import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchTeamStatus} from 'types';
 
-export function getShuffledBracket(event: IDoubleElimEvent):
-    IDoubleEliminationBracket {
-  let teams: IMatchTeam[] = event.checkedInPlayers.map(name => {
-    const tsp = (event.tsp ?? {})[name] ?? 0;
-    return {name, score: 0, status: MatchTeamStatus.UNDECIDED, dq: false, tsp};
+export function getShuffledBracket(
+    event: IDoubleElimEvent, teams: string[][]): IDoubleEliminationBracket {
+  let matchTeams: IMatchTeam[] = teams.map(players => {
+    const tsp = players.map(player => (event.tsp ?? {})[player] ?? 0)
+                    .reduce((a, b) => a + b, 0);
+    return {
+      name: players.join(' & '),
+      players,
+      score: 0,
+      status: MatchTeamStatus.UNDECIDED,
+      dq: false,
+      tsp,
+    };
   });
 
-  teams = cloneDeep(teams);
+  matchTeams = cloneDeep(matchTeams);
 
   // determine the number of matches in the first round given a set # of teams
-  const round1Matches = determineRound1Matches(teams.length);
+  const round1Matches = determineRound1Matches(matchTeams.length);
 
   // generate an empty bracket given a number of round 1 matches
   const bracket = generateEmptyBracket(round1Matches, event);
@@ -20,15 +28,15 @@ export function getShuffledBracket(event: IDoubleElimEvent):
   // points for the current/last season
   if (event.tsp) {
     // sort the teams (players) descending by tsp
-    teams.sort((a, b) => b.tsp - a.tsp);
+    matchTeams.sort((a, b) => b.tsp - a.tsp);
 
     // get the seed positions for the tournament based on the number of teams,
     // then set the matches
-    const seeds = getSeeds(teams.length);
+    const seeds = getSeeds(matchTeams.length);
 
     for (let i = 0; i < seeds.length; i++) {
       seeds[i].filter(seed => seed !== null).forEach(seed => {
-        const team = teams[seed - 1];
+        const team = matchTeams[seed - 1];
         bracket.winners[0].matches[i].teams.push(team);
       });
     }
@@ -36,12 +44,12 @@ export function getShuffledBracket(event: IDoubleElimEvent):
 
   // no tsp, shuffle the teams
   else {
-    teams = shuffle(teams);
+    matchTeams = shuffle(matchTeams);
 
     // pair teams in matches for the first round of the winners bracket
     let i = 0;
-    const increment = round1Matches / (teams.length - round1Matches);
-    teams.forEach(team => {
+    const increment = round1Matches / (matchTeams.length - round1Matches);
+    matchTeams.forEach(team => {
       const index = Math.floor(i) % round1Matches;
       bracket.winners[0].matches[index].teams.push(team);
 
