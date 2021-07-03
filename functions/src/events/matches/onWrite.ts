@@ -16,6 +16,11 @@ try {
 }
 const db = admin.firestore();
 
+/**
+ * This function is responsible for looking for finished games within a match in
+ * a double elimination bracket. When games complete, we will parse the replay
+ * to determine who won and increment the score of the winning team
+ */
 export const onWriteMatch =
     functions.firestore.document('events/{eventId}/matches/{matchId}')
         .onWrite(async (matchDoc, context) => {
@@ -37,13 +42,13 @@ async function lookForFinishedGame(
     eventRef: admin.firestore.DocumentReference,
     ): Promise<any> {
   const match = (snapshot.data() || {}) as IBracketMatchDocument;
-  const {players} = match;
+  const {players, status, started} = match;
 
   console.log(`looking for finished game ${snapshot.id}`);
 
   // if we have a match with some players, and it is not complete,
   // find games for these players
-  if (match.status === MatchStatus.READY && players?.length) {
+  if (status === MatchStatus.READY && players?.length) {
     // get list of tracked replays for a event
     const eventSnap = await eventRef.get();
     const event = (eventSnap.data() || {}) as IArenaEvent;
@@ -54,7 +59,7 @@ async function lookForFinishedGame(
     // wait for all of those replays to load so we can compare those replays to
     // see if they're the same
     const replays = await getReplaysForPlayers(
-        players, trackedReplays, match.started, event.server);
+        players, trackedReplays, started, event.server);
 
     console.log('got all replays for players')
 
@@ -148,7 +153,7 @@ async function saveReplayToMatch(
     eventRef: admin.firestore.DocumentReference,
     event: IArenaEvent,
     ): Promise<void> {
-  const {number, players} = matchSnapshot.data() as IBracketMatchDocument;
+  const {number, teams} = matchSnapshot.data() as IBracketMatchDocument;
 
   const batch = db.batch();
   batch.update(eventRef, {
@@ -161,16 +166,12 @@ async function saveReplayToMatch(
   // pull down the replay and save it to the game doc
   const {scores, summary, turns} =
       await simulator.getReplayStats(replay.id, event.server);
-
-  // determine if the winner is on a streak
   const winner = scores[0];
-  const snapshot = await eventRef.collection('players').doc(winner.name).get();
-  const winnerDoc = snapshot.data() || {};
-
-  console.log(`TODO some stuff with the winner: ${winnerDoc.name}`);
 
   // determine which team won and increment the
-  const winningIndex = players.indexOf(winner.name);
+  const winningIndex = teams.findIndex(team => {
+    return team.players?.includes(winner.name);
+  });
   const teamToIncrement = winningIndex === 0 ? 'team1Score' : 'team2Score';
   console.log(`incrementing team ${teamToIncrement} for match ${number}`);
   batch.update(eventRef, {

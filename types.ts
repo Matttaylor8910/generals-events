@@ -227,6 +227,7 @@ export enum MatchStatus {
   NOT_STARTED = 'NOT_STARTED',
 }
 
+// the interface for a match displayed in the bracket UI
 export interface IBracketMatch {
   teams: IMatchTeam[];
   number: number;
@@ -239,6 +240,7 @@ export interface IBracketMatch {
   lobby?: string;  // optional lobby to use
 }
 
+// the document under /events/:eventId/matches
 export interface IBracketMatchDocument extends IBracketMatch {
   players: string[];
   timesChecked: number;

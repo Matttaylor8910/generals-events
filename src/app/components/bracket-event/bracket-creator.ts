@@ -7,7 +7,7 @@ export function getShuffledBracket(
     const tsp = players.map(player => (event.tsp ?? {})[player] ?? 0)
                     .reduce((a, b) => a + b, 0);
     return {
-      name: players.join(' & '),
+      name: players.join(' and '),
       players,
       score: 0,
       status: MatchTeamStatus.UNDECIDED,

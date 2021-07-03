@@ -24,7 +24,7 @@ export async function handleDoubleElimEventUpdate(snapshot: DocumentSnapshot):
       const winner = lastMatch.teams.find(t => t.score === finals.winningSets);
 
       // set the winner and endTime
-      updates.winners = [winner!.name];
+      updates.winners = winner?.players ?? [];
       updates.endTime = Date.now();
     }
 
@@ -140,8 +140,8 @@ function byebye(match: IBracketMatch):
 function hasTwoTeams(match: IBracketMatch):
     boolean {
       return match.teams.length === 2 &&
-          (match.teams[0].name?.length || 0) > 0 &&
-          (match.teams[1].name?.length || 0) > 0;
+          (match.teams[0].players?.length ?? 0) > 0 &&
+          (match.teams[1].players?.length ?? 0) > 0;
     }
 
 /**
@@ -222,8 +222,12 @@ async function advancePlayers(
       // strip the old finals match of its gold border
       match.final = false;
     } else {
-      await setRank(snapshot, winningTeam.name!, 1);
-      await setRank(snapshot, losingTeam.name!, 2);
+      winningTeam.players?.forEach(async player => {
+        await setRank(snapshot, player, 1);
+      });
+      losingTeam.players?.forEach(async player => {
+        await setRank(snapshot, player, 2);
+      });
       return true;
     }
   }
@@ -295,7 +299,9 @@ async function advanceLosingTeam(
 
     // this was the loser of the loser's bracket semifinal, they placed 3rd
     if (bracket[bracketName].length === roundIdx + 1) {
-      await setRank(snapshot, team.name!, 3);
+      team.players?.forEach(async player => {
+        await setRank(snapshot, player, 3);
+      });
     }
   }
 
