@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {EventFormat, EventStatus, IEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventFormat, EventStatus, EventType, IEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-event-trophies',
@@ -19,20 +19,38 @@ export class EventTrophiesComponent {
       public readonly generals: GeneralsService,
   ) {}
 
-  get showTrophies() {
+  get showTrophies(): boolean {
     return this.status === EventStatus.FINISHED;
   }
 
+  get is2v2(): boolean {
+    return this.event?.type === EventType.TWO_VS_TWO;
+  }
+
   get first(): ILeaderboardPlayer|null {
-    return this.players?.length > 0 ? this.players[0] : null;
+    const player = this.players?.length > 0 ? {...this.players[0]} : null;
+    if (this.is2v2) {
+      player.name += ` and ${this.players[1].name}`
+    }
+    return player;
   }
 
   get second(): ILeaderboardPlayer|null {
-    return this.players?.length > 1 ? this.players[1] : null;
+    const index = this.is2v2 ? 2 : 1;
+    const player = this.players?.length > 1 ? {...this.players[index]} : null;
+    if (this.is2v2) {
+      player.name += ` and ${this.players[index + 1].name}`
+    }
+    return player;
   }
 
   get third(): ILeaderboardPlayer|null {
-    return this.players?.length > 2 ? this.players[2] : null;
+    const index = this.is2v2 ? 4 : 2;
+    const player = this.players?.length > 2 ? {...this.players[index]} : null;
+    if (this.is2v2) {
+      player.name += ` and ${this.players[index + 1].name}`
+    }
+    return player;
   }
 
   get showOtherPlaces(): boolean {
