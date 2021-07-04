@@ -44,7 +44,8 @@ async function lookForFinishedGame(
   const match = (snapshot.data() || {}) as IBracketMatchDocument;
   const {players, status, started} = match;
 
-  console.log(`looking for finished game ${snapshot.id}`);
+  console.log(`looking for finished game ${snapshot.id} with players ${
+      players?.join(', ')}`);
 
   // if we have a match with some players, and it is not complete,
   // find games for these players
@@ -105,7 +106,7 @@ async function getReplaysForPlayers(
   // wait for all requests to come back or timeout after 10 seconds
   const replays = await Promise.race([
     Promise.all(replayPromises),
-    timeoutAfter(1000, []),
+    timeoutAfter(10000, []),
   ]);
 
   return flatten(replays).filter(replay => {

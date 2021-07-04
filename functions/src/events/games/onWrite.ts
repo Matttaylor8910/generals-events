@@ -131,7 +131,7 @@ async function getReplaysForPlayers(
   // wait for all requests to come back or timeout after 10 seconds
   const replays = await Promise.race([
     Promise.all(replayPromises),
-    timeoutAfter(1000, []),
+    timeoutAfter(10000, []),
   ]);
 
   return flatten(replays).filter(replay => {

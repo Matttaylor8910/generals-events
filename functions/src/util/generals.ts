@@ -21,6 +21,7 @@ export function getReplaysForUsername(
   const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${
       encodeURIComponent(name)}&offset=${offset}&count=${count}`;
   return http.get(url).then((response: {data: IGeneralsReplay[]}) => {
+    console.log(`loaded ${response.data.length} replays for ${name}`);
     return response.data;
   });
 }

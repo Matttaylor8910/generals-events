@@ -1,5 +1,5 @@
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
-import {cloneDeep, map} from 'lodash';
+import {cloneDeep, flatten, map} from 'lodash';
 
 import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchStatus, MatchTeamStatus} from '../../../types';
 
@@ -365,7 +365,7 @@ async function setMatchReady(
     const now = Date.now();
     await snapshot.ref.collection('matches').doc(String(match.number)).create({
       ...match,
-      players: match.teams.map(team => team.name),
+      players: flatten(match.teams.map(team => team.players)),
       started: now,
       updated: now,
     });
