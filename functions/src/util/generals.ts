@@ -29,7 +29,10 @@ export function getReplaysForUsername(
 const typesMap = {
   [EventType.FFA]: 'ffa',
   [EventType.ONE_VS_ONE]: 'duel',
-  [EventType.TWO_VS_TWO]: '2v2',
+
+  // Use 1v1 rankings until the 2v2 stars doesn't return null
+  // [EventType.TWO_VS_TWO]: '2v2',
+  [EventType.TWO_VS_TWO]: 'duel',
 
   // multi stage events themselves can be composed of several different events
   // with different formats, but for the purpose of showing stars during
