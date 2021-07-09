@@ -69,6 +69,9 @@ export interface IBaseEvent {
   server?: GeneralsServer;  // optional server override
   parentId?: string;        // eventId for this event's parent, for multi-stage
 
+  // 2v2 events will need a pairing strategy
+  doublesPairingStrategy?: DoublesPairingStrategy;
+
   options: Partial<IGeneralsGameOptions>;  // all possible options
 
   id?: string;       // client field
@@ -105,9 +108,6 @@ export interface IDoubleElimEvent extends IBaseEvent {
   // the season tournaments will only let qualified players check in
   qualified?: string[];
   tsp: {[name: string]: number};
-
-  // brackets played as 2v2 will need a pairing strategy
-  doublesPairingStrategy?: DoublesPairingStrategy;
 }
 
 export interface IDynamicDYPEvent extends IBaseEvent {
