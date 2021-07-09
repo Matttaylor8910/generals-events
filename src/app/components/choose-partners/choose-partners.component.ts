@@ -1,6 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {UtilService} from 'src/app/services/util.service';
 import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, PartnerStatus} from 'types';
 
 @Component({
@@ -17,6 +18,7 @@ export class ChoosePartnersComponent {
   constructor(
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
+      private readonly utilService: UtilService,
   ) {}
 
   get me(): ILeaderboardPlayer {
@@ -54,7 +56,8 @@ export class ChoosePartnersComponent {
         ?.filter(player => {
           return this.event?.checkedInPlayers?.includes(player.name) &&
               player.name !== this.generals.name &&
-              player.partnerStatus !== PartnerStatus.CONFIRMED;
+              player.partnerStatus !== PartnerStatus.CONFIRMED &&
+              player.name !== this.me?.partner;
         })
         .sort((a, b) => {
           return a.name.localeCompare(b.name);
@@ -73,8 +76,19 @@ export class ChoosePartnersComponent {
   }
 
   choosePartner(player: ILeaderboardPlayer) {
-    this.eventService.selectPartner(
-        this.event.id, this.generals.name, player.name);
+    // if this player has already sent me a partner request, accept it instead
+    // of sending one their way
+    if (this.partnerRequests.some(p => p.name === player.name)) {
+      this.acceptPartner(player);
+    }
+
+    // otherwise, send a request for them to confirm
+    else {
+      this.eventService.selectPartner(
+          this.event.id, this.generals.name, player.name);
+
+      this.utilService.showToast(`Sent team request to ${player.name}!`);
+    }
   }
 
   acceptPartner(player: ILeaderboardPlayer) {
