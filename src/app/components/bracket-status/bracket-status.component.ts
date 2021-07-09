@@ -27,6 +27,7 @@ export class BracketStatusComponent implements OnDestroy {
     opponents: null|string[],
     lobby: null|string,
     sets: null|number,
+    team: null|number,
   };
   spectateStatus: {
     player1: null|string,
@@ -136,8 +137,8 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   joinMatch() {
-    this.generals.joinLobby(
-        `match_${this.readyStatus.lobby}`, this.event, true);
+    const {lobby, team} = this.readyStatus;
+    this.generals.joinLobby(`match_${lobby}`, this.event, true, {team});
   }
 
   spectateMatch() {
@@ -194,8 +195,12 @@ export class BracketStatusComponent implements OnDestroy {
     this.readyStatus.lobby = `${match.lobby ?? match.number}`;
     this.readyStatus.sets = sets;
 
-    const opposingTeam =
-        match.teams.find(team => !team.players.includes(this.generals.name));
+    // determine which team we're on
+    const teamIndex = match.teams?.findIndex(
+        team => team.players?.includes(this.generals.name));
+    this.readyStatus.team = teamIndex + 1;
+
+    const opposingTeam = match.teams[teamIndex === 0 ? 1 : 0];
     this.readyStatus.opponents = opposingTeam?.players ?? [];
   }
 
@@ -261,6 +266,7 @@ export class BracketStatusComponent implements OnDestroy {
       opponents: null,
       lobby: null,
       sets: null,
+      team: null,
     };
   }
 

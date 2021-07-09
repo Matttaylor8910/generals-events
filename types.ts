@@ -407,4 +407,7 @@ export interface IGeneralsGameOptions {
 
   // the swamp density, between 0 and 1, e.g. 0.75
   swamps?: number;
+
+  // the team to join when you reach a lobby
+  team?: number;
 }

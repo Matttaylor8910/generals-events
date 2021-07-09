@@ -1,8 +1,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ModalController} from '@ionic/angular';
+import {flatten} from 'lodash';
 import {UpdateMatchPage} from 'src/app/pages/event/update-match/update-match.page';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {IBracketMatch, IBracketRound, IDoubleElimEvent, MatchStatus} from 'types';
+import {IBracketMatch, IBracketRound, IDoubleElimEvent, IGeneralsGameOptions, MatchStatus} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -50,11 +51,19 @@ export class BracketComponent {
 
   handleClickMatch(match: IBracketMatch) {
     if (match.status !== MatchStatus.COMPLETE && !this.disabled) {
-      const players = match.teams.map(team => team.name);
-      const inMatch = players.includes(this.generals.name);
       const lobby = match.lobby ?? match.number;
+      const options: IGeneralsGameOptions = {};
 
-      const options = inMatch ? {} : {spectate: true};
+      // set the team or spectator params if you're in this match
+      const teamIndex = match.teams?.findIndex(
+          team => team.players?.includes(this.generals.name));
+
+      if (teamIndex >= 0) {
+        options.team = teamIndex + 1;
+      } else {
+        options.spectate = true;
+      }
+
       this.generals.joinLobby(`match_${lobby}`, this.event, true, options);
     }
   }
