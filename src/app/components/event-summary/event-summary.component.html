@@ -20,6 +20,9 @@
         <p *ngIf="needToQualify">
           You must qualify to participate
         </p>
+        <p *ngIf="event.doublesPairingStrategy">
+          {{ event.doublesPairingStrategy }}
+        </p>
       </ion-label>
     </ion-item>
 
