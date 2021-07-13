@@ -9,7 +9,7 @@ This is a tournament webapp for running events for the game [generals.io](http:/
 Arena tournaments will play in the arena style that [lichess.org](https://lichess.org/tournament) uses where the tournament runs for a set amount of time and the player with the most points at the end wins. You accumulate points based on your performance in the tournament. Whenever your current game ends, you jump in the queue to be paired with new players to jump into a new game.
 
 ### Double Elimination
-#### Supports: 1v1
+#### Supports: 1v1, 2v2 (bring your partner)
 Players play in a double elimination bracket until one winner wins the grand finals. The number of games played per round are configurable for the winners backet, losers bracket, semifinals, and finals. A tournament can use the total seed points (TSP) from the main generals.io site for seeding the bracket as well as limiting participants to those that qualified this season. Most of the info is out of date, but you can [read more about season rankings here](https://www.reddit.com/r/generalsio/wiki/index#wiki_season_tournament_information).
 
 ### Dynamic DYP
