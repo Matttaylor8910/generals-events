@@ -24,7 +24,7 @@ export const api = functions.https.onRequest(main);
 app.get('/', async (request, response) => {
   response.send(`
     Welcome! This API is currently intended as a way for bot players to play in
-    a generals.io event. Feel free to ping @googleman in the generals.io
+    a generals.io event. Feel free to ping @matt in the generals.io
     discord for more information.
   `);
 });

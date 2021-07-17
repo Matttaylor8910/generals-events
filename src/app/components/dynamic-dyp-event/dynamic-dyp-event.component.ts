@@ -121,7 +121,8 @@ export class DynamicDYPEventComponent {
 
   generateEventRounds() {
     const players = this.event.checkedInPlayers.slice(0, this.playersToUse);
-    this.rounds = getRounds(players, 'googleman', this.maxRounds);
+    // 'matt' is the oddManOut in the case of a player getting fewer games
+    this.rounds = getRounds(players, 'matt', this.maxRounds);
     console.log(this.rounds);
   }
 

@@ -77,7 +77,7 @@ export class BracketStatusComponent implements OnDestroy {
 
   get message(): string {
     if (this.disqualified) {
-      return 'You have been disqualified for ruining the experience for others! Reach out to googleman on discord if you feel this is in error.';
+      return 'You have been disqualified for ruining the experience for others! Reach out to matt on discord if you feel this is in error.';
     }
 
     // status for after the bracket has been set, and thus the event has started
