@@ -169,7 +169,7 @@ async function saveReplayToMatch(
       await simulator.getReplayStats(replay.id, event.server);
   const winner = scores[0];
 
-  // determine which team won and increment the
+  // determine which team won and increment the score of that team
   const winningIndex = teams.findIndex(team => {
     return team.players?.includes(winner.name);
   });
@@ -198,8 +198,15 @@ async function saveReplayToMatch(
     const playerDoc = await playerRef.get();
     if (!playerDoc.exists) continue;
 
-    const opponents = scores.filter(score => score.name !== player.name)
-                          .map(score => score.name);
+    const opponents = teams.filter(team => !team.players?.includes(player.name))
+                          .map(team => team.name);
+
+    // update the rank to either be 1 or 2 for dyp
+    if (teams[winningIndex].players?.includes(player.name)) {
+      player.rank = 1;
+    } else {
+      player.rank = 2;
+    }
 
     // determine finished for this player based on their last turn
     const record = {

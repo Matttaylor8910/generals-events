@@ -202,7 +202,7 @@ async function saveReplayToMatch(
       player.rank = 1;
 
       // set the lastTurn for each of the winners to be the max between the two
-      // for trhe purpose of showing an accurate quickest win stat
+      // for the purpose of showing an accurate quickest win stat
       const lastTurns =
           scores.filter(s => winners.includes(s.name)).map(s => s.lastTurn);
       player.lastTurn = Math.max(...lastTurns);
