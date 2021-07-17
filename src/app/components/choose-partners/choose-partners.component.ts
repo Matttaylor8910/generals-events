@@ -36,15 +36,15 @@ export class ChoosePartnersComponent {
 
   get confirmedTeams(): string[][] {
     const teams = [];
-    const paired = new Set<string>();
+    const partnerMap = new Map<string, string>();
 
     // create the teams
     for (const player of this.players) {
-      if (!paired.has(player.name) &&
-          player.partnerStatus === PartnerStatus.CONFIRMED && player.partner) {
-        teams.push([player.name, player.partner].sort());
-        paired.add(player.name);
-        paired.add(player.partner);
+      partnerMap.set(player.name, player.partner);
+
+      // these players have chosen each other as partners
+      if (partnerMap.get(player.partner) === player.name) {
+        teams.push([player.name, player.partner]);
       }
     }
 
