@@ -170,18 +170,19 @@ export class BracketEventComponent {
   }
 
   // TODO: likely remove
-  checkInAll() {
-    for (const player of this.players) {
-      if (!this.event.qualified?.length ||
-          this.event.qualified.includes(player.name)) {
-        this.eventService.checkInPlayer(this.event.id, player.name);
-      }
-    }
-  }
+  async checkInAll() {
+    const confirm = await this.utilService.confirm(
+        'Check in all?',
+        'Are you really sure you wanna do that? Players should generally check themselves in.',
+        'Check in all', 'Nevermind');
 
-  updateAll() {
-    for (const player of this.players) {
-      this.eventService.addPlayer(this.event.id, player.name);
+    if (confirm) {
+      for (const player of this.players) {
+        if (!this.event.qualified?.length ||
+            this.event.qualified.includes(player.name)) {
+          this.eventService.checkInPlayer(this.event.id, player.name);
+        }
+      }
     }
   }
 

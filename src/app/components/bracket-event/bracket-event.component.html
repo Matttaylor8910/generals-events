@@ -71,7 +71,6 @@
     <ng-container *ngIf="showBracketButtons">
       <ion-button class="generals-button" (click)="createBracket()" [disabled]="!event.checkedInPlayers?.length">New Bracket ({{ event.checkedInPlayers?.length || 0 }})</ion-button>
       <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>
-      <ion-button class="generals-button" (click)="updateAll()">Update all</ion-button>
       <ion-button class="generals-button" (click)="startEvent()" [disabled]="!bracket">Start Event</ion-button>
     </ng-container>
     <app-double-elimination-bracket
