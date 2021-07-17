@@ -3,7 +3,7 @@ import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
+import {DoublesPairingStrategy, EventStatus, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus, PartnerStatus} from 'types';
 
 @Component({
   selector: 'app-bracket-status',
@@ -19,6 +19,7 @@ export class BracketStatusComponent implements OnDestroy {
   currentSubscription: string;
   redirect$: Subscription;
 
+  me?: ILeaderboardPlayer;
   inEvent = false;
   checkedIn = false;
   notQualified = false;
@@ -50,6 +51,23 @@ export class BracketStatusComponent implements OnDestroy {
     this.determineInEvent();
   }
 
+  get highlight(): boolean {
+    // highlight if you have a match to play in
+    if (this.readyStatus?.opponents?.length > 0) {
+      return true;
+    }
+
+    // highlight once your partner is set
+    if (this.bringYourPartner) {
+      return this.me?.partnerStatus === PartnerStatus.CONFIRMED;
+    }
+
+    // otherwise highlight once you are checked in
+    else {
+      return this.checkedIn && this.checkInOpen;
+    }
+  }
+
   get showTimer(): boolean {
     return this.status === EventStatus.UPCOMING && !this.checkInOpen;
   }
@@ -75,13 +93,18 @@ export class BracketStatusComponent implements OnDestroy {
     return !this.event?.bracket || this.inEvent;
   }
 
+  get bringYourPartner(): boolean {
+    return this.event?.doublesPairingStrategy ===
+        DoublesPairingStrategy.BRING_YOUR_PARTNER;
+  }
+
   get message(): string {
     if (this.disqualified) {
       return 'You have been disqualified for ruining the experience for others! Reach out to matt on discord if you feel this is in error.';
     }
 
     // status for after the bracket has been set, and thus the event has started
-    if (this.event.bracket) {
+    if (this.event?.bracket) {
       if (this.readyStatus.lobby) {
         const {opponents, sets} = this.readyStatus;
         return `You are up against ${
@@ -110,6 +133,20 @@ export class BracketStatusComponent implements OnDestroy {
       return 'You do not qualify to participate in this event';
     }
     if (this.checkedIn) {
+      // doubles event statuses for bring your partner
+      if (this.bringYourPartner) {
+        // confirmed team, great!
+        if (this.me?.partnerStatus === PartnerStatus.CONFIRMED) {
+          return `You and ${this.me.partner} are set to compete in the bracket.
+                  The event organizers will generate the bracket shortly, hang tight.`;
+        } else if (this.me?.partner) {
+          return `You have asked ${
+              this.me.partner} to play with you, they have not responded yet.`;
+        } else {
+          return 'Choose a partner to play with below.'
+        }
+      }
+
       return 'You are checked in! The event organizers will generate the bracket shortly, hang tight.';
     }
     if (this.showCheckIn) {
@@ -122,10 +159,10 @@ export class BracketStatusComponent implements OnDestroy {
   }
 
   determineInEvent() {
-    const me = this.players.find(p => p.name === this.generals.name);
-    this.inEvent = this.players && !!me;
+    this.me = this.players.find(p => p.name === this.generals.name);
+    this.inEvent = this.players && !!this.me;
     this.checkedIn =
-        this.inEvent && this.event.checkedInPlayers?.includes(me.name);
+        this.inEvent && this.event.checkedInPlayers?.includes(this.me.name);
     this.notQualified = this.generals.name &&
         this.event?.qualified?.length > 0 &&
         !this.event.qualified.includes(this.generals.name);

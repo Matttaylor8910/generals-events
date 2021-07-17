@@ -15,14 +15,15 @@
     font-size: 20px;
   }
 
-  &.checked-in,
-  &.opponent {
+  &.highlight {
     background-color: teal;
     border-color: teal;
   }
 
   .checkin-checkmark {
     font-size: 28px;
+    min-width: 28px;
+    margin-left: 12px;
   }
 
   .message {
