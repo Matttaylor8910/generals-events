@@ -12,7 +12,7 @@ export class DoubleEliminationBracketComponent {
   @Input() minRoundsToShow = 4;
   @Input() disabled = false;
 
-  @Output() playerClicked = new EventEmitter<string>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   showToggle = false;
   hideCompletedRounds: boolean;

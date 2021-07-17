@@ -3,7 +3,7 @@ import {cloneDeep} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {DoublesPairingStrategy, EventFormat, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, PartnerStatus} from 'types';
+import {DoublesPairingStrategy, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, PartnerStatus} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -18,10 +18,10 @@ export class BracketEventComponent {
   @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
-  @Input() selectedPlayer?: ILeaderboardPlayer;
+  @Input() selectedPlayers?: ILeaderboardPlayer[];
   @Input() disqualified: boolean;
 
-  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   bracket: IDoubleEliminationBracket;
   preview: IDoubleEliminationBracket;
@@ -192,11 +192,6 @@ export class BracketEventComponent {
       startTime: Date.now(),
       playerCount: this.event.checkedInPlayers.length,
     });
-  }
-
-  handlePlayerClicked(name: string) {
-    const player = this.players.find(p => p.name === name);
-    this.playerClicked.emit(player);
   }
 
   // TODO: likely remove

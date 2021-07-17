@@ -3,7 +3,7 @@ import {ModalController} from '@ionic/angular';
 import {flatten} from 'lodash';
 import {UpdateMatchPage} from 'src/app/pages/event/update-match/update-match.page';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {IBracketMatch, IBracketRound, IDoubleElimEvent, IGeneralsGameOptions, MatchStatus} from 'types';
+import {IBracketMatch, IBracketRound, IDoubleElimEvent, IGeneralsGameOptions, IMatchTeam, MatchStatus} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -20,7 +20,7 @@ export class BracketComponent {
   @Input() bracketName: string;
   @Input() disabled = false;
 
-  @Output() playerClicked = new EventEmitter<string>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   rounds: IBracketRound[];
   start = 0;
@@ -88,9 +88,9 @@ export class BracketComponent {
     }
   }
 
-  clickPlayer(name: string, $event: Event) {
+  clickTeam(team: IMatchTeam, $event: Event) {
     $event.stopPropagation();
-    this.playerClicked.emit(name);
+    this.playersClicked.emit(team.players ?? team.name);
   }
 
   private updateBracket(rounds: IBracketRound[]) {

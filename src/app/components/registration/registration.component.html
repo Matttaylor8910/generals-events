@@ -27,13 +27,13 @@
     <tr [class.even]="i % 2 === 0">
       <td class="marker"
         [class.you]="player.name === generals.name"
-        [class.selected]="player.name === selectedPlayer?.name">
+        [class.selected]="isSelected(player.name)">
       </td>
       <td class="rank">
         <span *ngIf="!player.dq">{{ player.rank }}</span>
         <ion-icon name="close" color="danger" tooltip="{{player.name}} has been disqualified" *ngIf="player.dq"></ion-icon>
       </td>
-      <td (click)="playerClicked.emit(player)">
+      <td (click)="playersClicked.emit(player.name)">
         <span class="name">{{ player.name }}</span>
         <span class="partner-status" *ngIf="showPartner(player)">
           + {{ player.partner }}

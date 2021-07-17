@@ -15,10 +15,10 @@ export class ArenaLeaderboardComponent {
   @Input() event: IArenaEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
-  @Input() selectedPlayer?: ILeaderboardPlayer;
+  @Input() selectedPlayers?: ILeaderboardPlayer[];
   @Input() disqualified: boolean;
 
-  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   visible: ILeaderboardPlayer[];
   offset = 0;
@@ -104,6 +104,10 @@ export class ArenaLeaderboardComponent {
   get canLeave() {
     return this.inEvent && this.generals.name &&
         this.status === EventStatus.UPCOMING;
+  }
+
+  isSelected(name: string): boolean {
+    return this.selectedPlayers?.some(p => p.name === name);
   }
 
   prev() {

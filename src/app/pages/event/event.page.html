@@ -52,7 +52,7 @@
             [event]="event"
             [parentEvent]="parent"
             [disqualified]="disqualified"
-            (nameClicked)="selectPlayer($event)">
+            (nameClicked)="selectPlayers($event)">
           </app-chat>
         </div>
       </div>
@@ -63,33 +63,33 @@
             [event]="event"
             [players]="players"
             [status]="status"
-            (playerClicked)="selectPlayer($event)">
+            (playersClicked)="selectPlayers($event)">
           </app-event-trophies>
           <app-arena-leaderboard
             [event]="event"
             [players]="players"
             [status]="status"
-            [selectedPlayer]="selectedPlayer"
+            [selectedPlayers]="selectedPlayers"
             [disqualified]="disqualified"
-            (playerClicked)="selectPlayer($event)"
+            (playersClicked)="selectPlayers($event)"
             *ngIf="isArena">
           </app-arena-leaderboard>
           <app-bracket-event
             [event]="event"
             [players]="players"
             [status]="status"
-            [selectedPlayer]="selectedPlayer"
+            [selectedPlayers]="selectedPlayers"
             [disqualified]="disqualified"
-            (playerClicked)="selectPlayer($event)"
+            (playersClicked)="selectPlayers($event)"
             *ngIf="isBracket">
           </app-bracket-event>
           <app-dynamic-dyp-event
             [event]="event"
             [players]="players"
             [status]="status"
-            [selectedPlayer]="selectedPlayer"
+            [selectedPlayers]="selectedPlayers"
             [disqualified]="disqualified"
-            (playerClicked)="selectPlayer($event)"
+            (playersClicked)="selectPlayers($event)"
             *ngIf="isDynamicDYP">
           </app-dynamic-dyp-event>
         </ng-container>
@@ -98,25 +98,25 @@
       <div class="right-panel" [class.show]="showRightPanel">
         <div class="panel-container">
           <app-event-player-summary
-            [player]="selectedPlayer"
+            [players]="selectedPlayers"
             [event]="event"
             [status]="status"
             [showRank]="isArena"
-            (close)="selectPlayer()"
-            *ngIf="selectedPlayer">
+            (close)="selectPlayers()"
+            *ngIf="selectedPlayers">
           </app-event-player-summary>
           <app-game-list
-            [class.hidden]="selectedPlayer"
+            [class.hidden]="selectedPlayers"
             [event]="event"
-            (nameClicked)="selectPlayer($event)"
+            (nameClicked)="selectPlayers($event)"
             *ngIf="isArena">
           </app-game-list>
           <app-dynamic-dyp-leaderboard
-            [class.hidden]="selectedPlayer"
+            [class.hidden]="selectedPlayers"
             [event]="event"
             [players]="players"
             [status]="status"
-            (playerClicked)="selectPlayer($event)"
+            (playersClicked)="selectPlayers($event)"
             *ngIf="isDynamicDYP">
           </app-dynamic-dyp-leaderboard>
         </div>

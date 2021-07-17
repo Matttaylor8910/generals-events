@@ -17,7 +17,7 @@ export class DynamicDYPFinalsTeamsComponent {
   finals: IDynamicDYPFinals;
   bracket: IBracketRound[];
 
-  @Output() playerClicked = new EventEmitter<string>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   constructor(
       public readonly generals: GeneralsService,

@@ -16,10 +16,10 @@ export class DynamicDYPEventComponent {
   @Input() event: IDynamicDYPEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
-  @Input() selectedPlayer?: ILeaderboardPlayer;
+  @Input() selectedPlayers?: ILeaderboardPlayer[];
   @Input() disqualified: boolean;
 
-  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   rounds: IDynamicDYPRound[];
   selectedTab = 'Registration';
@@ -49,7 +49,7 @@ export class DynamicDYPEventComponent {
       // move from registration to rounds when the event starts
       if (this.selectedTab === 'Registration') {
         this.selectedTab = this.finals ? 'Finals' : 'Rounds';
-        this.playerClicked.emit(null);
+        this.playersClicked.emit([]);
       }
     }
   }
@@ -112,11 +112,6 @@ export class DynamicDYPEventComponent {
 
   get finished(): boolean {
     return this.status === EventStatus.FINISHED;
-  }
-
-  handlePlayerClicked(name: string) {
-    const player = this.players.find(p => p.name === name);
-    this.playerClicked.emit(player);
   }
 
   generateEventRounds() {

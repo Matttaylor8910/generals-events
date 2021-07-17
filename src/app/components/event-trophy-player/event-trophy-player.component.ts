@@ -22,7 +22,7 @@ const RANKS = {
   @Input() player: ILeaderboardPlayer;
   @Input() place: Place;
 
-  @Output() playerClicked = new EventEmitter<void>();
+  @Output() playersClicked = new EventEmitter<void>();
 
   constructor() {}
 

@@ -13,7 +13,7 @@ export class EventTrophiesComponent {
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
 
-  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   constructor(
       public readonly generals: GeneralsService,

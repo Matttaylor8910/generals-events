@@ -11,7 +11,7 @@ export class DynamicDYPLeaderboardComponent {
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
 
-  @Output() playerClicked = new EventEmitter<string>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   constructor() {}
 

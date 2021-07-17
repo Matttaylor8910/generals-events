@@ -24,10 +24,10 @@
       [event]="event"
       [players]="players"
       [status]="status"
-      [selectedPlayer]="selectedPlayer"
+      [selectedPlayers]="selectedPlayers"
       [disqualified]="disqualified"
       [registrationOpen]="registrationOpen"
-      (playerClicked)="playerClicked.emit($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-registration>
   </ng-container>
 
@@ -35,7 +35,7 @@
     <app-double-elimination-bracket
       [event]="event"
       [bracket]="bracket"
-      (playerClicked)="handlePlayerClicked($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-double-elimination-bracket>
   </ng-container>
 
@@ -50,7 +50,7 @@
       [event]="event"
       [bracket]="preview"
       [disabled]="true"
-      (playerClicked)="handlePlayerClicked($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-double-elimination-bracket>
   </ng-container>
 
@@ -76,7 +76,7 @@
     <app-double-elimination-bracket
       [event]="event"
       [bracket]="bracket"
-      (playerClicked)="handlePlayerClicked($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-double-elimination-bracket>
   </ng-container>
 

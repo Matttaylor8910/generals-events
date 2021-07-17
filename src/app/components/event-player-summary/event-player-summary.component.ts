@@ -10,7 +10,7 @@ import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, ILeaderboardPla
   styleUrls: ['./event-player-summary.component.scss'],
 })
 export class EventPlayerSummaryComponent {
-  @Input() player: ILeaderboardPlayer;
+  @Input() players: ILeaderboardPlayer[];
   @Input() event: IArenaEvent;
   @Input() status: EventStatus;
   @Input() showRank: boolean;
@@ -36,7 +36,20 @@ export class EventPlayerSummaryComponent {
   }
 
   get showDisclaimers(): boolean {
-    return !this.player?.stats?.totalGames || this.upcoming;
+    return this.upcoming ||
+        this.players?.some(player => !player?.stats?.totalGames);
+  }
+
+  get rank(): string {
+    if (this.isArena) {
+      const [player] = this.players ?? [];
+      return player?.rank ? String(player?.rank) : '';
+    }
+    return '';
+  }
+
+  get teamName(): string {
+    return this.players?.map(p => p.name).join(' and ');
   }
 
   get playerQualifyString(): string {
@@ -45,7 +58,9 @@ export class EventPlayerSummaryComponent {
 
       // only show this qualified string if this event requires being qualified
       if (qualified.length > 0) {
-        const index = qualified.indexOf(this.player?.name);
+        // qualified only applies to 1v1
+        const [player] = this.players ?? [];
+        const index = qualified.indexOf(player?.name);
         if (index >= 0) {
           const week = Math.floor(index / 25) + 1;
           return 'Qualified for this event ' +
@@ -64,8 +79,13 @@ export class EventPlayerSummaryComponent {
    * has died at least once
    */
   get showKDR(): boolean {
+    // KDR is only shown for arena
+    if (!this.isArena) return false;
+
+    // arena is only 1v1, so there will be only one selected player
+    const [player] = this.players ?? [];
     const {averageKills, killDeathRatio, totalGames, totalWins} =
-        this.player?.stats || {};
+        player?.stats ?? {};
     return averageKills !== killDeathRatio && totalGames > totalWins;
   }
 

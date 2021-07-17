@@ -8,7 +8,7 @@
       <ion-item *ngFor="let player of leaderboard; let i = index; trackBy: trackByFn">
         <ion-label>
           {{ i + 1 }}.
-          <span class="player-name" (click)="playerClicked.emit(player.name)">{{ player.name }}</span>
+          <span class="player-name" (click)="playersClicked.emit(player.name)">{{ player.name }}</span>
         </ion-label>
         <ion-text slot="end">
           {{ player.stats?.winRate | percent:'1.0-2' }}

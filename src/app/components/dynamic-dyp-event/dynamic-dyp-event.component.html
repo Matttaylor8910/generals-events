@@ -18,10 +18,10 @@
       [event]="event"
       [players]="players"
       [status]="status"
-      [selectedPlayer]="selectedPlayer"
+      [selectedPlayers]="selectedPlayers"
       [disqualified]="disqualified"
       [registrationOpen]="registrationOpen"
-      (playerClicked)="playerClicked.emit($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-registration>
   </ng-container>
 
@@ -45,7 +45,7 @@
       [event]="event"
       [rounds]="rounds"
       [finals]="finals"
-      (playerClicked)="handlePlayerClicked($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-dynamic-dyp-rounds>
   </ng-container>
 
@@ -53,7 +53,7 @@
     <app-dynamic-dyp-finals-teams
       [event]="event"
       [players]="players"
-      (playerClicked)="handlePlayerClicked($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-dynamic-dyp-finals-teams>
   </ng-container>
 

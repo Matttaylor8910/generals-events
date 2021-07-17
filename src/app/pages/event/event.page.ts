@@ -6,7 +6,7 @@ import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, Visibility} from 'types';
+import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -28,7 +28,7 @@ export class EventPage implements OnDestroy {
 
   players: ILeaderboardPlayer[];
   players$: Observable<ILeaderboardPlayer[]>;
-  selectedPlayer?: Partial<ILeaderboardPlayer>;
+  selectedPlayers = [];
 
   disqualified = localStorage.getItem('generals-dq') === 'true';
 
@@ -115,7 +115,7 @@ export class EventPage implements OnDestroy {
   }
 
   get showRightPanel(): boolean {
-    return !!this.selectedPlayer || this.event?.endTime > 0;
+    return !!this.selectedPlayers || this.event?.endTime > 0;
   }
 
   get inEvent(): boolean {
@@ -180,31 +180,38 @@ export class EventPage implements OnDestroy {
 
   determineSelectPlayer(playersUpdated = false) {
     if (this.players?.length && this.event) {
-      if (this.selectedPlayer) {
+      if (this.selectedPlayers.length > 0) {
         if (playersUpdated) {
-          const updated = this.findPlayer(this.selectedPlayer.name);
-          const previousGames = this.selectedPlayer.stats?.totalGames || 0;
+          // allow selectedPlayer to be the first in the array, we are using
+          // this player to see if the number of games played has changed, and
+          // in a team they all change at the same time
+          const [selectedPlayer] = this.selectedPlayers;
+          const updated = this.findPlayer(selectedPlayer.name);
+          const previousGames = selectedPlayer.stats?.totalGames || 0;
 
-          // if the selected player has played another game, update their stats
+          // if the selected players have played another game, update their
+          // stats
           if (previousGames < updated?.stats?.totalGames) {
-            this.selectedPlayer = updated;
+            this.setSelectedPlayers(this.selectedPlayers.map(player => {
+              return this.findPlayer(player.name);
+            }));
           }
         }
       }
 
-      // if no player is selected, be smart about automatically selecting one
+      // if no players are selected, be smart about automatically selecting one
       else {
         if (this.inEvent) {
           // select your own player if the event is upcoming or finished
           if (this.status === EventStatus.UPCOMING ||
               this.status === EventStatus.FINISHED) {
-            this.selectedPlayer = this.findPlayer(this.generals.name);
+            this.setSelectedPlayers([this.findPlayer(this.generals.name)]);
           }
         } else {
           // if you're not logged in, and the event is over, select the winner
           // of the event
           if (this.status === EventStatus.FINISHED && this.isBracket) {
-            this.selectedPlayer = this.findPlayer(this.event.winners[0]);
+            this.setSelectedPlayers([this.findPlayer(this.event.winners[0])]);
           }
         }
       }
@@ -217,15 +224,22 @@ export class EventPage implements OnDestroy {
         undefined;
   }
 
-  selectPlayer(player?: ILeaderboardPlayer|string) {
-    if (typeof player === 'string') {
-      this.selectedPlayer = this.findPlayer(player);
-      if (this.selectedPlayer === undefined) {
-        this.utilService.showToast(`${player} hasn't joined this event!`);
-        this.selectedPlayer = {name: player};
+  selectPlayers(players: string|string[] = []) {
+    if (typeof players === 'string') {
+      // just a single player to select
+      const selectedPlayer = this.findPlayer(players);
+
+      if (selectedPlayer === undefined) {
+        this.utilService.showToast(`${players} hasn't joined this event!`);
+        this.setSelectedPlayers([{name: players}]);
+      } else {
+        this.setSelectedPlayers([selectedPlayer]);
       }
     } else {
-      this.selectedPlayer = player;
+      // this is an array of players, select all of those players
+      this.setSelectedPlayers(players.map(name => {
+        return this.findPlayer(name);
+      }));
     }
   }
 
@@ -313,6 +327,10 @@ export class EventPage implements OnDestroy {
       this.eventService.deleteEvent(this.event.id);
       this.goHome();
     }
+  }
+
+  private setSelectedPlayers(players: Partial<ILeaderboardPlayer>[] = []) {
+    this.selectedPlayers = players.filter(p => !!p);
   }
 
   ngOnDestroy() {

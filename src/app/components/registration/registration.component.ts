@@ -13,11 +13,11 @@ export class RegistrationComponent {
   @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
-  @Input() selectedPlayer?: ILeaderboardPlayer;
+  @Input() selectedPlayers?: ILeaderboardPlayer[];
   @Input() disqualified: boolean;
   @Input() registrationOpen: boolean;
 
-  @Output() playerClicked = new EventEmitter<ILeaderboardPlayer>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   inEvent = false;
   recentlyJoined = false;
@@ -64,6 +64,10 @@ export class RegistrationComponent {
 
   get showQualified(): boolean {
     return this.event?.qualified?.length > 0;
+  }
+
+  isSelected(name: string): boolean {
+    return this.selectedPlayers?.some(p => p.name === name);
   }
 
   isQualified(name: string): boolean {

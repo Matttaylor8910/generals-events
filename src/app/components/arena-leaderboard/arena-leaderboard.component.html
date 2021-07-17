@@ -48,13 +48,13 @@
     <tr [class.even]="i % 2 === 0">
       <td class="marker"
         [class.you]="player.name === generals.name"
-        [class.selected]="player.name === selectedPlayer?.name">
+        [class.selected]="isSelected(player.name)">
       </td>
       <td class="rank">
         <span *ngIf="!player.dq">{{ player.rank }}</span>
         <ion-icon name="close" color="danger" tooltip="{{player.name}} has been disqualified" *ngIf="player.dq"></ion-icon>
       </td>
-      <td class="name" (click)="playerClicked.emit(player)">
+      <td class="name" (click)="playersClicked.emit(player.name)">
         {{ player.name }}
       </td>
       <td class="record">
@@ -87,7 +87,7 @@
     <tr [class.even]="i % 2 === 0" class="small-devices" *ngIf="player.record.length">
       <td class="marker"
         [class.you]="player.name === generals.name"
-        [class.selected]="player.name === selectedPlayer?.name">
+        [class.selected]="isSelected(player.name)">
       </td>
       <td class="record" colspan="5">
         <div class="record-container">

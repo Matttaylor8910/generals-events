@@ -7,7 +7,7 @@
       [minRoundsToShow]="minRoundsToShow"
       [disabled]="disabled"
       bracketName="winners"
-      (playerClicked)="playerClicked.emit($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-bracket>
   </ng-container>
 
@@ -19,7 +19,7 @@
       [minRoundsToShow]="minRoundsToShow"
       [disabled]="disabled"
       bracketName="losers"
-      (playerClicked)="playerClicked.emit($event)">
+      (playersClicked)="playersClicked.emit($event)">
     </app-bracket>
   </ng-container>
 </div>

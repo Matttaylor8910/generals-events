@@ -14,7 +14,7 @@ export class DynamicDYPRoundsComponent {
   @Input() rounds: IDynamicDYPRound[];
   @Input() finals: boolean;
 
-  @Output() playerClicked = new EventEmitter<string>();
+  @Output() playersClicked = new EventEmitter<string|string[]>();
 
   hideCompletedRounds: boolean;
   showToggle = false;
@@ -38,7 +38,7 @@ export class DynamicDYPRoundsComponent {
 
   clickPlayer(name: string, $event: Event) {
     $event.stopPropagation();
-    this.playerClicked.emit(name);
+    this.playersClicked.emit(name);
   }
 
   handleClickMatch(match: IDynamicDYPMatch) {
