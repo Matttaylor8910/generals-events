@@ -11,7 +11,10 @@
 
       <!-- some stats -->
       <div class="stats" *ngIf="player.stats as stats">
-        <h2>Stats</h2>
+        <h2>
+          Stats
+          <span *ngIf="players.length > 1"> for {{player.name}}</span>
+        </h2>
         <div class="stat-line">
           <span>
             <span *ngIf="notFinished">Current</span>

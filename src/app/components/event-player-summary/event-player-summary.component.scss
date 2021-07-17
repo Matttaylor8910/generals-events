@@ -35,9 +35,17 @@
     color: #fff;
   }
 
-  .stats b ion-icon {
-    position: relative;
-    top: 1.5px;
+  .stats {
+    margin-top: 20px;
+
+    &:first-of-type {
+      margin-top: initial;
+    }
+
+    b ion-icon {
+      position: relative;
+      top: 1.5px;
+    }
   }
 
   .stat-line {
