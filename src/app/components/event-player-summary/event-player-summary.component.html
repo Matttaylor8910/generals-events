@@ -1,6 +1,6 @@
 <ion-card class="player-summary" *ngIf="players?.length > 0">
   <ion-card-header class="space-between">
-    <ion-card-title (click)="goToProfile(player.name)">
+    <ion-card-title [class.solo-player]="players.length === 1" (click)="handleClickTeamName()">
       <span *ngIf="rank">{{rank}}.</span> {{ teamName }}
       <ion-icon name="link"></ion-icon>
     </ion-card-title>

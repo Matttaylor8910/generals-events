@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Router} from '@angular/router';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
@@ -20,7 +19,6 @@ export class EventPlayerSummaryComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly utilService: UtilService,
-      private readonly router: Router,
   ) {}
 
   get upcoming(): boolean {
@@ -98,7 +96,13 @@ export class EventPlayerSummaryComponent {
     }
   }
 
+  handleClickTeamName() {
+    if (this.players?.length === 1) {
+      this.goToProfile(this.players[0].name);
+    }
+  }
+
   goToProfile(name: string) {
-    this.router.navigate(['/', 'profiles', name]);
+    this.generals.goToProfile(name, this.event?.server);
   }
 }

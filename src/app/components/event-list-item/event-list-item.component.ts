@@ -46,6 +46,6 @@ export class EventListItemComponent {
 
   goToProfile(name: string, $event: Event) {
     $event.stopPropagation();
-    this.router.navigate(['/', 'profiles', name]);
+    this.generals.goToProfile(name, this.event?.server);
   }
 }
