@@ -1,7 +1,7 @@
 <ion-card class="player-summary" *ngIf="players?.length > 0">
   <ion-card-header class="space-between">
     <ion-card-title (click)="goToProfile(player.name)">
-      <span *ngIf="rank">{{ player.rank}}.</span> {{ teamName }}
+      <span *ngIf="rank">{{rank}}.</span> {{ teamName }}
       <ion-icon name="link"></ion-icon>
     </ion-card-title>
     <ion-icon name="close" (click)="close.emit()"></ion-icon>
