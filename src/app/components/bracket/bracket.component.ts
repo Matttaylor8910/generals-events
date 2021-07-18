@@ -119,6 +119,7 @@ export class BracketComponent {
               t.status = team.status;
               t.score = team.score;
               t.name = team.name;
+              t.players = team.players;
             });
           }
         });
