@@ -3,8 +3,14 @@
   <!-- confirmed teams -->
   <h3>Confirmed Teams:</h3>
   <div class="team" *ngFor="let team of confirmedTeams; let i = index; trackBy: trackByFn">
-    <span>{{ team.join(' and ') }} </span>
-    <ion-button *ngIf="onTeam(team)" (click)="leaveTeam()">Leave Team</ion-button>
+    <div>
+      <div class="name">{{ team.name }}</div>
+      <div class="placeholder" *ngIf="team.placeholder">{{ team.placeholder }}</div>
+    </div>
+    <div *ngIf="onTeam(team)">
+      <ion-button class="generals-button" (click)="setTeamName(team)">Set team name</ion-button>
+      <ion-button class="generals-button color-secondary" (click)="leaveTeam()">Leave Team</ion-button>
+    </div>
   </div>
   <p *ngIf="confirmedTeams.length === 0">
     No confirmed teams just yet

@@ -2,7 +2,7 @@ import {Component, Input} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, PartnerStatus} from 'types';
+import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, IMatchTeam, PartnerStatus} from 'types';
 
 @Component({
   selector: 'app-choose-partners',
@@ -34,7 +34,7 @@ export class ChoosePartnersComponent {
     return this.me?.partnerStatus !== PartnerStatus.CONFIRMED;
   }
 
-  get confirmedTeams(): string[][] {
+  get confirmedTeams(): IMatchTeam[] {
     const teams = [];
     const partnerMap = new Map<string, string>();
 
@@ -44,7 +44,17 @@ export class ChoosePartnersComponent {
 
       // these players have chosen each other as partners
       if (partnerMap.get(player.partner) === player.name) {
-        teams.push([player.name, player.partner]);
+        const players = [player.name, player.partner];
+        const placeholder = players.join(' and ');
+        const name = player.teamName || placeholder;
+
+        // in the case where there is no team name set, just join player names,
+        // otherwise show the team name prominently and the real names below
+        teams.push({
+          name,
+          players,
+          placeholder: name === placeholder ? '' : placeholder,
+        });
       }
     }
 
@@ -71,8 +81,8 @@ export class ChoosePartnersComponent {
     });
   }
 
-  onTeam(team: string[]): boolean {
-    return team.includes(this.generals.name);
+  onTeam(team: IMatchTeam): boolean {
+    return team.players.includes(this.generals.name);
   }
 
   choosePartner(player: ILeaderboardPlayer) {
@@ -94,6 +104,17 @@ export class ChoosePartnersComponent {
   acceptPartner(player: ILeaderboardPlayer) {
     this.eventService.confirmPartner(
         this.event.id, this.generals.name, player.name);
+  }
+
+  async setTeamName(team: IMatchTeam) {
+    let name = await this.utilService.promptForText(
+        'Team name', 'What should your team name be?', team.name, 'Save Name',
+        'Nevermind');
+
+    if (name !== null) {
+      this.eventService.setTeamName(this.event.id, team.players, name);
+      this.utilService.showToast(`Team name set to ${name}`);
+    }
   }
 
   leaveTeam() {

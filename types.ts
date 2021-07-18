@@ -145,6 +145,7 @@ export interface ILeaderboardPlayer {
   // fields for 2v2 events
   partner?: string;
   partnerStatus?: PartnerStatus;
+  teamName?: string;
 }
 
 export interface ILeaderboardPlayerStats {

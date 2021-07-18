@@ -289,7 +289,11 @@ export class EventService {
         .doc(eventId)
         .collection('players')
         .doc(name)
-        .update({partner, partnerStatus: PartnerStatus.PENDING});
+        .update({
+          partner,
+          partnerStatus: PartnerStatus.PENDING,
+          teamName: '',
+        });
   }
 
   confirmPartner(eventId: string, name: string, partner: string):
@@ -304,6 +308,7 @@ export class EventService {
           .update({
             partner: name === player ? partner : name,
             partnerStatus: PartnerStatus.CONFIRMED,
+            teamName: '',
           });
     }));
   }
@@ -314,9 +319,24 @@ export class EventService {
         .doc(eventId)
         .collection('players')
         .doc(name)
-        .update({partner: '', partnerStatus: PartnerStatus.NONE});
+        .update({
+          partner: '',
+          partnerStatus: PartnerStatus.NONE,
+          teamName: '',
+        });
 
     return this.selectPartner(eventId, currentPartner, name);
+  }
+
+  setTeamName(eventId: string, players: string[], teamName: string):
+      Promise<void[]> {
+    return Promise.all(players.map(player => {
+      return this.afs.collection('events')
+          .doc(eventId)
+          .collection('players')
+          .doc(player)
+          .update({teamName});
+    }));
   }
 
   updateEvent(eventId: string, data: Partial<IEvent>) {

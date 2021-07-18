@@ -37,6 +37,7 @@
         <span class="name">{{ player.name }}</span>
         <span class="partner-status" *ngIf="showPartner(player)">
           + {{ player.partner }}
+          <span *ngIf="player.teamName">({{ player.teamName }})</span>
         </span>
         <span class="qualified" *ngIf="showQualified">
           <ion-icon
