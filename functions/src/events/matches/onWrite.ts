@@ -204,6 +204,13 @@ async function saveReplayToMatch(
     // update the rank to either be 1 or 2 for dyp
     if (teams[winningIndex].players?.includes(player.name)) {
       player.rank = 1;
+
+      // set the lastTurn for each of the winners to be the max between the two
+      // for the purpose of showing an accurate quickest win stat
+      const lastTurns =
+          scores.filter(s => teams[winningIndex].players?.includes(s.name))
+              .map(s => s.lastTurn);
+      player.lastTurn = Math.max(...lastTurns);
     } else {
       player.rank = 2;
     }
