@@ -140,7 +140,7 @@ export class BracketEventComponent {
 
       // these players have chosen each other as partners
       if (partnerMap.get(player.partner) === player.name) {
-        const players = [player.name, player.partner];
+        const players = [player.name, player.partner].sort();
 
         // in the case where there is no team name set, just join player names
         teams.push({name: player.teamName || players.join(' and '), players});

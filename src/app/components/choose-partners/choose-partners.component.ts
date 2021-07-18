@@ -44,7 +44,7 @@ export class ChoosePartnersComponent {
 
       // these players have chosen each other as partners
       if (partnerMap.get(player.partner) === player.name) {
-        const players = [player.name, player.partner];
+        const players = [player.name, player.partner].sort();
         const placeholder = players.join(' and ');
         const name = player.teamName || placeholder;
 
