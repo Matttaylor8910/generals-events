@@ -1,21 +1,31 @@
 <ion-card class="player-summary" *ngIf="players?.length > 0">
   <ion-card-header class="space-between">
-    <ion-card-title [class.solo-player]="players.length === 1" (click)="handleClickTeamName()">
+    <ion-card-title [class.player-name]="players.length === 1" (click)="handleClickTeamName()">
       <span *ngIf="rank">{{rank}}.</span> {{ teamName }}
       <ion-icon name="link"></ion-icon>
     </ion-card-title>
     <ion-icon name="close" (click)="close.emit()"></ion-icon>
   </ion-card-header>
   <ion-card-content>
-    <ng-container *ngFor="let player of players">
+    <div class="players" *ngIf="players.length > 1">
+      <h2>Players</h2>
+      <div class="stat-line" *ngFor="let player of players">
+        <span class="player-name" (click)="goToProfile(player.name)">
+          {{ player.name }}
+        </span>
+        <b *ngIf="player.stats as stats">
+          <ion-icon name="star" color="warning"></ion-icon>
+          {{ (stats.currentStars | number:'1.0-1') || 0 }}
+        </b>
+      </div>
+    </div>
+
+    <ng-container *ngIf="players[0] as player">
 
       <!-- some stats -->
       <div class="stats" *ngIf="player.stats as stats">
-        <h2>
-          Stats
-          <span *ngIf="players.length > 1"> for {{player.name}}</span>
-        </h2>
-        <div class="stat-line">
+        <h2>Stats</h2>
+        <div class="stat-line" *ngIf="players.length === 1">
           <span>
             <span *ngIf="notFinished">Current</span>
             {{ event?.type }} Stars
