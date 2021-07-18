@@ -5,13 +5,13 @@
       [player]="second"
       [isArena]="isArena"
       place="second"
-      (playersClicked)="playersClicked.emit(second?.name)"
+      (playersClicked)="placeClicked(1)"
       *ngIf="showOtherPlaces">
     </app-event-trophy-player>
     <app-event-trophy-player
       [player]="first"
       [isArena]="isArena"
-      (playersClicked)="playersClicked.emit(first?.name)"
+      (playersClicked)="placeClicked(0)"
       place="first">
     </app-event-trophy-player>
     <app-event-trophy-player
@@ -19,7 +19,7 @@
       [player]="third"
       [isArena]="isArena"
       place="third"
-      (playersClicked)="playersClicked.emit(third?.name)"
+      (playersClicked)="placeClicked(2)"
       *ngIf="showOtherPlaces">
     </app-event-trophy-player>
   </ng-container>

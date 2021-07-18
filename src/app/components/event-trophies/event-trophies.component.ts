@@ -64,4 +64,17 @@ export class EventTrophiesComponent {
   get dyp(): boolean {
     return this.event?.format === EventFormat.DYNAMIC_DYP;
   }
+
+  placeClicked(index: number) {
+    // for 2v2 find the team pairing
+    if (this.is2v2) {
+      this.playersClicked.emit(
+          this.players.slice(index * 2, index * 2 + 2).map(p => p.name));
+    }
+
+    // for 1v1 just shoot out that player's name at that index
+    else {
+      this.playersClicked.emit(this.players[index]?.name);
+    }
+  }
 }
