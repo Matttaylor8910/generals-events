@@ -3,7 +3,7 @@ import {cloneDeep} from 'lodash';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {DoublesPairingStrategy, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, PartnerStatus} from 'types';
+import {DoublesPairingStrategy, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, PartnerStatus} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -130,22 +130,20 @@ export class BracketEventComponent {
     return this.status === EventStatus.FINISHED;
   }
 
-  getConfirmedTeams(): string[][] {
-    if (this.event.doublesPairingStrategy !==
-        DoublesPairingStrategy.BRING_YOUR_PARTNER) {
-      return [];
-    }
-
+  getConfirmedTeams(): IMatchTeam[] {
     const teams = [];
-    const paired = new Set<string>();
+    const partnerMap = new Map<string, string>();
 
     // create the teams
     for (const player of this.players) {
-      if (!paired.has(player.name) &&
-          player.partnerStatus === PartnerStatus.CONFIRMED && player.partner) {
-        teams.push([player.name, player.partner].sort());
-        paired.add(player.name);
-        paired.add(player.partner);
+      partnerMap.set(player.name, player.partner);
+
+      // these players have chosen each other as partners
+      if (partnerMap.get(player.partner) === player.name) {
+        const players = [player.name, player.partner];
+
+        // in the case where there is no team name set, just join player names
+        teams.push({name: player.teamName || players.join(' and '), players});
       }
     }
 
@@ -157,7 +155,9 @@ export class BracketEventComponent {
 
     // 1v1 just passes the list of checked in players
     if (this.event.type === EventType.ONE_VS_ONE) {
-      teams = this.event.checkedInPlayers.map(player => [player]);
+      teams = this.event.checkedInPlayers.map(player => {
+        return {name: player, players: [player]};
+      });
     }
 
     // 2v2 passes the list of confirmed teams
@@ -220,7 +220,9 @@ export class BracketEventComponent {
           cloned.checkedInPlayers = this.players.map(p => p.name);
         }
       }
-      const teams = this.event.checkedInPlayers.map(player => [player]);
+      const teams = this.event.checkedInPlayers.map(player => {
+        return {name: player, players: [player]};
+      });
       const bracket = getShuffledBracket(cloned, teams);
       delete this.preview;
       setTimeout(() => {

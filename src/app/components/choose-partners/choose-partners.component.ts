@@ -108,12 +108,13 @@ export class ChoosePartnersComponent {
 
   async setTeamName(team: IMatchTeam) {
     let name = await this.utilService.promptForText(
-        'Team name', 'What should your team name be?', team.name, 'Save Name',
-        'Nevermind');
+        'Team name', 'What should your team name be? Max 20 characters!',
+        team.name, 'Save Name', 'Nevermind');
 
     if (name !== null) {
-      this.eventService.setTeamName(this.event.id, team.players, name);
-      this.utilService.showToast(`Team name set to ${name}`);
+      const sliced = name.slice(0, 20);
+      this.eventService.setTeamName(this.event.id, team.players, sliced);
+      this.utilService.showToast(`Team name set to ${sliced}`);
     }
   }
 

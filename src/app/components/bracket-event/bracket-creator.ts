@@ -2,13 +2,13 @@ import {cloneDeep, map, shuffle} from 'lodash';
 import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchTeamStatus} from 'types';
 
 export function getShuffledBracket(
-    event: IDoubleElimEvent, teams: string[][]): IDoubleEliminationBracket {
-  let matchTeams: IMatchTeam[] = teams.map(players => {
-    const tsp = players.map(player => (event.tsp ?? {})[player] ?? 0)
+    event: IDoubleElimEvent, teams: IMatchTeam[]): IDoubleEliminationBracket {
+  let matchTeams: IMatchTeam[] = teams.map(team => {
+    const tsp = team.players.map(player => (event.tsp ?? {})[player] ?? 0)
                     .reduce((a, b) => a + b, 0);
     return {
-      name: players.join(' and '),
-      players,
+      name: team.name,
+      players: team.players,
       score: 0,
       status: MatchTeamStatus.UNDECIDED,
       dq: false,

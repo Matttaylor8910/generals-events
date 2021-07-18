@@ -47,7 +47,8 @@ export class EventPlayerSummaryComponent {
   }
 
   get teamName(): string {
-    return this.players?.map(p => p.name).join(' and ');
+    const [player] = this.players ?? [];
+    return player?.teamName || this.players?.map(p => p.name).join(' and ');
   }
 
   get playerQualifyString(): string {
