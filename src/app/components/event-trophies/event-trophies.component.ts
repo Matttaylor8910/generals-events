@@ -30,8 +30,7 @@ export class EventTrophiesComponent {
   get first(): ILeaderboardPlayer|null {
     const player = this.players?.length > 0 ? {...this.players[0]} : null;
     if (this.is2v2) {
-      player.name =
-          player.teamName || `${player.name} and ${this.players[1]?.name}`;
+      player.name += ` and ${this.players[1]?.name}`
     }
     return player;
   }
@@ -40,8 +39,7 @@ export class EventTrophiesComponent {
     const index = this.is2v2 ? 2 : 1;
     const player = this.players?.length > 1 ? {...this.players[index]} : null;
     if (this.is2v2) {
-      player.name = player.teamName ||
-          `${player.name} and ${this.players[index + 1]?.name}`;
+      player.name += ` and ${this.players[index + 1]?.name}`
     }
     return player;
   }
@@ -50,8 +48,7 @@ export class EventTrophiesComponent {
     const index = this.is2v2 ? 4 : 2;
     const player = this.players?.length > 2 ? {...this.players[index]} : null;
     if (this.is2v2) {
-      player.name = player.teamName ||
-          `${player.name} and ${this.players[index + 1]?.name}`;
+      player.name += ` and ${this.players[index + 1]?.name}`
     }
     return player;
   }
