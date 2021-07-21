@@ -94,8 +94,9 @@ export class BracketEventComponent {
     if (this.registrationOpen) {
       tabs.push('Registration');
 
-      if (this.event?.tsp) {
-        tabs.push('Bracket Preview');
+      if (this.event?.tsp && this.players.length > 3) {
+        // tabs.push('Bracket Preview');
+        // false for now until I can test
       }
 
       if (this.isAdmin) {
@@ -209,7 +210,7 @@ export class BracketEventComponent {
   }
 
   generatePreviewBracket() {
-    if (this.event?.tsp && this.players) {
+    if (this.event?.tsp && this.players && this.event.checkedInPlayers) {
       const cloned = cloneDeep(this.event);
       if (cloned.checkedInPlayers.length < 3) {
         if (this.event?.qualified?.length > 0) {
@@ -276,11 +277,15 @@ Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
   const [rank, name, tsp] = row.childNodes;
   const [span] = name.childNodes;
   const username = span.textContent;
-  TSP[username] = Number(tsp.textContent);
+  if (username !== '___Ryan___') {
+    TSP[username] = Number(tsp.textContent);
+  }
 });
 for (let i = 0; i < currentLeaderboard.length; i++) {
   const username = currentLeaderboard[i];
-  TSP[username] = (TSP[username] ?? 0) + (500 - i);
+  if (username !== '___Ryan___') {
+    TSP[username] = (TSP[username] ?? 0) + (500 - i);
+  }
 }
 copy(JSON.stringify(TSP));
 `
