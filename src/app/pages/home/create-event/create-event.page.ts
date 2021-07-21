@@ -170,6 +170,7 @@ export class CreateEventPage {
       type: this.type,
       visibility: this.visibility,
       startTime: this.getDate().getTime(),
+      checkedInPlayers: [],
 
       // custom options for the lobby
       options: {

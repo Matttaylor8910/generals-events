@@ -95,8 +95,7 @@ export class BracketEventComponent {
       tabs.push('Registration');
 
       if (this.event?.tsp && this.players.length > 3) {
-        // tabs.push('Bracket Preview');
-        // false for now until I can test
+        tabs.push('Bracket Preview');
       }
 
       if (this.isAdmin) {
@@ -210,7 +209,7 @@ export class BracketEventComponent {
   }
 
   generatePreviewBracket() {
-    if (this.event?.tsp && this.players && this.event.checkedInPlayers) {
+    if (this.event?.tsp && this.players) {
       const cloned = cloneDeep(this.event);
       if (cloned.checkedInPlayers.length < 3) {
         if (this.event?.qualified?.length > 0) {
@@ -221,14 +220,18 @@ export class BracketEventComponent {
           cloned.checkedInPlayers = this.players.map(p => p.name);
         }
       }
-      const teams = this.event.checkedInPlayers.map(player => {
+      const teams = cloned.checkedInPlayers.map(player => {
         return {name: player, players: [player]};
       });
-      const bracket = getShuffledBracket(cloned, teams);
-      delete this.preview;
-      setTimeout(() => {
-        this.preview = bracket;
-      }, 500);
+
+      // we need a minimum of 3 teams for the bracket to render
+      if (teams.length >= 3) {
+        const bracket = getShuffledBracket(cloned, teams);
+        delete this.preview;
+        setTimeout(() => {
+          this.preview = bracket;
+        }, 500);
+      }
     }
   }
 }
