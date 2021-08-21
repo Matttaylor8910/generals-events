@@ -106,7 +106,7 @@
             *ngIf="selectedPlayers">
           </app-event-player-summary>
           <app-game-list
-            [class.hidden]="selectedPlayers"
+            [class.hidden]="selectedPlayers?.length"
             [event]="event"
             (nameClicked)="selectPlayers($event)"
             *ngIf="isArena">
