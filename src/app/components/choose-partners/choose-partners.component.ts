@@ -2,7 +2,7 @@ import {Component, Input} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, IMatchTeam, PartnerStatus} from 'types';
+import {DoublesPairingStrategy, EventStatus, IDoubleElimEvent, ILeaderboardPlayer, IMatchTeam, PartnerStatus} from 'types';
 
 @Component({
   selector: 'app-choose-partners',
@@ -26,7 +26,9 @@ export class ChoosePartnersComponent {
   }
 
   get showPartners(): boolean {
-    return !this.disqualified && this.status === EventStatus.UPCOMING &&
+    return this.event?.doublesPairingStrategy ===
+        DoublesPairingStrategy.BRING_YOUR_PARTNER &&
+        !this.disqualified && this.status === EventStatus.UPCOMING &&
         this.event?.checkedInPlayers?.includes(this.generals.name);
   }
 
