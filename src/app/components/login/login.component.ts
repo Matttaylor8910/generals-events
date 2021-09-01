@@ -1,10 +1,10 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnDestroy} from '@angular/core';
 import {Router} from '@angular/router';
 import {PopoverAction as IPopoverAction} from 'src/app/components/actions-popover/actions-popover.component';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {GeneralsServer} from '../../../../constants';
+import {GeneralsServer, SITE_URLS} from '../../../../constants';
 import {EventStatus} from '../../../../types';
 
 @Component({
@@ -12,13 +12,15 @@ import {EventStatus} from '../../../../types';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   @Input() eventId?: string;
   @Input() status?: EventStatus;
   @Input() server = GeneralsServer.NA;
   @Input() disqualified = false;
 
   actions: IPopoverAction[];
+  generalsio = SITE_URLS[GeneralsServer.NA];
+  listener;
 
   constructor(
       public readonly generals: GeneralsService,
@@ -27,6 +29,16 @@ export class LoginComponent {
   ) {
     this.checkUserParam();
     this.ngOnChanges();
+
+    this.listener = window.addEventListener('message', event => {
+      // Ensure the message is coming from generals.io
+      if (event.origin !== this.generalsio) return;
+
+      // if the username was passed back, save it
+      if (event.data?.length > 0) {
+        this.generals.handleDidLogin(event.data, this.eventId);
+      }
+    });
   }
 
   async checkUserParam() {
@@ -54,5 +66,17 @@ export class LoginComponent {
 
   ngOnChanges() {
     this.actions = [{label: 'Logout', onClick: () => this.logout()}];
+    this.checkIframeForUsername();
+  }
+
+  private checkIframeForUsername() {
+    const iframe = document.getElementById('generals') as HTMLIFrameElement;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage('username', this.generalsio);
+    }
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('message', this.listener);
   }
 }
