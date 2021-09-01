@@ -61,7 +61,7 @@ export class LoginComponent implements OnDestroy {
   }
 
   goToProfile() {
-    this.router.navigate(['/', 'profiles', this.generals.name]);
+    this.generals.goToProfile(this.generals.name);
   }
 
   ngOnChanges() {
