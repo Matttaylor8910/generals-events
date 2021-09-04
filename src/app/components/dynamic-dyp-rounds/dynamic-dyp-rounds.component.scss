@@ -5,7 +5,7 @@
   overflow-x: auto;
 
   .round {
-    margin: 0 10px;
+    margin: 0 10px 0 30px;
     max-width: 500px;
     max-height: 10000px;
     opacity: 1;
@@ -16,6 +16,19 @@
       opacity: 0;
       max-height: 0;
       pointer-events: none;
+    }
+
+    .match-container {
+      position: relative;
+
+      .match-number {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: -20px;
+        color: teal;
+        font-weight: bold;
+      }
     }
 
     .match-item {
