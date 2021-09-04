@@ -142,8 +142,6 @@ export class UtilService {
   getParamString(params: {[key: string]: any}): string {
     if (!params) return '';
 
-    console.log(params);
-
     let str = '';
     const entries = Object.entries(params);
     for (let i = 0; i < entries.length; i++) {
@@ -151,8 +149,6 @@ export class UtilService {
       str += i === 0 ? '?' : '&';
       str += `${key}=${value ?? ''}`;
     }
-
-    console.log(str);
 
     return str;
   }

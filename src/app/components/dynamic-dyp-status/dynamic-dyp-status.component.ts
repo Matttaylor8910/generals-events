@@ -185,8 +185,6 @@ export class DynamicDYPStatusComponent implements OnDestroy {
 
     this.readyStatus.opponents = them.join(' and ');
     this.readyStatus.partner = us.find(p => p !== this.generals.name);
-
-    console.log(match, this.readyStatus);
   }
 
   resetReadyStatus() {
