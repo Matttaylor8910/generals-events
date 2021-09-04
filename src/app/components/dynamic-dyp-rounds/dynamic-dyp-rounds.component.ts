@@ -1,8 +1,10 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {AngularFirestore} from '@angular/fire/firestore';
 import {flatten} from 'lodash';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {UtilService} from 'src/app/services/util.service';
 import {IDynamicDYPEvent, IDynamicDYPMatch, IDynamicDYPRound, IGeneralsGameOptions, MatchStatus} from 'types';
-import {HIDE_COMPLETED} from '../../../../constants';
+import {ADMINS, HIDE_COMPLETED} from '../../../../constants';
 
 @Component({
   selector: 'app-dynamic-dyp-rounds',
@@ -21,6 +23,8 @@ export class DynamicDYPRoundsComponent {
 
   constructor(
       private readonly generals: GeneralsService,
+      private readonly utilService: UtilService,
+      private readonly afs: AngularFirestore,
   ) {
     this.hideCompletedRounds = localStorage.getItem(HIDE_COMPLETED) !== 'false';
   }
@@ -93,5 +97,23 @@ export class DynamicDYPRoundsComponent {
   toggleHideCompleted() {
     this.hideCompletedRounds = !this.hideCompletedRounds;
     localStorage.setItem(HIDE_COMPLETED, String(this.hideCompletedRounds));
+  }
+
+  async whoWon(match: IDynamicDYPMatch) {
+    if (ADMINS.includes(this.generals.name)) {
+      const winner = await this.utilService.promptForText(
+          'Who won?', 'Type 1 or 2', '', 'Advance', 'Cancel');
+
+      if (winner !== null) {
+        const teamToIncrement =
+            Number(winner) === 1 ? 'team1Score' : 'team2Score';
+
+        console.log(`results.${match.number}.${teamToIncrement}`);
+
+        this.afs.collection('events')
+            .doc(this.event?.id)
+            .update({[`results.${match.number}.${teamToIncrement}`]: 3});
+      }
+    }
   }
 }
