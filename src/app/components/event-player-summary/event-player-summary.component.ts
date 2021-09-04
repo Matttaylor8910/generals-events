@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
+import {ADMINS} from 'constants';
 import {default as firebase} from 'firebase';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
@@ -34,6 +35,10 @@ export class EventPlayerSummaryComponent {
 
   get isArena(): boolean {
     return this.event?.format === EventFormat.ARENA;
+  }
+
+  get isAdmin(): boolean {
+    return ADMINS.includes(this.generals.name);
   }
 
   get showDisclaimers(): boolean {
