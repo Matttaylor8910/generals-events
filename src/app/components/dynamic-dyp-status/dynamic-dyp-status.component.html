@@ -5,7 +5,10 @@
   [class.checked-in]="checkedIn && checkInOpen"
   *ngIf="showStatusBar"
 >
-  <div class="message">
+
+  <!-- todo make dynamic dyp work with the trophies component -->
+  <div class="message" [class.winners]="event?.winners?.length">
+    <img class="trophy" src="../../../assets/leaderboard.png">
     {{ message }}
   </div>
 

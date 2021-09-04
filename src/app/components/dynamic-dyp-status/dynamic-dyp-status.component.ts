@@ -3,7 +3,7 @@ import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IBracketMatch, IBracketRound, IDynamicDYPEvent, IDynamicDYPMatch, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
+import {EventStatus, IBracketMatch, IBracketRound, IDynamicDYPEvent, IDynamicDYPMatch, IGeneralsGameOptions, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
 
 @Component({
   selector: 'app-dynamic-dyp-status',
@@ -24,7 +24,8 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   checkedIn = false;
 
   readyStatus: {
-    partner: null|string; opponents: null | string, match: null|number,
+    partner: null|string; opponents: null | string,
+                          match: null|IDynamicDYPMatch,
   };
   noMoreMatches = false;
 
@@ -61,7 +62,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   get showStatusBar(): boolean {
-    return !this.event?.rounds || this.inEvent;
+    return !this.event?.rounds || this.inEvent || this.event?.endTime > 0;
   }
 
   get message(): string {
@@ -131,8 +132,21 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   joinMatch() {
-    this.generals.joinLobby(
-        `match_${this.readyStatus.match}`, this.event, true);
+    const {match} = this.readyStatus;
+    const lobby = match.lobby ?? match.number;
+    const options: IGeneralsGameOptions = {};
+
+    // set the team or spectator params if you're in this match
+    const teamIndex = match.teams?.findIndex(
+        team => team.players?.includes(this.generals.name));
+
+    if (teamIndex >= 0) {
+      options.team = teamIndex + 1;
+    } else {
+      options.spectate = true;
+    }
+
+    this.generals.joinLobby(`match_${lobby}`, this.event, true, options);
   }
 
   joinFinals() {
@@ -158,7 +172,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   setMatchReadyStatus(match: IDynamicDYPMatch) {
-    this.readyStatus.match = match.number;
+    this.readyStatus.match = match;
 
     let us = match.teams[0].players;
     let them = match.teams[1].players;
@@ -171,8 +185,6 @@ export class DynamicDYPStatusComponent implements OnDestroy {
 
     this.readyStatus.opponents = them.join(' and ');
     this.readyStatus.partner = us.find(p => p !== this.generals.name);
-
-    console.log(match, this.readyStatus);
   }
 
   resetReadyStatus() {

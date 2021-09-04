@@ -112,7 +112,7 @@
             *ngIf="isArena">
           </app-game-list>
           <app-dynamic-dyp-leaderboard
-            [class.hidden]="selectedPlayers"
+            [class.hidden]="selectedPlayers?.length"
             [event]="event"
             [players]="players"
             [status]="status"

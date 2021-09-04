@@ -350,6 +350,8 @@ export interface IDynamicDYPMatch {
   ready: string[];
   number: number;
   status: MatchStatus;
+
+  lobby?: string;  // optional lobby to use
 }
 
 export interface IDynamicDYPTeam {
