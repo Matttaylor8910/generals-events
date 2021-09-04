@@ -22,6 +22,11 @@
 
     <ng-container *ngIf="players[0] as player">
 
+      <!-- afk button -->
+      <ion-button color="danger" *ngIf="players.length === 1" (click)="setAFK(player)">
+        Set AFK
+      </ion-button>
+
       <!-- some stats -->
       <div class="stats" *ngIf="player.stats as stats">
         <h2>Stats</h2>

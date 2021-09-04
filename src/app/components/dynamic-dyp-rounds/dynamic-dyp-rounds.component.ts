@@ -64,9 +64,17 @@ export class DynamicDYPRoundsComponent {
     return this.generals.name === player;
   }
 
+  isAfk(player: string): boolean {
+    return this.event?.afks?.includes(player);
+  }
+
   showReady(match: IDynamicDYPMatch, player: string): boolean {
-    return match.status === MatchStatus.NOT_STARTED &&
+    return !this.isAfk(player) && match.status === MatchStatus.NOT_STARTED &&
         match.ready.includes(player);
+  }
+
+  showAfk(match: IDynamicDYPMatch, player: string): boolean {
+    return this.isAfk(player) && match.status !== MatchStatus.COMPLETE;
   }
 
   shouldShowToggle(): boolean {

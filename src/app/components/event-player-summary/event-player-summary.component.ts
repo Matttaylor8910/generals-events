@@ -1,4 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {AngularFirestore} from '@angular/fire/firestore';
+import {default as firebase} from 'firebase';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, ILeaderboardPlayer} from 'types';
@@ -19,6 +21,7 @@ export class EventPlayerSummaryComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly utilService: UtilService,
+      private readonly afs: AngularFirestore,
   ) {}
 
   get upcoming(): boolean {
@@ -105,5 +108,13 @@ export class EventPlayerSummaryComponent {
 
   goToProfile(name: string) {
     this.generals.goToProfile(name, this.event?.server);
+  }
+
+
+  // TODO: make this better
+  setAFK(player: ILeaderboardPlayer) {
+    this.afs.collection('events').doc(this.event?.id).update({
+      afks: firebase.firestore.FieldValue.arrayUnion(player.name)
+    });
   }
 }

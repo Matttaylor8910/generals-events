@@ -114,6 +114,8 @@ export interface IDynamicDYPEvent extends IBaseEvent {
   checkInTime: number;
   checkedInPlayers: string[];
 
+  afks: string[];  // TODO: maybe make this some disqualified array?
+
   rounds?: IDynamicDYPRound[];
   results: IMatchResults;
   finals?: IDynamicDYPFinals;

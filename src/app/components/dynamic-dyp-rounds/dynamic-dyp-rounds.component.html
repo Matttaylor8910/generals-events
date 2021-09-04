@@ -11,6 +11,7 @@
             <div class="player-name" [class.highlight]="isMe(player)" *ngFor="let player of team.players" (click)="clickPlayer(player, $event)">
               {{ player }}
               <ion-icon class="ready" name="checkmark-circle" *ngIf="showReady(match, player)"></ion-icon>
+              <ion-icon class="afk" color="danger" name="close-circle" *ngIf="showAfk(match, player)" tooltip="{{ player }} has been AFK, this match will not count"></ion-icon>
             </div>
           </span>
           <span class="team-score" *ngIf="match.status">{{team.score}}</span>
