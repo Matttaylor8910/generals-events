@@ -95,7 +95,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
         return 'All prelims are done, finals time!';
       }
       if (this.noMoreMatches) {
-        return 'You have no more matches, spectate the other matches while we wait for the finals!';
+        return 'You have no matches right now, spectate the other matches while you wait!';
       }
       if (this.readyStatus.match) {
         const {partner, opponents} = this.readyStatus;
