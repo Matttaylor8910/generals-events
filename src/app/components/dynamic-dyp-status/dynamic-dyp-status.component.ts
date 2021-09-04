@@ -61,7 +61,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   get showStatusBar(): boolean {
-    return !this.event?.rounds || this.inEvent;
+    return !this.event?.rounds || this.inEvent || this.event?.endTime > 0;
   }
 
   get message(): string {
