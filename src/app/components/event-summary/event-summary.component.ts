@@ -15,6 +15,10 @@ export class EventSummaryComponent {
       private readonly utilService: UtilService,
   ) {}
 
+  get capy(): boolean {
+    return [this.event?.id, this.event?.parentId].includes('Capy-Cup-2021');
+  }
+
   get isArena(): boolean {
     return this.event.format === EventFormat.ARENA;
   }
