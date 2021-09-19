@@ -20,7 +20,10 @@ export class EventPage implements OnDestroy {
 
   EventStatus = EventStatus;
 
+  // eventId is always the id of the page, so in a multi-stage event, this will
+  // be the parentId, not the id of the selected event
   eventId: string;
+
   event: IEvent;
   parent: IEvent;
 
@@ -141,15 +144,14 @@ export class EventPage implements OnDestroy {
   }
 
   async checkJoinQueue() {
-    // skip the join param for now since it's not working
-    // TODO: fix this to the root:
-    if (this.parent?.format === EventFormat.MULTI_STAGE_EVENT) {
+    // skip the join param for the parent in a multi stage event
+    if (this.event?.format === EventFormat.MULTI_STAGE_EVENT) {
       return;
     }
 
     // if this url has the url param "join=true" and the user has their
     // generals name set, join the queue
-    if (location.href.includes('join=true')) {
+    if (location.href.includes('join=true') && this.event?.id) {
       const {name} = this.generals;
 
       // add the player to the event if registration is open
@@ -162,13 +164,14 @@ export class EventPage implements OnDestroy {
       if (name && registrationOpen) {
         // join the event if you haven't already
         if (!this.inEvent) {
-          await this.eventService.addPlayer(this.eventId, name);
+          await this.eventService.addPlayer(this.event.id, name);
         }
 
         // only add to queue if the event is ongoing
         // and this event type is arena
         if (this.status === EventStatus.ONGOING && this.isArena) {
-          this.eventService.joinQueue(this.eventId, name);
+          console.log('joining queue', this.event.id);
+          this.eventService.joinQueue(this.event.id, name);
         }
       }
     }

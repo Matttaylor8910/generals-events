@@ -70,6 +70,11 @@ export class GeneralsService {
     return await decryptUsername(encryptedString).toPromise();
   }
 
+  async loginFromEvent(event: IEvent, join: boolean) {
+    const eventId = event?.parentId ?? event?.id;
+    this.login(eventId, join, event.server);
+  }
+
   async login(eventId: string, join: boolean, server = GeneralsServer.NA) {
     if (eventId) {
       localStorage.setItem('generals-last-event', eventId);

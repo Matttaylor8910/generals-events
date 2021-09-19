@@ -144,7 +144,7 @@ export class ArenaLeaderboardComponent {
     if (this.generals.name) {
       this.eventService.addPlayer(this.event.id, this.generals.name);
     } else {
-      this.generals.login(this.event.id, true);
+      this.generals.loginFromEvent(this.event, true);
     }
     this.setRecentlyJoined();
   }

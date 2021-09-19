@@ -87,7 +87,7 @@ export class ArenaQueueComponent implements OnDestroy {
         }
         this.eventService.joinQueue(this.event.id, this.generals.name);
       } else {
-        this.generals.login(this.event.id, true, this.event.server);
+        this.generals.loginFromEvent(this.event, true);
       }
     }
   }
