@@ -208,6 +208,12 @@ export class BracketEventComponent {
     delete this.tsp;
   }
 
+  updateAll() {
+    for (const player of this.players) {
+      this.eventService.addPlayer(this.event.id, player.name);
+    }
+  }
+
   generatePreviewBracket() {
     if (this.event?.tsp && this.players) {
       const cloned = cloneDeep(this.event);
@@ -290,5 +296,7 @@ for (let i = 0; i < currentLeaderboard.length; i++) {
     TSP[username] = (TSP[username] ?? 0) + (500 - i);
   }
 }
+delete TSP['____1____'];
+delete TSP['___Anonymous__'];
 copy(JSON.stringify(TSP));
 `
