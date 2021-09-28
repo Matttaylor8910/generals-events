@@ -416,3 +416,28 @@ export interface IGeneralsGameOptions {
   // the team to join when you reach a lobby
   team?: number;
 }
+
+export interface IGeneralsRankings {
+  season: number;
+  tsp: IGeneralsTSPForUsername[];
+  weeks: IGeneralsRankingsWeek[];
+}
+
+export interface IGeneralsTSPForUsername {
+  username: string;
+  tsp: number;
+}
+
+export interface IGeneralsRankingsWeek {
+  'duel': IGeneralsStarsForUsername[];  // this is all we care about
+  'ffa': IGeneralsStarsForUsername[];
+  '2v2': IGeneralsStarsForUsername[];
+  'duel-alltime': IGeneralsStarsForUsername[];
+  'ffa-alltime': IGeneralsStarsForUsername[];
+  '2v2-alltime': IGeneralsStarsForUsername[];
+}
+
+export interface IGeneralsStarsForUsername {
+  stars: number;
+  username: string;
+}

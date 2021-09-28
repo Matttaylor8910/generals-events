@@ -1,7 +1,7 @@
 import {default as http} from 'axios';
 
 import {GeneralsServer, SITE_URLS} from '../../../constants';
-import {EventType, IGeneralsReplay} from '../../../types';
+import {EventType, IGeneralsRankings, IGeneralsReplay} from '../../../types';
 
 import {timeoutAfter} from './util';
 
@@ -52,4 +52,25 @@ export function getCurrentStars(
   });
 
   return Promise.race([generalsStars, timeoutAfter(1000, 0)]);
+}
+
+export function getRankingsForSeason(season: number):
+    Promise<IGeneralsRankings|null> {
+  const url = `${SITE_URLS[GeneralsServer.NA]}/api/rankings?season=${season}`;
+  const rankingsPromise = http.get(url).then((response) => {
+    // if there is no season on this response, the first week of the season
+    // hasn't completed yet, so we should return an empty season
+    const hasSeason = response.data?.season !== undefined;
+    if (!hasSeason) return {season, tsp: [], weeks: []};
+
+    // if there are rankings, split out the tsp from the rest of the weeks
+    const weeks = response.data.rankings;
+    const [tsp] = weeks.splice(0, 1);
+
+    // assume the data came back in the right shape
+    return {season, tsp, weeks};
+  });
+
+  // the only case where we return null is if the request times out
+  return Promise.race([rankingsPromise, timeoutAfter(5000, null)]);
 }
