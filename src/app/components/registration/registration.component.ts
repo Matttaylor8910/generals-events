@@ -40,8 +40,24 @@ export class RegistrationComponent {
 
   get pageControlText(): string {
     const players = this.players?.length || 0;
-    const registeredText =
+    let registeredText =
         `${players} ${players === 1 ? 'player' : 'players'} registered`;
+
+    // for events you must qualify for, show a count of qualified
+    if (this.showQualified) {
+      const qualified =
+          this.players?.filter(p => this.event?.qualified?.includes(p.name))
+              ?.length ??
+          0;
+
+      // only show the number of qualifiers if it's less than the total number
+      // of players registered. "28 players registered (28 players qualify)"
+      // would be quite redundant
+      if (qualified < players) {
+        registeredText += ` (${qualified} ${
+            qualified === 1 ? 'player qualifies' : 'players qualify'})`;
+      }
+    }
 
     const checkedIn = this.event?.checkedInPlayers?.length || 0;
     const checkedInText =
