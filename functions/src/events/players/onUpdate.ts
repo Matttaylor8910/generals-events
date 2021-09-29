@@ -167,7 +167,7 @@ function getTSP(event: IEvent, player: ILeaderboardPlayer) {
     // in the case that the TSP map is set on the event document, fetch this
     // player's total seed points value
     if (tsp !== undefined) {
-      const totalSeedPoints = tsp[player.name];
+      const totalSeedPoints = tsp[`PLAYER${player.name}`];
       if (totalSeedPoints >= 0) {
         return totalSeedPoints;
       }
