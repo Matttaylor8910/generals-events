@@ -1,5 +1,6 @@
 import {NgModule} from '@angular/core';
 import {AngularFireModule} from '@angular/fire';
+import {AngularFireAnalyticsModule} from '@angular/fire/analytics';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireFunctionsModule} from '@angular/fire/functions';
@@ -26,6 +27,7 @@ import {AppComponent} from './app.component';
     AngularFirestoreModule,
     AngularFireAuthModule,
     AngularFireFunctionsModule,
+    AngularFireAnalyticsModule,
   ],
   providers: [
     StatusBar,
