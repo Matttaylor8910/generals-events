@@ -334,6 +334,7 @@ export interface IProfileStats {
     opponent: IGeneralsRanking,
     count: number,
   }[];
+  previousNames: string[];
 }
 
 // located at /players/{:name}/replays/chunk_0 for example

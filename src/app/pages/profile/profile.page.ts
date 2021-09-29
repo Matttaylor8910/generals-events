@@ -61,15 +61,22 @@ export class ProfilePage {
     let v1Win = 0;
     let v1Count = 0;
     const v1ChartData = [];
+    const previousNames = new Set<string>();
 
     for (const replay of replays) {
       const total = replay.ranking.length;
       if (replay.turns <= this.minTurns) {
         continue;
       }
-      const rank = replay.ranking.findIndex(el => el.currentName === name);
+      const rank =
+          replay.ranking.findIndex(el => (el.currentName ?? el.name) === name);
       if (rank === -1) {
         continue;
+      }
+
+      const myRanking = replay.ranking[rank];
+      if (myRanking.name !== name) {
+        previousNames.add(myRanking.name);
       }
 
       if (replay.type === 'classic') {
@@ -99,9 +106,14 @@ export class ProfilePage {
     }
 
     return {
-      ffaCount, ffaPercentile: ffaPercentileSum / ffaCount,
-          ffaWinRate: ffaWin / ffaCount, ffaChartData, v1Count,
-          v1WinRate: v1Win / v1Count, v1ChartData,
-    }
+      ffaCount,
+      ffaPercentile: ffaPercentileSum / ffaCount,
+      ffaWinRate: ffaWin / ffaCount,
+      ffaChartData,
+      v1Count,
+      v1WinRate: v1Win / v1Count,
+      v1ChartData,
+      previousNames: Array.from(previousNames),
+    };
   }
 }
