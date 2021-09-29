@@ -227,6 +227,7 @@ export interface IGeneralsReplay {
 export interface IGeneralsRanking {
   name: string;
   stars: number;
+  currentName: string;
 }
 
 export interface IDoubleEliminationBracket {

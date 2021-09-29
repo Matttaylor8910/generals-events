@@ -67,7 +67,7 @@ export class ProfilePage {
       if (replay.turns <= this.minTurns) {
         continue;
       }
-      const rank = replay.ranking.findIndex(el => el.name === name);
+      const rank = replay.ranking.findIndex(el => el.currentName === name);
       if (rank === -1) {
         continue;
       }
