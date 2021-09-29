@@ -65,9 +65,10 @@
             <ion-label>1v1 Win Rate</ion-label>
             <ion-text slot="end">{{ stats.v1WinRate | percent:'1.2' }}</ion-text>
           </ion-item>
-          <ion-item *ngIf="stats.previousNames?.length">
+          <ion-item>
             <ion-label>Previous Names</ion-label>
             <ion-text slot="end">{{ stats.previousNames.join(', ') }}</ion-text>
+            <ion-icon slot="end" name="ban" *ngIf="!stats.previousNames?.length"></ion-icon>
           </ion-item>
         </ng-container>
       </ion-card>
