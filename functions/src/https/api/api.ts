@@ -68,6 +68,23 @@ app.get('/replays/:replayId/stats', async (request, response) => {
 });
 
 /**
+ * Return a list of the upcoming events
+ */
+app.get('/upcomingevents', async (request, response) => {
+  try {
+    const snapshot = await db.collection('events').where('startTime', '>', Date.now()).orderBy('startTime', 'asc').get();
+    const events = snapshot.docs.map(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      return data;
+    });
+    response.json(events);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+
+/**
  * Return the event matching the id provided, or return null if not found
  */
 app.get('/events/:eventId', async (request, response) => {
