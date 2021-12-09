@@ -59,15 +59,6 @@
   </ng-container>
 
   <ng-container *ngIf="showAdmin">
-    <div>
-      <textarea class="qualified" [(ngModel)]="qualified"></textarea>
-      <ion-button [disabled]="!qualified" (click)="setQualified()">Set Qualified</ion-button>
-    </div>
-    <div>
-      <textarea class="qualified" [(ngModel)]="tsp"></textarea>
-      <ion-button [disabled]="!tsp" (click)="setTSP()">Set TSP</ion-button>
-    </div>
-
     <ng-container *ngIf="showBracketButtons">
       <ion-button class="generals-button" (click)="createBracket()" [disabled]="!event.checkedInPlayers?.length">New Bracket ({{ event.checkedInPlayers?.length || 0 }})</ion-button>
       <ion-button class="generals-button" (click)="checkInAll()">Check in all</ion-button>

@@ -27,10 +27,6 @@ export class BracketEventComponent {
   preview: IDoubleEliminationBracket;
   selectedTab = 'Registration';
 
-  // TODO: remove - temp thing for qualified
-  qualified: string;
-  tsp: string;
-
   constructor(
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
@@ -194,20 +190,6 @@ export class BracketEventComponent {
     });
   }
 
-  // TODO: likely remove
-  setQualified() {
-    const qualified = JSON.parse(this.qualified);
-    this.eventService.updateEvent(this.event.id, {qualified});
-    delete this.qualified;
-  }
-
-  // TODO: likely remove
-  setTSP() {
-    const tsp = JSON.parse(this.tsp);
-    this.eventService.updateEvent(this.event.id, {tsp});
-    delete this.tsp;
-  }
-
   updateAll() {
     for (const player of this.players) {
       this.eventService.addPlayer(this.event.id, player.name);
@@ -241,62 +223,3 @@ export class BracketEventComponent {
     }
   }
 }
-
-// TO GET LEADERBOARD:
-`
-copy(Array.from(document.getElementsByTagName('tr')).slice(1).map(row => {
-  const [rank, name] = row.childNodes;
-  const [span] = name.childNodes;
-  return span.textContent;
-}));
-`;
-
-// TO GET RANKINGS:
-`
-var currentLeaderboard = [];
-var madeIt = new Set();
-var {rankings} = window.__PRELOADED_STATE__;
-rankings.push({
-  duel: currentLeaderboard.map(username => {
-    return {username};
-  })
-});
-const tsp = rankings.splice(0,1);
-rankings.push({ duel: tsp[0] });
-for (const week of rankings) {
-  var {duel} = week;
-  var added = 0;
-  var index = 0;
-  while (added < 25 && duel[index]) {
-    var {username} = duel[index++];
-    if (username && !madeIt.has(username)) {
-      madeIt.add(username);
-      added++;
-    }
-  }
-}
-copy(JSON.stringify(Array.from(madeIt)));
-`;
-
-// TO GET TSP:
-`
-var currentLeaderboard = [];
-var TSP = {};
-Array.from(document.getElementsByTagName('tr')).slice(1).forEach(row => {
-  const [rank, name, tsp] = row.childNodes;
-  const [span] = name.childNodes;
-  const username = span.textContent;
-  if (username !== '___Ryan___') {
-    TSP[username] = Number(tsp.textContent);
-  }
-});
-for (let i = 0; i < currentLeaderboard.length; i++) {
-  const username = currentLeaderboard[i];
-  if (username !== '___Ryan___') {
-    TSP[username] = (TSP[username] ?? 0) + (500 - i);
-  }
-}
-delete TSP['____1____'];
-delete TSP['___Anonymous__'];
-copy(JSON.stringify(TSP));
-`
