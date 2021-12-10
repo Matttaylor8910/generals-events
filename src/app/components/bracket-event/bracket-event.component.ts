@@ -83,6 +83,10 @@ export class BracketEventComponent {
     return this.event?.bracket && this.status === EventStatus.ONGOING;
   }
 
+  get isQualifiedEvent(): boolean {
+    return this.event?.qualified?.length > 0;
+  }
+
   get tabs(): string[] {
     const tabs = [];
 
@@ -193,6 +197,21 @@ export class BracketEventComponent {
   updateAll() {
     for (const player of this.players) {
       this.eventService.addPlayer(this.event.id, player.name);
+    }
+  }
+
+  async purgeNonQualified() {
+    const confirm = await this.utilService.confirm(
+      'Purge Non-Qualified Players',
+      'Are you sure you want to remove all non-wualified players from the registration?',
+      'Purge', 'Nevermind');
+
+    if (confirm) {
+      for (const player of this.players) {
+        if (!this.event?.qualified?.includes(player.name)) {
+          this.eventService.removePlayer(this.event.id, player.name);
+        }
+      }
     }
   }
 
