@@ -108,7 +108,11 @@ export class UpdateMatchPage implements OnInit {
       }
     } else {
       const bracket = this.event.bracket[this.bracketName];
-      bracket[this.roundIdx].matches[this.matchIdx].status = MatchStatus.READY;
+      const match = bracket[this.roundIdx].matches[this.matchIdx] as IBracketMatch;
+      match.status = MatchStatus.READY;
+      match.teams[0].status = MatchTeamStatus.UNDECIDED;
+      match.teams[1].status = MatchTeamStatus.UNDECIDED;
+      bracket[this.roundIdx].complete = false;
 
       // save and dismiss
       this.eventService.updateEvent(this.event.id, {

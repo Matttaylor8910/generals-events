@@ -17,6 +17,9 @@
           <span class="team-score" *ngIf="match.status && !match.bye">{{team.score}}</span>
         </div>
       </div>
+      <span class="info-text" *ngIf="match.final && round.matches.length === 1">
+        Note: since this is double elimination, {{ match.teams[1].name }} would have to beat {{ match.teams[0].name }} twice to win
+      </span>
     </li>
   </ul>
 </div>

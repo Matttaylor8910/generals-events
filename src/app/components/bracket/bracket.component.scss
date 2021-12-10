@@ -44,6 +44,14 @@
     }
   }
 
+  .info-text {
+    position: absolute;
+    top: 84px;
+    left: 28px;
+    font-size: 14px;
+    color: #7f7f7f;
+  }
+
   .match-container {
     flex-grow: 1;
     display: flex;

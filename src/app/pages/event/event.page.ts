@@ -118,7 +118,7 @@ export class EventPage implements OnDestroy {
   }
 
   get showRightPanel(): boolean {
-    return !!this.selectedPlayers || this.event?.endTime > 0;
+    return this.selectedPlayers?.length > 0 || this.event?.endTime > 0;
   }
 
   get inEvent(): boolean {
