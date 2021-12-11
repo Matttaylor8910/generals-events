@@ -47,7 +47,7 @@
   .info-text {
     position: absolute;
     top: 84px;
-    left: 28px;
+    left: 30px;
     font-size: 14px;
     color: #7f7f7f;
   }
@@ -66,6 +66,7 @@
       font-weight: bold;
       text-align: center;
       margin-right: 2px;
+      white-space: nowrap;
     }
 
     .match-item {
