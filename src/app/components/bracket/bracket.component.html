@@ -18,7 +18,7 @@
         </div>
       </div>
       <span class="info-text" *ngIf="match.final && round.matches.length === 1">
-        Note: since this is a double elimination bracket, {{ match.teams[1].name || 'the winner of the loser\'s bracket' }} would have to beat {{ match.teams[0].name || 'the winner of the winner\'s bracket' }} twice to win the tournament
+        Note: since this is a double elimination bracket, {{ match.teams[1].name || 'the winner of the loser\'s bracket' }} would have to win two matches against {{ match.teams[0].name || 'the winner of the winner\'s bracket' }} to win the tournament
       </span>
     </li>
   </ul>
