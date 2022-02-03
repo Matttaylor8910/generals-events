@@ -13,6 +13,7 @@ export class HttpPipe implements PipeTransform {
   private stylize(text: string): string {
     let stylizedText: string = '';
     if (text && text.length > 0) {
+      text = this.strip(text);
       for (let line of text.split('\n')) {
         for (let t of line.split(' ')) {
           if (t.startsWith('http') && t.length > 7) {
@@ -25,5 +26,10 @@ export class HttpPipe implements PipeTransform {
       return stylizedText;
     } else
       return text;
+  }
+
+  private strip(html: string) {
+    let doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
   }
 }
