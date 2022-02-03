@@ -28,6 +28,7 @@ export class HttpPipe implements PipeTransform {
       return text;
   }
 
+  // From https://stackoverflow.com/a/47140708
   private strip(html: string) {
     let doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
