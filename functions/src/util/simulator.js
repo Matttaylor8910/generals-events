@@ -19,7 +19,6 @@ function getReplayStats(replayId, server = 'na') {
   return getReplay(replayId, server).then(replay => simulate(replay));
 }
 
-// TODO: handle team games (#7)
 // TODO: maybe recognize players that turtle, give 0 points (#8)
 function simulate(replay) {
   // Create a game from the replay.
