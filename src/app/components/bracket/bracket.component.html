@@ -1,4 +1,4 @@
-<div class="bracket-container" *ngIf="rounds">
+<div class="bracket-container {{bracketName}}" *ngIf="rounds">
   <ul class="round round-{{r + 1}}" *ngFor="let round of rounds; index as r" [ngClass]="{'length-1': round.matches.length === 1}" [class.hide]="shouldHide(r)">
     <h3>
       <div class="round-name">{{ round.name }}</div>

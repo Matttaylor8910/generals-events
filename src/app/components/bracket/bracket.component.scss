@@ -4,6 +4,11 @@
   list-style-type: none;
   margin-bottom: 15px;
 
+  // make the winners bracket have a min height to ensure we can see the king seat description
+  &.winners {
+    min-height: 350px;
+  }
+
   .round {
     padding-left: 0;
     display: flex;
