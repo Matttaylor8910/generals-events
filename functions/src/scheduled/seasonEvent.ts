@@ -42,6 +42,8 @@ export const updateSeasonEvent =
         return;
       }
 
+      let description = getSeasonEndEventDescription(season, event.startTime);
+
       // If the start date is in the past, increment the season in the
       // generals.io/homepage doc by one and generate the new season end event
       if (event.startTime < Date.now()) {
@@ -52,12 +54,13 @@ export const updateSeasonEvent =
                 season} and resetting the home page qualified modal`);
 
         const nextEventTime = event.startTime + SEASON;
+        description = getSeasonEndEventDescription(season, nextEventTime);
 
         // reset the homepage qualification modal for the next season
         await homepageRef.update({
           seasonEndEvent: {
             season,
-            description: getSeasonEndEventDescription(season, nextEventTime),
+            description,
             qualified: [],
             remindLater: [],
             notInterested: [],
@@ -86,11 +89,15 @@ export const updateSeasonEvent =
       // of qualified players for this season end event, it is the start of a
       // new week of the season. Clear the remindLater list so those players get
       // notified again
+      // Update the description too in case we changed the time
       if (qualified.length > (event.qualified?.length ?? 0)) {
         console.log(
             `There are more qualifiers than we knew about before, this means it's a new week, clearing remindLater`);
 
-        await homepageRef.update({[`seasonEndEvent.remindLater`]: []});
+        await homepageRef.update({
+          [`seasonEndEvent.remindLater`]: [],
+          [`seasonEndEvent.description`]: description
+        });
       }
 
       // pull down the players snapshot
