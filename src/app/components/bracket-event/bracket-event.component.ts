@@ -215,7 +215,7 @@ export class BracketEventComponent {
   async purgeNonQualified() {
     const confirm = await this.utilService.confirm(
       'Purge Non-Qualified Players',
-      'Are you sure you want to remove all non-wualified players from the registration?',
+      'Are you sure you want to remove all non-qualified players from the registration?',
       'Purge', 'Nevermind');
 
     if (confirm) {
