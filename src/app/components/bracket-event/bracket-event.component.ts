@@ -155,8 +155,10 @@ export class BracketEventComponent {
 
     // 1v1 just passes the list of checked in players
     if (this.event.type === EventType.ONE_VS_ONE) {
-      teams = this.event.checkedInPlayers.map(player => {
-        return {name: player, players: [player]};
+      this.players.forEach(player => {
+        if (this.event.checkedInPlayers.includes(player.name)) {
+          teams.push({name: player.name, players: [player.name]});
+        }
       });
     }
 
@@ -227,8 +229,11 @@ export class BracketEventComponent {
           cloned.checkedInPlayers = this.players.map(p => p.name);
         }
       }
-      const teams = cloned.checkedInPlayers.map(player => {
-        return {name: player, players: [player]};
+      const teams = [];
+      this.players.forEach(player => {
+        if (cloned.checkedInPlayers.includes(player.name)) {
+          teams.push({name: player.name, players: [player.name]});
+        }
       });
 
       // we need a minimum of 3 teams for the bracket to render
