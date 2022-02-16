@@ -9,6 +9,7 @@ const HOUR = 1000 * 60 * 60;
 const DAY = HOUR * 24;
 const WEEK = DAY * 7;
 const SEASON = WEEK * 10;
+const MAX_QUALIFIERS = 275;
 
 try {
   admin.initializeApp();
@@ -87,17 +88,11 @@ export const updateSeasonEvent =
 
       // If the list of qualified players is now longer than the previous list
       // of qualified players for this season end event, it is the start of a
-      // new week of the season. Clear the remindLater list so those players get
-      // notified again
-      // Update the description too in case we changed the time
-      if (qualified.length > (event.qualified?.length ?? 0)) {
-        console.log(
-            `There are more qualifiers than we knew about before, this means it's a new week, clearing remindLater`);
-
-        await homepageRef.update({
-          [`seasonEndEvent.remindLater`]: [],
-          [`seasonEndEvent.description`]: description
-        });
+      // new week of the season. If we have all 275 qualifiers at this point, 
+      // clear the remindLater list so those players get notified again
+      if (qualified.length > (event.qualified?.length ?? 0) && qualified.length === MAX_QUALIFIERS) {
+        console.log(`The season just ended, clearing remindLater`);
+        await homepageRef.update({[`seasonEndEvent.remindLater`]: []});
       }
 
       // pull down the players snapshot
@@ -110,8 +105,11 @@ export const updateSeasonEvent =
           Object.entries(tsp).length} tsp entries. There are ${
           unregistered.length} unregistered players that qualify!`);
 
-      // prompt the unregistered to join the event
-      await homepageRef.update({[`seasonEndEvent.qualified`]: unregistered});
+      // prompt the unregistered to join the event and update the description
+      await homepageRef.update({
+        [`seasonEndEvent.qualified`]: unregistered,
+        [`seasonEndEvent.description`]: description,
+      });
 
       // Save those qualified players to the season end event
       await eventRef.update({qualified, tsp});
