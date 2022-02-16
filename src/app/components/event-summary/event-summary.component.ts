@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent} from 'types';
 
@@ -66,5 +66,9 @@ export class EventSummaryComponent {
 
   get mapName(): string {
     return decodeURI(this.event?.options?.map);
+  }
+
+  goToRules() {
+    this.utilService.selectTab('Rules');
   }
 }

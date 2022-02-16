@@ -1,8 +1,10 @@
-import {Injectable} from '@angular/core';
+import {EventEmitter, Injectable} from '@angular/core';
 import {AlertController, LoadingController, ToastController} from '@ionic/angular';
 
 @Injectable({providedIn: 'root'})
 export class UtilService {
+  selectTab$ = new EventEmitter<string>();
+
   constructor(
       private readonly alertCtrl: AlertController,
       private readonly loadingCtrl: LoadingController,
@@ -151,5 +153,9 @@ export class UtilService {
     }
 
     return str;
+  }
+
+  selectTab(tab: string) {
+    this.selectTab$.emit(tab);
   }
 }

@@ -46,7 +46,8 @@
         <div class="panel-container">
           <app-event-summary
             [event]="event"
-            [status]="status">
+            [status]="status"
+            (goToRules)="goToRules">
           </app-event-summary>
           <app-chat
             [event]="event"

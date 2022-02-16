@@ -25,6 +25,8 @@
           {{ event.doublesPairingStrategy }}
         </p>
       </ion-label>
+
+      <ion-icon tooltip="Click to learn more on the rules tab" class="clickable" slot="end" name="help-circle" *ngIf="needToQualify" (click)="goToRules()"></ion-icon>
     </ion-item>
 
     <!-- using custom map -->

@@ -1,9 +1,11 @@
 import {Component, EventEmitter, Input, Output, SimpleChange} from '@angular/core';
 import {cloneDeep} from 'lodash';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {DoublesPairingStrategy, EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam, PartnerStatus} from 'types';
+import {EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam} from 'types';
 
 import {ADMINS} from '../../../../constants';
 
@@ -15,6 +17,8 @@ import {getShuffledBracket} from './bracket-creator';
   styleUrls: ['./bracket-event.component.scss'],
 })
 export class BracketEventComponent {
+  private destroyed$ = new Subject<void>();
+
   @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
@@ -31,7 +35,13 @@ export class BracketEventComponent {
       private readonly generals: GeneralsService,
       private readonly eventService: EventService,
       private readonly utilService: UtilService,
-  ) {}
+  ) {
+    this.utilService.selectTab$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe(tab => {
+        if (this.tabs.includes(tab)) this.selectedTab = tab;
+      });
+  }
 
   ngOnChanges(changes: SimpleChange) {
     if (this.event?.bracket) {
@@ -245,5 +255,9 @@ export class BracketEventComponent {
         }, 500);
       }
     }
+  }
+
+  ngOnDestroy() {
+    this.destroyed$.next();
   }
 }
