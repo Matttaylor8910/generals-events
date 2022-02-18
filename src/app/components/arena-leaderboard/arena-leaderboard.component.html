@@ -73,6 +73,9 @@
       </td>
       <td class="points">
         <div class="stars" *ngIf="showStars">
+          <span class="event-wins" *ngIf="player.stats?.eventWins" tooltip="{{ player.name }} has won {{ player.stats?.eventWins }} {{ player.stats?.eventWins === 1 ? 'time' : 'times' }}">
+            {{ eventWins(player) }}
+          </span>
           <ion-icon name="star" color="warning"></ion-icon>
           <span *ngIf="player.stats && player.stats.currentStars !== undefined; else spinner">
             {{ player.stats?.currentStars | number:'1.0-0' }}

@@ -33,13 +33,6 @@ export class RegistrationComponent {
     }
   }
 
-  eventWins(player: ILeaderboardPlayer): string {
-    if (player?.stats?.eventWins) {
-      return new Array(player.stats.eventWins).fill('🏆').join('');
-    }
-    return '';
-  }
-
   // before the event starts, show the stars for the players
   get showStars(): boolean {
     return this.status === EventStatus.UPCOMING;
@@ -87,6 +80,13 @@ export class RegistrationComponent {
 
   get showQualified(): boolean {
     return this.event?.qualified?.length > 0;
+  }
+
+  eventWins(player: ILeaderboardPlayer): string {
+    if (player?.stats?.eventWins) {
+      return new Array(player.stats.eventWins).fill('🏆').join('');
+    }
+    return '';
   }
 
   isSelected(name: string): boolean {

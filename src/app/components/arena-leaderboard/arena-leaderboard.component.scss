@@ -115,6 +115,12 @@ table {
         align-items: center;
         justify-content: flex-end;
 
+        .event-wins {
+          margin-right: 16px;
+          letter-spacing: 1.3px;
+          width: auto;
+        }
+
         span,
         ion-spinner {
           width: 18px;

@@ -106,6 +106,13 @@ export class ArenaLeaderboardComponent {
         this.status === EventStatus.UPCOMING;
   }
 
+  eventWins(player: ILeaderboardPlayer): string {
+    if (player?.stats?.eventWins) {
+      return new Array(player.stats.eventWins).fill('🏆').join('');
+    }
+    return '';
+  }
+
   isSelected(name: string): boolean {
     return this.selectedPlayers?.some(p => p.name === name);
   }
