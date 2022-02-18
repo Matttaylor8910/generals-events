@@ -9,6 +9,7 @@ try {
 } catch (e) {
   // do nothing, this is fine
 }
+const db = admin.firestore();
 
 export const onUpdatePlayer =
     functions.firestore.document('events/{eventId}/players/{playerId}')
@@ -23,12 +24,14 @@ export const onUpdatePlayer =
 
           const currentStars =
               await getCurrentStars(player.name, event.type, event.server);
+          const eventWins = await getEventWins(player.name, event.type);
 
           const totalSeedPoints = getTSP(event, player);
           console.log(`${player.name} has ${totalSeedPoints} TSP`);
 
           // generate some stats from the current record
           updates.stats = {
+            eventWins,
             currentStars,
             totalSeedPoints,
             ...getStats(updates.record!),
@@ -185,4 +188,16 @@ function getTSP(event: IEvent, player: ILeaderboardPlayer) {
     }
   }
   return null;
+}
+
+async function getEventWins(name: string, type: EventType): Promise<number> {
+  const snapshot = await db.collection('events')
+                    .where('winners', 'array-contains', name)
+                    .where('type', '==', type)
+                    .get();
+
+  return snapshot.docs.filter(doc => {
+    const event = doc.data() as IEvent;
+    return !event.parentId;
+  }).length;
 }

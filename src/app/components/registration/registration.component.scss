@@ -97,10 +97,16 @@ table {
         align-items: center;
         justify-content: flex-end;
 
+        .event-wins {
+          margin-right: 16px;
+          letter-spacing: 1.3px;
+        }
+
         .tsp {
           font-family: var(--ion-font-family);
           letter-spacing: .5px;
           font-weight: normal;
+          min-width: 75px;
         }
 
         .star-count,

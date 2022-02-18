@@ -152,6 +152,7 @@ export interface ILeaderboardPlayer {
 
 export interface ILeaderboardPlayerStats {
   currentStars: number;         // stars for event type on generals.io
+  eventWins: number;            // event wins for this type of tourney
   totalGames: number;           // count
   totalWins: number;            // count
   perfectStarts: number;        // count
