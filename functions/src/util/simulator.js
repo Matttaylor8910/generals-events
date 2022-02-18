@@ -72,7 +72,7 @@ function simulate(replay) {
     // first round just ended
     if (game.turn === 50) {
       players.forEach((player, index) => {
-        player.tilesAfterFirstRound = game.scores[index].tiles;
+        player.tilesAfterFirstRound = game.scores.find(score => score.i === index).tiles;
       });
     }
 
