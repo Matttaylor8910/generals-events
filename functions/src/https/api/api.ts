@@ -54,8 +54,8 @@ app.get('/replays/:replayId/stats', async (request, response) => {
         await simulator.getReplayStats(replayId, server);
     response.json({
       scores: scores.map(score => {
-        const {name, kills, rank, lastTurn, killed, killedBy} = score;
-        return {name, kills, rank, lastTurn, killed, killedBy};
+        const {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound} = score;
+        return {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound};
       }),
       summary,
       turns

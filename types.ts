@@ -154,8 +154,10 @@ export interface ILeaderboardPlayerStats {
   currentStars: number;         // stars for event type on generals.io
   totalGames: number;           // count
   totalWins: number;            // count
+  perfectStarts: number;        // count
   winRate: number;              // wins / totalGames
   longestStreak: number;        // longest win streak
+  averageOpening: number|null;  // average tiles after the first round
   quickestWin: number|null;     // number of turns for quickest win
   averageWin: number|null;      // average number of turns per win
   averageKills: number|null;    // average number of kills per game
@@ -196,6 +198,7 @@ export interface IGamePlayerRecord {
   rank: number;
   points: number;
   lastTurn: number;
+  tilesAfterFirstRound: number;
   streak: boolean;
 }
 

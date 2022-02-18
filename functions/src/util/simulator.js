@@ -61,13 +61,20 @@ function simulate(replay) {
   let {afks, usernames} = replay;
   let currentAFK = new Set();
   let players = replay.usernames.map(name => {
-    return {name, kills: 0, lastTurn: 0, killed: [], killedBy: []};
+    return {name, kills: 0, lastTurn: 0, killed: [], killedBy: [], tilesAfterFirstRound: 0};
   });
   let turn = 0;
 
   // Simulate the game!
   while (!game.isOver()) {
     nextTurn();
+
+    // first round just ended
+    if (game.turn === 50) {
+      players.forEach((player, index) => {
+        player.tilesAfterFirstRound = game.scores[index].tiles;
+      });
+    }
 
     const alive = game.generals.filter(g => g >= 0).length;
     turn = Math.floor(game.turn / 2);
@@ -130,7 +137,7 @@ function simulate(replay) {
 
   // scoring right now is a combination of rank + # of kills
   const scores = game.scores.map((score, index) => {
-    const {name, kills, lastTurn, killed, killedBy} = players[score.i];
+    const {name, kills, lastTurn, killed, killedBy, tilesAfterFirstRound} = players[score.i];
     const rank = index + 1;
     const points = game.generals.length - rank + kills;
     return {
@@ -141,7 +148,8 @@ function simulate(replay) {
       lastTurn,
       killed,
       killedBy,
-      streak: false
+      tilesAfterFirstRound,
+      streak: false,
     };
   });
 

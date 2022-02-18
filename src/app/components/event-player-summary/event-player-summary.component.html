@@ -53,6 +53,14 @@
             <span>Win Rate</span>
             <b>{{ stats.winRate | percent:'1.0-1' }}</b>
           </div>
+          <div class="stat-line" *ngIf="stats.averageOpening">
+            <span>Average Land After First Round</span>
+            <b>{{ stats.averageOpening | number:'1.0-1' }}</b>
+          </div>
+          <div class="stat-line" *ngIf="stats.perfectStarts >= 0">
+            <span>Perfect 25 Starts</span>
+            <b>{{ stats.perfectStarts }} / {{ stats.totalGames }}</b>
+          </div>
           <div class="stat-line">
             <span>Current Streak</span>
             <b *ngIf="player.currentStreak; else NA">

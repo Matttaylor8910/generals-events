@@ -133,12 +133,21 @@ function getStats(record: IPlayerHistoryRecord[]):
   let totalRank = 0;
   let longestStreak = 0;
   let currentStreak = 0;
+  let perfectStarts = 0;
+  let totalTiles = 0;
+
   for (const game of record) {
     totalKills += game.kills;
     totalTurns += game.lastTurn;
     totalRank += game.rank;
+
+    // streaks
     currentStreak = game.rank === 1 ? currentStreak + 1 : 0;
     if (currentStreak > longestStreak) longestStreak = currentStreak;
+    
+    // tiles after first round
+    totalTiles += game.tilesAfterFirstRound;
+    if (game.tilesAfterFirstRound === 25) perfectStarts++;
   }
 
   return {
@@ -147,6 +156,8 @@ function getStats(record: IPlayerHistoryRecord[]):
     winRate,
     longestStreak,
     quickestWin,
+    perfectStarts,
+    averageOpening: totalTiles > 0 ? totalTiles / totalGames : null,
     averageWin: totalWins > 0 ? totalWinTurns / totalWins : null,
     averageKills: totalGames > 0 ? totalKills / totalGames : null,
     averageTurns: totalGames > 0 ? totalTurns / totalGames : null,
