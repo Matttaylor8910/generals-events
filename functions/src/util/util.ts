@@ -30,7 +30,7 @@ export function getFinishedTime(
 }
 
 export function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
-  const {timesChecked} = snapshot.data() ?? {};
+  const {timesChecked = 0} = snapshot.data() ?? {};
   return new Promise(resolve => {
     if (timesChecked < 1000) {
       setTimeout(async () => {
