@@ -7,7 +7,7 @@ import {GeneralsServer} from '../../../../constants';
 import {GameSpeed, IArenaEvent, IBracketMatchDocument, IGeneralsReplay, MatchStatus} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
-import {getFinishedTime, timeoutAfter} from '../../util/util';
+import {getFinishedTime, timeoutAfter, keepLookingIn10Seconds} from '../../util/util';
 
 try {
   admin.initializeApp();
@@ -235,15 +235,4 @@ async function saveReplayToMatch(
   console.log('committing...');
   await batch.commit();
   console.log('done!');
-}
-
-function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
-  return new Promise(resolve => {
-    setTimeout(async () => {
-      await snapshot.ref.update({
-        timesChecked: admin.firestore.FieldValue.increment(1),
-      })
-      resolve();
-    }, 10000);
-  });
 }

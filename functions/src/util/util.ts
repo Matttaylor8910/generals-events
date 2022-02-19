@@ -1,3 +1,5 @@
+import * as admin from 'firebase-admin';
+import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {GameSpeed} from '../../../types';
 
 export function timeoutAfter<T>(ms: number, defaultValue: T): Promise<T> {
@@ -25,4 +27,21 @@ export function getFinishedTime(
     speed = GameSpeed.SPEED_1X,
     ): number {
   return startTime + (turns * TURNS_MS[speed]);
+}
+
+export function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
+  const {timesChecked} = snapshot.data() ?? {};
+  return new Promise(resolve => {
+    if (timesChecked < 1000) {
+      setTimeout(async () => {
+        await snapshot.ref.update({
+          timesChecked: admin.firestore.FieldValue.increment(1),
+        });
+        resolve();
+      }, 10000);
+    } else {
+      // if we've checked 1000 times, that's nearly 3 hours, give up
+      resolve();
+    }
+  });
 }

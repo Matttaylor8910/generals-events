@@ -7,7 +7,7 @@ import {GeneralsServer} from '../../../../constants';
 import {EventType, GameSpeed, GameStatus, IArenaEvent, IGame, IGeneralsReplay, ILeaderboardPlayer} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
-import {getFinishedTime, timeoutAfter} from '../../util/util';
+import {getFinishedTime, timeoutAfter, keepLookingIn10Seconds} from '../../util/util';
 
 try {
   admin.initializeApp();
@@ -51,6 +51,7 @@ async function lookForFinishedGame(
   console.log(`looking for finished game ${snapshot.id}`);
 
   // if we still haven't found a replay within 20 minutes, pull the plug
+  // note: the /games subcollection only applies to FFA Arena events
   if (timesChecked >= TWENTY_MINUTES) {
     console.log('it has been 20 minutes');
     await eventRef.update({
@@ -273,15 +274,4 @@ async function saveReplayToGame(
   console.log('committing...');
   await batch.commit();
   console.log('done!');
-}
-
-function keepLookingIn10Seconds(snapshot: DocumentSnapshot): Promise<void> {
-  return new Promise(resolve => {
-    setTimeout(async () => {
-      await snapshot.ref.update({
-        timesChecked: admin.firestore.FieldValue.increment(1),
-      })
-      resolve();
-    }, 10000);
-  });
 }
