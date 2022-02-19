@@ -49,8 +49,8 @@
       </td>
       <td class="points">
         <div class="stars" *ngIf="!canCheckIn || isCheckedIn(player.name)">
-          <span class="event-wins" *ngIf="player.stats?.eventWins" tooltip="{{ player.name }} has won {{ player.stats?.eventWins }} {{ player.stats?.eventWins === 1 ? 'time' : 'times' }}">
-            {{ eventWins(player) }}
+          <span class="event-wins" *ngIf="player.stats?.eventWins" tooltip="{{ player.name }} has won {{ player.stats?.eventWins === 1 ? 'once' : (player.stats?.eventWins + ' times') }}">
+            <ion-icon name="trophy" *ngFor="let win of eventWins(player)"></ion-icon>
           </span>
           <ng-container *ngIf="!event?.tsp">
             <ion-icon name="star" color="warning"></ion-icon>

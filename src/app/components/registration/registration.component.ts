@@ -82,11 +82,11 @@ export class RegistrationComponent {
     return this.event?.qualified?.length > 0;
   }
 
-  eventWins(player: ILeaderboardPlayer): string {
+  eventWins(player: ILeaderboardPlayer): string[] {
     if (player?.stats?.eventWins) {
-      return new Array(player.stats.eventWins).fill('🏆').join('');
+      return new Array(player.stats.eventWins);
     }
-    return '';
+    return [];
   }
 
   isSelected(name: string): boolean {

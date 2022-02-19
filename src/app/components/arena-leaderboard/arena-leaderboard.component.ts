@@ -106,11 +106,11 @@ export class ArenaLeaderboardComponent {
         this.status === EventStatus.UPCOMING;
   }
 
-  eventWins(player: ILeaderboardPlayer): string {
+  eventWins(player: ILeaderboardPlayer): string[] {
     if (player?.stats?.eventWins) {
-      return new Array(player.stats.eventWins).fill('🏆').join('');
+      return new Array(player.stats.eventWins);
     }
-    return '';
+    return [];
   }
 
   isSelected(name: string): boolean {

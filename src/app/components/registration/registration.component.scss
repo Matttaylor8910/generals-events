@@ -98,8 +98,14 @@ table {
         justify-content: flex-end;
 
         .event-wins {
+          display: flex;
+          align-items: center;
           margin-right: 16px;
-          letter-spacing: 1.3px;
+          color: gold;
+
+          ion-icon {
+            margin-left: 1px;
+          }
         }
 
         .tsp {
