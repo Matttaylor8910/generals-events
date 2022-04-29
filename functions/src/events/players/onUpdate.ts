@@ -171,15 +171,11 @@ function getStats(record: IPlayerHistoryRecord[]):
 
 function getTSP(event: IEvent, player: ILeaderboardPlayer) {
   if (event.format === EventFormat.DOUBLE_ELIM) {
-    const {tsp, qualified = []} = event as IDoubleElimEvent;
-
-    // if the user doesn't qualify, TSP is pointless
-    if (qualified.length > 0 && !qualified.includes(player.name)) {
-      return null;
-    }
+    const {tsp} = event as IDoubleElimEvent;
 
     // in the case that the TSP map is set on the event document, fetch this
     // player's total seed points value
+    // note: the tsp map will only include this player's TSP if they qualify
     if (tsp !== undefined) {
       const totalSeedPoints = tsp[`PLAYER${player.name}`];
       if (totalSeedPoints >= 0) {
