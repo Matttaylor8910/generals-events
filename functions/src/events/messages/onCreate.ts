@@ -21,8 +21,5 @@ export const onCreateMessage =
 
           const message = doc.data() as IChatMessage;
 
-          return postToSlack(`
-            ${event.name}: \n
-            ${message.sender}: ${message.text}
-          `);
+          return postToSlack(`${event.name}:\n${message.sender}: ${message.text}`);
         });
