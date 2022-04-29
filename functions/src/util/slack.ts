@@ -1,6 +1,6 @@
 // firebase functions:config:set slack.url="your://url.here"
 import * as functions from 'firebase-functions';
-import * as request from 'request';
+import axios from 'axios';
 
 const SLACK_URL = functions.config().slack.url;
 const SLACK_BOT = {
@@ -17,5 +17,5 @@ export async function postToSlack(text: string) {
 
   console.log('Posting the following to slack: ', message);
   console.log('Using this URL: ', SLACK_URL);
-  return request.post(SLACK_URL, {json: message});
+  return axios.post(SLACK_URL, {json: message});
 }
