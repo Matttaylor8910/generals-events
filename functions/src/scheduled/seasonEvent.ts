@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import * as moment from 'moment-timezone';
 
-import {EventFormat, EventType, IDoubleElimEvent, IGeneralsRankings, Visibility} from '../../../types';
+import {EventFormat, EventType, IDoubleElimEvent, IEvent, IGeneralsRankings, Visibility} from '../../../types';
 import {getRankingsForSeason} from '../util/generals';
 
 const HOUR = 1000 * 60 * 60;
@@ -82,7 +82,7 @@ export const updateSeasonEvent =
         console.error(`Unable to retrieve rankings for season ${season}`);
         return;
       }
-      const {qualified, tsp} = getQualifiedPlayers(rankings);
+      const {qualified, tsp} = await getQualifiedPlayers(rankings);
 
       console.log(`Found ${qualified.length} qualified players`);
 
@@ -199,9 +199,10 @@ function getSeasonEndEventDescription(
  * @param rankings
  * @returns
  */
-function getQualifiedPlayers(rankings: IGeneralsRankings) {
+async function getQualifiedPlayers(rankings: IGeneralsRankings) {
   const qualified = new Set<string>();
   const tsp: {[username: string]: number} = {};
+  const champions = await getChampions(EventType.ONE_VS_ONE);
 
   // find 25 qualifiers per week
   for (const week of rankings.weeks) {
@@ -225,8 +226,8 @@ function getQualifiedPlayers(rankings: IGeneralsRankings) {
   for (const player of rankings.tsp) {
     const key = `PLAYER${player.username}`;
 
-    // build up the map of players already added to the overall tsp
-    if (qualified.has(player.username)) {
+    // build up the map of players already added to the overall tsp and add in the event champions
+    if (qualified.has(player.username) || champions.includes(player.username)) {
       tsp[key] = player.tsp;
     }
 
@@ -239,4 +240,30 @@ function getQualifiedPlayers(rankings: IGeneralsRankings) {
   }
 
   return {qualified: Array.from(qualified), tsp};
+}
+
+/**
+ * Return a list of the event champions for a given type
+ * @param eventType
+ * @returns
+ */
+async function getChampions(eventType: EventType): Promise<string[]> {
+  const champions: string[] = [];
+
+  // get all events of the given type
+  const snapshot = await db.collection('events')
+                    .where('type', '==', eventType)
+                    .get();
+
+  // collect the names of all of the winners of this type
+  snapshot.docs.forEach(doc => {
+    const {winners = []} = doc.data() as IEvent;
+    winners.forEach(winner => {
+      if (!champions.includes(winner)) {
+        champions.push(winner);
+      }
+    })
+  });
+
+  return champions;
 }
