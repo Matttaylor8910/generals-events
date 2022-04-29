@@ -93,8 +93,8 @@ export class RegistrationComponent {
     return this.selectedPlayers?.some(p => p.name === name);
   }
 
-  isQualified(name: string): boolean {
-    return !this.showQualified || this.event?.qualified?.includes(name);
+  isQualified(player: ILeaderboardPlayer): boolean {
+    return !this.showQualified || this.event?.qualified?.includes(player.name) || player.stats?.eventWins > 0;
   }
 
   isCheckedIn(name: string): boolean {

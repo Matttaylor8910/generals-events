@@ -43,7 +43,7 @@
           <ion-icon
             name="checkmark-circle"
             tooltip="Qualifies for this event!"
-            *ngIf="isQualified(player.name); else notQualified">
+            *ngIf="isQualified(player); else notQualified">
           </ion-icon>
         </span>
       </td>
@@ -58,11 +58,11 @@
               {{ player.stats?.currentStars | number:'1.0-0' }}
             </span>
           </ng-container>
-          <span class="tsp" *ngIf="event?.tsp && player.stats?.totalSeedPoints" tooltip="Total Seed Points are a total of the seed points you earned each week this season">
-            {{ player.stats?.totalSeedPoints }} TSP
+          <span class="tsp" *ngIf="event?.tsp && isQualified(player)" tooltip="Total Seed Points are a total of the seed points you earned each week this season">
+            {{ player.stats?.totalSeedPoints || 0 }} TSP
           </span>
         </div>
-        <ng-container *ngIf="canCheckIn && isQualified(player.name) && !isCheckedIn(player.name)">
+        <ng-container *ngIf="canCheckIn && isQualified(player) && !isCheckedIn(player.name)">
           <ion-button size="small" class="generals-button" *ngIf="generals.name === player.name" (click)="checkIn()">
             Check In
           </ion-button>
