@@ -163,6 +163,7 @@ export class CreateEventPage {
     this.saving = true;
 
     const [base, map = ''] = this.mapURL?.split('/maps/');
+    const defeat_spectate = this.type === EventType.ONE_VS_ONE;
 
     const event: Partial<IEvent> = {
       name: this.name || this.namePlaceholder,
@@ -180,7 +181,8 @@ export class CreateEventPage {
         mountains: this.mountains,
         swamps: this.swamps,
         speed: this.speed,
-        map: map,
+        defeat_spectate,
+        map,
       }
     };
 
