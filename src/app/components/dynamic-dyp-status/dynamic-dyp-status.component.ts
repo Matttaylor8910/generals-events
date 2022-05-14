@@ -1,5 +1,4 @@
 import {Component, Input, OnDestroy} from '@angular/core';
-import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
