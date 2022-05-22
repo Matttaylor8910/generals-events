@@ -198,6 +198,17 @@ export class BracketEventComponent {
     }
   }
 
+  async openCheckIn() {
+    const confirm = await this.utilService.confirm(
+        'Open Check In?',
+        'Are you sure you want to open the checkin to all players now?',
+        'Open Check In', 'Nevermind');
+
+    if (confirm) {
+      this.eventService.updateEvent(this.event.id, {checkInTime: Date.now()});
+    }
+  }
+
   startEvent() {
     this.eventService.updateEvent(this.event.id, {
       bracket: this.bracket,
