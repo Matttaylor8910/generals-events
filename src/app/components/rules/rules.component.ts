@@ -42,7 +42,7 @@ export class RulesComponent {
   getPlayers(week: number): string {
     const amount = 25;
     const offset = (week - 1) * amount;
-    return this.event.qualified.slice(offset, offset + amount).join(', ');
+    return this.event.qualified.slice(offset, offset + amount).join(', ') || '(25 spots open)';
   }
 
   bestOf(winningSets: number): string {
