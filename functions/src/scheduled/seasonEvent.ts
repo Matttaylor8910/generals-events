@@ -160,8 +160,8 @@ async function createNewSeasonEndEvent(
     replays: [],
     winners: [],
     winningSets: {
-      winners: 3,
-      losers: 2,
+      winners: 4,
+      losers: 3,
       semifinals: 4,
       finals: 4,
     },
