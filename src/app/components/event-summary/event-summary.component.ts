@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent} from 'types';
+import {EventFormat, EventStatus, GameSpeed, IArenaEvent, IDoubleElimEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -66,6 +66,10 @@ export class EventSummaryComponent {
 
   get mapName(): string {
     return decodeURI(this.event?.options?.map);
+  }
+  
+  get speedText(): string {
+    return `Playing at ${this.event?.options?.speed || GameSpeed.SPEED_1X} speed`;
   }
 
   goToRules() {

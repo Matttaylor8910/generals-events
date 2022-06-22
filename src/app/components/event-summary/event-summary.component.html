@@ -24,6 +24,9 @@
         <p *ngIf="event.doublesPairingStrategy">
           {{ event.doublesPairingStrategy }}
         </p>
+        <p *ngIf="speedText">
+          {{ speedText }}
+        </p>
       </ion-label>
 
       <ion-icon tooltip="Click to learn more on the rules tab" class="clickable" slot="end" name="help-circle" *ngIf="needToQualify" (click)="goToRules()"></ion-icon>
