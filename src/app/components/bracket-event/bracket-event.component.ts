@@ -231,7 +231,9 @@ export class BracketEventComponent {
 
     if (confirm) {
       for (const player of this.players) {
-        if (!this.event?.qualified?.includes(player.name)) {
+        // this player isn't in the qualified list and doesn't have an event win
+        if (!this.event?.qualified?.includes(player.name) && !(player.stats?.eventWins > 0)) {
+          // remove them from the registration
           this.eventService.removePlayer(this.event.id, player.name);
         }
       }
