@@ -232,7 +232,7 @@ export class BracketEventComponent {
     if (confirm) {
       for (const player of this.players) {
         // this player isn't in the qualified list and doesn't have an event win
-        if (!this.event?.qualified?.includes(player.name) && !(player.stats?.eventWins > 0)) {
+        if (!this.canPlayInEvent(player)) {
           // remove them from the registration
           this.eventService.removePlayer(this.event.id, player.name);
         }
@@ -246,7 +246,7 @@ export class BracketEventComponent {
       if (cloned.checkedInPlayers.length < 3) {
         if (this.event?.qualified?.length > 0) {
           cloned.checkedInPlayers =
-              this.players.filter(p => this.event.qualified.includes(p.name))
+              this.players.filter(this.canPlayInEvent.bind(this))
                   .map(p => p.name);
         } else {
           cloned.checkedInPlayers = this.players.map(p => p.name);
@@ -268,6 +268,10 @@ export class BracketEventComponent {
         }, 500);
       }
     }
+  }
+
+  private canPlayInEvent(player: ILeaderboardPlayer) {
+    return this.event?.qualified?.includes(player.name) || player.stats?.eventWins > 0;
   }
 
   ngOnDestroy() {
