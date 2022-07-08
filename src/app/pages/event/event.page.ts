@@ -125,6 +125,10 @@ export class EventPage implements OnDestroy {
     return this.players?.some(p => p.name === this.generals.name);
   }
 
+  get isOver(): boolean {
+    return this.status === EventStatus.FINISHED;
+  }
+
   setPlayers(eventId: string) {
     this.players$ = this.eventService.getPlayers(eventId).pipe(tap(players => {
       this.players = players;
@@ -330,6 +334,17 @@ export class EventPage implements OnDestroy {
       this.eventService.deleteEvent(this.event.id);
       this.goHome();
     }
+  }
+
+  copyStandings() {
+    let standings = '';
+    this.players.forEach(player => {
+      if (player.stats?.totalGames > 0) {
+        const wins = player.stats?.totalWins ?? 0;
+        standings += `${player.name} (1 week + ${wins} ${wins === 1 ? 'win' : 'wins'}) = ${wins + 7} days of supporter\n`; 
+      }
+    });
+    this.utilService.copyToClipboard(standings, 'Copied standings to clipboard');
   }
 
   private setSelectedPlayers(players: Partial<ILeaderboardPlayer>[] = []) {

@@ -29,6 +29,9 @@
         <ion-button tooltip="Clone Event" (click)="cloneEvent()">
           <ion-icon name="copy-outline"></ion-icon>
         </ion-button>
+        <ion-button tooltip="Copy Standings" (click)="copyStandings()" *ngIf="isOver">
+          <ion-icon name="trophy-outline"></ion-icon>
+        </ion-button>
       </ng-container>
       <app-login
         [eventId]="eventId"

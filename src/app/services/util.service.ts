@@ -18,7 +18,7 @@ export class UtilService {
   // IE: The clipboard feature may be disabled by an administrator. By
   // default a prompt is shown the first time the clipboard is
   // used (per session).
-  copyToClipboard(text) {
+  copyToClipboard(text: string, successText = 'Copied link to clipboard') {
     if (document.queryCommandSupported &&
         document.queryCommandSupported('copy')) {
       const textarea = document.createElement('textarea');
@@ -30,7 +30,7 @@ export class UtilService {
       try {
         // Security exception may be thrown by some browsers.
         document.execCommand('copy');
-        this.showToast('Copied link to clipboard');
+        this.showToast(successText);
       } catch (ex) {
         this.showToast('Copy to clipboard failed');
         return false;
