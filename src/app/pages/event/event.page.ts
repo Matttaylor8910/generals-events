@@ -338,12 +338,30 @@ export class EventPage implements OnDestroy {
 
   copyStandings() {
     let standings = '';
+    const daysSupporterMap = new Map<number, string[]>();
+
     this.players.forEach(player => {
       if (player.stats?.totalGames > 0) {
         const wins = player.stats?.totalWins ?? 0;
-        standings += `${player.name} (1 week + ${wins} ${wins === 1 ? 'win' : 'wins'}) = ${wins + 7} days of supporter\n`; 
+        const days = wins + 7;
+        standings += `${player.name} (1 week + ${wins} ${wins === 1 ? 'win' : 'wins'}) = ${days} days of supporter\n`;
+        
+        // group the players by 
+        const entry = daysSupporterMap.get(days) ?? [];
+        entry.push(player.name);
+        daysSupporterMap.set(days, entry);
       }
     });
+
+    // lastly add in the command to the standings
+    console.log(daysSupporterMap);
+    let command = 'node scripts/reward_player.js';
+    daysSupporterMap.forEach((players, days) => {
+      const playerString = players.map(p => `"${p}"`).join(' ');
+      command += ` -d ${days} ${playerString}`;
+    });
+    standings += `\n\n${command}`;
+
     this.utilService.copyToClipboard(standings, 'Copied standings to clipboard');
   }
 
