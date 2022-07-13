@@ -45,19 +45,14 @@ export class EventService {
   }
 
   /**
-   * Get a list of events. You can filter down to those that are or are not
-   * finished, or just get child events for a multi-stage event
+   * Get a list of events. You can optionally just get child events for 
+   * a multi-stage event
    *
-   * @param finished
-   *  true = only finished events
-   *  false = only unfinished events
-   *  null = both
-   *
-   * @param parentEventId optional parent event fi looking for children
+   * @param parentEventId optional parent event if looking for children
    *
    * @returns an observable of a list of events
    */
-  getEvents(finished: boolean|null, parentEventId?: string):
+  getEvents(parentEventId?: string):
       Observable<IEvent[]> {
     // admins can see private events too
     const visibilities = [Visibility.PUBLIC];
@@ -86,18 +81,6 @@ export class EventService {
               .map(action => {
                 const {doc} = action.payload;
                 return {...doc.data(), id: doc.id, exists: doc.exists};
-              })
-              .filter(event => {
-                // if finished is null, we want to see all, do not filter
-                if (finished === null) return event;
-
-                // otherwise look at endTime to determine if it has finished yet
-                return finished ? event.endTime < Date.now() :
-                                  event.endTime > Date.now() || !event.endTime;
-              })
-              .sort((a, b) => {
-                return finished ? b.endTime - a.endTime :
-                                  a.startTime - b.startTime;
               });
         }));
   }

@@ -54,7 +54,7 @@ export class EventPage implements OnDestroy {
           // if multi-stage, load the events that are part of this event and
           // select the first one
           if (this.event.format === EventFormat.MULTI_STAGE_EVENT) {
-            this.children$ = this.eventService.getEvents(null, this.eventId)
+            this.children$ = this.eventService.getEvents(this.eventId)
                                  .pipe(tap(this.selectChild.bind(this)));
           }
         });
