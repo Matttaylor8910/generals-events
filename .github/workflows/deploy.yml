@@ -12,15 +12,15 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Install @angular/cli
-        run: npm i -D -E @angular/cli
+        run: npm i -D -E @angular/cli --force
       - name: Use coturiv/setup-ionic
         uses: coturiv/setup-ionic@master
         with:
           cordova-version: 8
       - name: Install app dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Install functions dependencies
-        run: cd functions && npm i && cd ..
+        run: cd functions && npm i --force && cd ..
       - name: Build prod app
         run: npm run build
       - uses: w9jds/firebase-action@master
