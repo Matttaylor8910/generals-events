@@ -32,6 +32,7 @@
     "firebase": "^8.2.1",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
     "moving-averages": "^4.0.6",
     "ng2-tooltip-directive": "^2.9.22",
     "rxjs": "~6.5.5",

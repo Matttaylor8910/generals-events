@@ -5,7 +5,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IEvent, IGame, ILeaderboardPlayer, PartnerStatus, Visibility} from '../../../types';
+import {GameStatus, IEvent, IEventInfo, IGame, ILeaderboardPlayer, PartnerStatus, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 
@@ -335,6 +335,10 @@ export class EventService {
 
   deleteEvent(eventId: string) {
     return this.afs.collection('events').doc(eventId).delete();
+  }
+
+  promoteEvent(eventInfo: IEventInfo) {
+    return this.afs.collection('generals.io').doc('homepage').update({eventInfo});
   }
 
   /**

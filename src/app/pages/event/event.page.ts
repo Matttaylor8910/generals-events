@@ -6,7 +6,8 @@ import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
+import {EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
+import * as moment from 'moment-timezone';
 
 import {ADMINS} from '../../../../constants';
 
@@ -363,6 +364,31 @@ export class EventPage implements OnDestroy {
     standings += `\n\n${command}`;
 
     this.utilService.copyToClipboard(standings, 'Copied standings to clipboard');
+  }
+
+  promoteEvent() {
+    // do everything within the context of New York because the timer URL expects it
+    const timeToUse = this.getTimerTimeToUse();
+    const timeInNewYork = moment(timeToUse).tz('America/New_York');
+    const timerDateTime = timeInNewYork.format('YYYY-MM-DDThh:mm:ss');
+    const eventType = this.event.type === EventType.MULTI_STAGE_EVENT ? 'Custom' : this.event.type;
+    const timerIframeUrl = `https://free.timeanddate.com/countdown/i6aq85za/n43/cf12/cm0/cu4/ct0/cs0/caceee/cr0/ss0/caceee/cpceee/pct/tcfff/fs130/tat${eventType}%20Event/taceee/tpt${eventType}%20Event/tpceee/matbegins/maceee/mptbegan/mpceee/iso${timerDateTime}`;
+
+    const eventInfo = {
+      eventId: this.event.id,
+      date: timeInNewYork.format('MM/DD/YYYY'),
+      time: timeInNewYork.format('hh:mm a'),
+      timezone: timeInNewYork.format('z'),
+      timerIframeUrl,
+    };
+
+    this.eventService.promoteEvent(eventInfo);
+    this.utilService.showToast('Promoted this event, it shoud show in queue now');
+  }
+
+  private getTimerTimeToUse() {
+    const {checkInTime = null, startTime = null} = (this.event || {}) as IDoubleElimEvent;
+    return checkInTime ?? startTime;
   }
 
   private setSelectedPlayers(players: Partial<ILeaderboardPlayer>[] = []) {

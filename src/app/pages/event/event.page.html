@@ -22,7 +22,7 @@
     </ng-container>
 
     <ion-buttons slot="end">
-      <ng-container *ngIf="isAdmin">
+      <ng-container *ngIf="isAdmin && event">
         <ion-button tooltip="Delete Event" (click)="deleteEvent()">
           <ion-icon name="trash-outline"></ion-icon>
         </ion-button>
@@ -31,6 +31,9 @@
         </ion-button>
         <ion-button tooltip="Copy Standings" (click)="copyStandings()" *ngIf="isOver">
           <ion-icon name="trophy-outline"></ion-icon>
+        </ion-button>
+        <ion-button tooltip="Promote Event" (click)="promoteEvent()" *ngIf="!isOver">
+          <ion-icon name="megaphone-outline"></ion-icon>
         </ion-button>
       </ng-container>
       <app-login

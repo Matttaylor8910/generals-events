@@ -447,3 +447,11 @@ export interface IGeneralsStarsForUsername {
   stars: number;
   username: string;
 }
+
+export interface IEventInfo {
+  eventId: string;
+  date: string;
+  time: string;
+  timezone: string;
+  timerIframeUrl: string;
+}
