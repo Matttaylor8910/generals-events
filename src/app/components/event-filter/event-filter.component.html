@@ -1,0 +1,16 @@
+<div class="segment-container">
+  <ion-segment [(ngModel)]="selectedTab" *ngIf="tabs.length > 1" (ionChange)="tabChange.emit(selectedTab)">
+    <ion-segment-button [value]="tab" *ngFor="let tab of tabs">
+      <ion-label>{{ tab }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</div>
+
+<div class="select-container">
+  <h3>Event Type</h3>
+  <ion-item class="select-input">
+    <ion-select [(ngModel)]="selectedTab" interface="popover">
+      <ion-select-option *ngFor="let tab of tabs" [value]="tab">{{ tab }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+</div>

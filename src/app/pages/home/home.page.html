@@ -20,11 +20,11 @@
     <ion-icon name="add"></ion-icon>
   </div>
   <div class="home-container">
-    <ion-segment [(ngModel)]="selectedTab" *ngIf="tabs.length > 1" (ionChange)="setEvents()">
-      <ion-segment-button [value]="tab" *ngFor="let tab of tabs">
-        <ion-label>{{ tab }}</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <app-event-filter
+      [tabs]="tabs"
+      [selectedTab]="selectedTab"
+      (tabChange)="setEvents($event)">
+    </app-event-filter>
 
     <!-- in progress or upcoming events -->
     <ng-container *ngIf="unfinished">

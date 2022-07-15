@@ -34,7 +34,7 @@ export class HomePage {
       .pipe(takeUntil(this.destroyed$))
       .subscribe(events => {
         this.allEvents = events;
-        this.setEvents();
+        this.setEvents(this.selectedTab);
       });
   }
 
@@ -49,7 +49,9 @@ export class HomePage {
     return await modal.present();
   }
 
-  setEvents() {
+  setEvents(tab: string) {
+    this.selectedTab = tab;   
+
     const unfinished = [];
     const finished = [];
     const now = Date.now();

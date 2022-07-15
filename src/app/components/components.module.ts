@@ -23,6 +23,7 @@ import {DynamicDYPFinalsTeamsComponent} from './dynamic-dyp-finals-teams/dynamic
 import {DynamicDYPLeaderboardComponent} from './dynamic-dyp-leaderboard/dynamic-dyp-leaderboard.component';
 import {DynamicDYPRoundsComponent} from './dynamic-dyp-rounds/dynamic-dyp-rounds.component';
 import {DynamicDYPStatusComponent} from './dynamic-dyp-status/dynamic-dyp-status.component';
+import { EventFilterComponent } from './event-filter/event-filter.component';
 import {EventListItemComponent} from './event-list-item/event-list-item.component';
 import {EventOverviewComponent} from './event-overview/event-overview.component';
 import {EventPlayerSummaryComponent} from './event-player-summary/event-player-summary.component';
@@ -56,6 +57,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     DynamicDYPLeaderboardComponent,
     DynamicDYPRoundsComponent,
     DynamicDYPStatusComponent,
+    EventFilterComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
@@ -99,6 +101,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     DynamicDYPLeaderboardComponent,
     DynamicDYPRoundsComponent,
     DynamicDYPStatusComponent,
+    EventFilterComponent,
     EventListItemComponent,
     EventOverviewComponent,
     EventPlayerSummaryComponent,
