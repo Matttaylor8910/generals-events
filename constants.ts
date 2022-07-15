@@ -18,6 +18,7 @@ export const ADMINS = [
   'DavidC',
   'matt',
   'pasghetti',
+  'Wuped',
   '☻☺',
   'Fekete',
 ];
