@@ -161,27 +161,30 @@ export class BracketEventComponent {
   }
 
   createBracket() {
-    let teams = [];
+    try {
+      let teams = [];
 
-    // 1v1 just passes the list of checked in players
-    if (this.event.type === EventType.ONE_VS_ONE) {
-      this.players.forEach(player => {
-        if (this.event.checkedInPlayers.includes(player.name)) {
-          teams.push({name: player.name, players: [player.name]});
-        }
-      });
+      // 1v1 just passes the list of checked in players
+      if (this.event.type === EventType.ONE_VS_ONE) {
+        this.players.forEach(player => {
+          if (this.event.checkedInPlayers.includes(player.name)) {
+            teams.push({name: player.name, players: [player.name]});
+          }
+        });
+      }
+
+      // 2v2 passes the list of confirmed teams
+      // TODO: support DYP!
+      else {
+        teams = this.getConfirmedTeams();
+      }
+
+      this.bracket = getShuffledBracket(this.event, teams);
+    } catch {
+      this.utilService.showToast('Error creating bracket... are there enough players?');
     }
-
-    // 2v2 passes the list of confirmed teams
-    // TODO: support DYP!
-    else {
-      teams = this.getConfirmedTeams();
-    }
-
-    this.bracket = getShuffledBracket(this.event, teams);
   }
 
-  // TODO: likely remove
   async checkInAll() {
     const confirm = await this.utilService.confirm(
         'Check in all?',

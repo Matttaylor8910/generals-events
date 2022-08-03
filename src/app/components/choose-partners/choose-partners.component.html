@@ -1,7 +1,7 @@
 <div class="partners-container" *ngIf="showPartners">
 
   <!-- confirmed teams -->
-  <h3>Confirmed Teams:</h3>
+  <h3>{{ confirmedTeamsHeader }} </h3>
   <div class="team" *ngFor="let team of confirmedTeams; let i = index; trackBy: trackByFn">
     <div>
       <div class="name">{{ team.name }}</div>
@@ -17,7 +17,7 @@
   </p>
 
   <!-- only show the choosing partner logic if this player is taking requests -->
-  <ng-container *ngIf="takingRequests">
+  <ng-container *ngIf="takingRequests; else remainingPlayers">
     <!-- available partners to choose from -->
     <h3>Available Partners (click to choose):</h3>
     <div class="available-partners">
@@ -40,4 +40,17 @@
     </ng-container>
   </ng-container>
 
+  <ng-template #remainingPlayers>
+    <ng-container *ngIf="availablePartners.length > 0; else allSet">
+      <h5 *ngIf="availablePartners.length === 1">
+        {{ availablePartners[0].name }} is checked in but doesn't have a partner...
+      </h5>
+      <h5 *ngIf="availablePartners.length > 1">
+        {{ availablePartners.length }} {{ availablePartners.length === 1 ? 'player' : 'players' }} looking for a partner...
+      </h5>
+    </ng-container>
+    <ng-template #allSet>
+      <h4>All players have partners set!</h4>
+    </ng-template>
+  </ng-template>
 </div>

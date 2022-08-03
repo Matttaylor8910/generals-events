@@ -63,6 +63,17 @@ export class ChoosePartnersComponent {
     return teams;
   }
 
+  get confirmedTeamsHeader(): string {
+    switch(this.confirmedTeams.length) {
+      case 0:
+        return 'Confirmed Teams:';
+      case 1: 
+        return '1 Confirmed Team:';  
+      default: 
+        return `${this.confirmedTeams.length} Confirmed Teams:`;  
+    }
+  }
+
   get availablePartners(): ILeaderboardPlayer[] {
     return this.players
         ?.filter(player => {
