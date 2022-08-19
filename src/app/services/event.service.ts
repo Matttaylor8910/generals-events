@@ -64,15 +64,17 @@ export class EventService {
         .collection<IEvent>(
             'events',
             ref => {
+              const query = ref.orderBy('startTime');
+
               // support looking for children with a given parent eventId, we
               // don't care about the event visibility here
               if (parentEventId) {
-                return ref.where('parentId', '==', parentEventId);
+                return query.where('parentId', '==', parentEventId);
               }
 
               // otherwise, show only those with visibilities you can see
               else {
-                return ref.where('visibility', 'in', visibilities)
+                return query.where('visibility', 'in', visibilities)
               }
             })
         .snapshotChanges()
