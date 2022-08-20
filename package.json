@@ -13,7 +13,8 @@
     "build": "ionic build --prod --release",
     "deploy-functions": "npm run update && firebase deploy --only functions",
     "deploy-hosting": "npm run update && npm run build && firebase deploy --only hosting",
-    "deploy": "npm run update && npm run build && firebase deploy"
+    "deploy": "npm run update && npm run build && firebase deploy",
+    "indexes": "firebase firestore:indexes > firestore.indexes.json"
   },
   "private": true,
   "dependencies": {
