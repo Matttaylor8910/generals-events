@@ -42,7 +42,10 @@ export const onUpdatePlayer =
           if (updates.dq && !player.dq) {
             // TODO: support dq for multiple reasons
             const reason = 'playing in multiple games at once';
-            await eventSnap.ref.collection('messages').add({
+
+            // support dq for Multi-Stage Events
+            const eventRef = db.collection('events').doc(event.parentId || context.params.eventId);
+            await eventRef.collection('messages').add({
               sender: 'Automated Message',
               text: `${player.name} has been disqualified for ${reason}.`,
               timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -64,10 +67,16 @@ export function recordSanityCheck(
   // compare the original and the newly sorted games in the record to see if
   // there are any streaks/points to fix up
   let currentStreak = 0;
-  let nextGame: IPlayerHistoryRecord;
-  for (let i = 0; i < record.length; i++) {
+  let i = 0;
+  while (i < record.length) {
     const game = record[i];
-    nextGame = record[i + 1];
+    const nextGame = record[i + 1];
+
+    // accidental dupe, skip it
+    if (game.replayId === nextGame?.replayId) {
+      record.splice(i, 1); 
+      continue;
+    }
 
     // keep track of current streak
     const winner = record[i].rank === 1;
@@ -105,6 +114,9 @@ export function recordSanityCheck(
       console.log(`${game.replayId} overlaps with ${nextGame.replayId}`);
       dq = true;
     }
+
+    // finally increment to check the next record
+    i++;
   }
 
   return {
