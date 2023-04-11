@@ -17,9 +17,14 @@ export const onCreateMessage =
           const eventId = context.params.eventId;
           const eventRef = db.collection('events').doc(eventId);
           const eventSnap = await eventRef.get();
-          const event = (eventSnap.data() || {}) as IEvent;
+          const {name, chatBlocklist = []} = (eventSnap.data() || {}) as IEvent;
 
-          const message = doc.data() as IChatMessage;
+          const {sender, text} = doc.data() as IChatMessage;
 
-          return postToSlack(`${event.name}:\n${message.sender}: ${message.text}`);
+          if (chatBlocklist.includes(sender)) {
+            await doc.ref.delete();
+            return postToSlack(`DELETED MESSAGE\n${name}:\n${sender}: ${text}`);
+          } else {
+            return postToSlack(`${name}:\n${sender}: ${text}`);
+          }
         });

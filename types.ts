@@ -74,6 +74,8 @@ export interface IBaseEvent {
 
   options: Partial<IGeneralsGameOptions>;  // all possible options
 
+  chatBlocklist: string[];
+
   id?: string;       // client field
   exists?: boolean;  // client field
 }
