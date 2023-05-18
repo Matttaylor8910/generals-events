@@ -8,6 +8,7 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
 import * as moment from 'moment-timezone';
+import * as firebase from 'firebase';
 
 import {ADMINS} from '../../../../constants';
 
@@ -59,6 +60,10 @@ export class EventPage implements OnDestroy {
                                  .pipe(tap(this.selectChild.bind(this)));
           }
         });
+  }
+
+  get blocked(): boolean {
+    return this.event?.chatBlocklist?.includes(this.generals.name)
   }
 
   get status(): EventStatus {
@@ -254,10 +259,10 @@ export class EventPage implements OnDestroy {
   determineDisqualified() {
     if (this.generals.name) {
       const me = this.findPlayer(this.generals.name);
-      const disqualified = me?.dq || false
+      const disqualified = me?.dq || false;
 
       // leave the queue
-      if (disqualified) {
+      if (disqualified || this.blocked) {
         this.eventService.leaveQueue(this.eventId, me.name);
       }
 
@@ -394,6 +399,27 @@ export class EventPage implements OnDestroy {
   private setSelectedPlayers(players: Partial<ILeaderboardPlayer>[] = []) {
     this.selectedPlayers = players.filter(p => !!p);
   }
+
+  // async fixIt() {
+  //   const db = firebase.default.firestore();
+  //   const matchRef = db.collection('events').doc(this.eventId).collection('matches');
+  //   const snap = await matchRef.get();
+  //   const docMap = new Map<string, any>();
+
+  //   snap.docs.forEach(doc => {
+  //     docMap.set(doc.id, doc.data());
+  //     doc.ref.update({timesChecked: 2000});
+  //   });
+  //   console.log('stored all data');
+
+  //   setTimeout(() => {
+  //     console.log('5 secs');
+  //     console.log(docMap.entries());
+  //     for (const [key, value] of docMap.entries()) {
+  //       matchRef.doc(key).set(value);
+  //     }
+  //   }, 15000);
+  // }
 
   ngOnDestroy() {
     this.destroyed$.next();

@@ -4,6 +4,9 @@
       <ion-button fill="clear" (click)="goHome()">
         <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
       </ion-button>
+      <!-- <ion-button (click)="fixIt()">
+        Fix it
+      </ion-button> -->
     </ion-buttons>
 
     <!-- determine if there are children events -->
@@ -47,7 +50,7 @@
 </ion-header>
 
 <ion-content>
-  <div class="page-container" [class.bracket]="showWide" *ngIf="event; else loading">
+  <div class="page-container" [class.bracket]="showWide" *ngIf="event && !blocked; else loading">
     <ng-container *ngIf="event.exists; else empty">
       <div class="left-panel">
         <div class="panel-container">
