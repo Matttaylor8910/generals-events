@@ -46,6 +46,7 @@ export class GeneralsService {
       ...DEFAULT_GAME_OPTIONS,
       ...lobbyOptions,
       ...options,
+      eventId: event.id,
     });
 
     // append the query params to the game lobby url
