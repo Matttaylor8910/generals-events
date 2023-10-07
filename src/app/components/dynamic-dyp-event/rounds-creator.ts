@@ -28,11 +28,11 @@ export function getRounds(
 
   // generate the dynamic dyp rounds by shuffling teams per round
   const rounds = [];
-  let matchNumber = 1;
+  let matchNumber = 55;
   const matchesCount = new Map<string, number>();
   for (let i = 0; i < teamsPerRound.length; i++) {
     // new round
-    rounds.push({name: `Round ${i + 1}`, complete: false, matches: []});
+    rounds.push({name: `Round ${i + 10}`, complete: false, matches: []});
 
     // shuffle the team and remove one odd team if necessary
     const teams = shuffle(teamsPerRound[i]) as IDynamicDYPTeam[];

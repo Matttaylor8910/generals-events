@@ -29,6 +29,20 @@
     <ion-button class="generals-button" (click)="generateEventRounds()" [disabled]="!event.checkedInPlayers?.length">Generate Rounds</ion-button>
     <ion-button class="generals-button" (click)="checkInAll()">Check In All</ion-button>
     <ion-button class="generals-button" (click)="startEvent()" [disabled]="!rounds">Start Event</ion-button>
+    <ion-button class="generals-button" (click)="generateNewRound()" [disabled]="!rounds">Generate 1 more round</ion-button>
+    <ion-button class="generals-button" (click)="addRound()" [disabled]="!rounds">Start new round</ion-button>
+    <div>
+      <!-- TODO: remove -->
+      <label>Remove after: </label>
+      <input [(ngModel)]="removeFrom" type="number">
+    </div>
+    <ion-button class="generals-button" (click)="removeRoundsFrom()" [disabled]="!rounds">Remove rounds</ion-button>
+    <div>
+      <!-- TODO: remove -->
+      <label>DQ Player: </label>
+      <input [(ngModel)]="dqPlayerName">
+    </div>
+    <ion-button class="generals-button" (click)="dqPlayer()" [disabled]="!rounds">DQ player</ion-button>
     <div>
       <!-- TODO: remove -->
       <label>Players to Use: </label>
@@ -43,7 +57,7 @@
   <ng-container *ngIf="showRounds">
     <app-dynamic-dyp-rounds
       [event]="event"
-      [rounds]="rounds"
+      [rounds]="allRounds"
       [finals]="finals"
       (playersClicked)="playersClicked.emit($event)">
     </app-dynamic-dyp-rounds>

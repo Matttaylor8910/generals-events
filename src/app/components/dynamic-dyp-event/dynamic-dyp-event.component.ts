@@ -25,6 +25,10 @@ export class DynamicDYPEventComponent {
   selectedTab = 'Registration';
   finals: boolean;
 
+  newRound: IDynamicDYPRound;
+  dqPlayerName =  '';
+  removeFrom = 1;
+
   maxRounds: number = 10;
 
   // TODO: remove
@@ -52,6 +56,12 @@ export class DynamicDYPEventComponent {
         this.playersClicked.emit([]);
       }
     }
+  }
+
+  get allRounds(): IDynamicDYPRound[] {
+    const rounds = (this.rounds ?? []);
+    if (this.newRound) rounds.push(this.newRound);
+    return rounds;
   }
 
   get registrationOpen(): boolean {
@@ -114,11 +124,32 @@ export class DynamicDYPEventComponent {
     return this.status === EventStatus.FINISHED;
   }
 
+  removeRoundsFrom() {
+    this.rounds = this.rounds.slice(0, this.removeFrom);
+    this.eventService.updateEvent(this.event.id, {rounds: this.rounds});
+  }
+
+  dqPlayer() {
+    const afks = [...(this.event.afks || []), this.dqPlayerName];
+    this.eventService.updateEvent(this.event.id!, { afks });
+    this.dqPlayerName  = '';
+  }
+
+  generateNewRound() {
+    const players = this.event.checkedInPlayers.slice(0, this.playersToUse);
+    this.newRound = getRounds(players, 'matt', 1)[0];
+  }
+  
+  addRound() {
+    this.eventService.updateEvent(this.event.id, {rounds: this.rounds});
+  }
+
   generateEventRounds() {
     const players = this.event.checkedInPlayers.slice(0, this.playersToUse);
+    const filtered = players.filter(name => !this.event.afks?.includes(name));
     // 'matt' is the oddManOut in the case of a player getting fewer games
-    this.rounds = getRounds(players, 'matt', this.maxRounds);
-    console.log(this.rounds);
+    this.rounds = [...(this.rounds || []), ...getRounds(filtered, 'matt', this.maxRounds)];
+    this.eventService.updateEvent(this.event.id, {rounds: this.rounds});
   }
 
   // TODO: likely remove
