@@ -16,7 +16,7 @@ export class EventSummaryComponent {
   ) {}
 
   get capy(): boolean {
-    return [this.event?.id, this.event?.parentId].some(id => id.includes('Capy-Cup'));
+    return [this.event?.id, this.event?.parentId].some(id => id?.includes('Capy-Cup'));
   }
 
   get isArena(): boolean {
