@@ -423,6 +423,10 @@ export interface IGeneralsGameOptions {
 
   // the team to join when you reach a lobby
   team?: number;
+
+  // the modifiers to use, can be a single number or multiple comma separated
+  // e.g. modifiers=1 or modifiers=0,2
+  modifiers?: string; 
 }
 
 export interface IGeneralsRankings {
