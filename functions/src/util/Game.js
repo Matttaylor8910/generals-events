@@ -68,6 +68,7 @@ Game.createFromReplay = function(gameReplay) {
   game.generals = [];
   game.swamps = [];
   game.lights = gameReplay.lights;
+  game.modifiers = gameReplay.modifiers;
 
   // Init the game map from the replay.
   game.map =
@@ -238,7 +239,13 @@ Game.prototype.handleAttack = function(index, start, end, is50, attackIndex) {
     }
 
     // Turn the general into a city.
-    this.cities.push(end);
+    if (this.modifiers && this.modifiers.includes(0)) {
+      // leapfrog modifier (0)
+      this.cities.push(this.generals[index]);
+      this.generals[index] = this.generals[generalIndex];
+    } else {
+      this.cities.push(end);
+    }
     this.generals[generalIndex] = DEAD_GENERAL;
   }
 };

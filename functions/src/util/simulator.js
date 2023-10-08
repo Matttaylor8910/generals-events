@@ -195,6 +195,7 @@ function deserialize(serialized) {
   replay.city_density = options[1];
   replay.mountain_density = options[2];
   replay.swamp_density = options[3];
+  replay.modifiers = obj[i++] || [];
 
   return replay;
 };

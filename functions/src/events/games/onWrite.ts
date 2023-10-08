@@ -46,7 +46,7 @@ async function lookForFinishedGame(
   const game = (snapshot.data() || {}) as IGame;
   const {players} = game;
   const timesChecked = game.timesChecked || 0;
-  const TWENTY_MINUTES = 120;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
+  const TWENTY_MINUTES = 12000;  // 120 * 10 = 1200 -> 20 minutes (in seconds)
 
   console.log(`looking for finished game ${snapshot.id}`);
 
@@ -125,9 +125,9 @@ async function getReplaysForPlayers(
     gameStarted: number,
     server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
-  // for each player, request their latest 10 replays
+  // for each player, request their latest 80 replays
   const replayPromises: Promise<IGeneralsReplay[]>[] =
-      usernames.map(name => getReplaysForUsername(name, 0, 10, server));
+      usernames.map(name => getReplaysForUsername(name, 0, 80, server));
 
   // wait for all requests to come back or timeout after 10 seconds
   const replays = await Promise.race([
