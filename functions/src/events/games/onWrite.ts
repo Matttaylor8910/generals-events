@@ -197,7 +197,6 @@ async function saveReplayToGame(
 
   const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
   const finished = getFinishedTime(started, turns, speed);
-  const tooLate = false; // event.endTime < finished;
   const afterTime = event.endTime < finished;
 
   // determine if the winner is on a streak
@@ -231,49 +230,46 @@ async function saveReplayToGame(
     started: started,
     finished: finished,
     replay: {scores, summary, turns},
-    status: tooLate ? GameStatus.TOO_LATE : GameStatus.FINISHED,
+    status: GameStatus.FINISHED,
   });
 
-  // update each of the player's leaderboard item if the game finished before
-  // the clock ran out
-  if (!tooLate) {
-    for (const player of scores) {
-      // determine if this player is in the event
-      const playerRef = eventRef.collection('players').doc(player.name);
-      const playerDoc = await playerRef.get();
-      if (!playerDoc.exists) continue;
+  // update each of the player's leaderboard item
+  for (const player of scores) {
+    // determine if this player is in the event
+    const playerRef = eventRef.collection('players').doc(player.name);
+    const playerDoc = await playerRef.get();
+    if (!playerDoc.exists) continue;
 
-      const recordId = `${replayId}_${player.name}`;
+    const recordId = `${replayId}_${player.name}`;
 
-      // determine finished for this player based on their last turn
-      const record = {
-        replayId: replayId,
-        started: started,
-        finished: getFinishedTime(started, player.lastTurn, speed),
-        ...player,
-      };
+    // determine finished for this player based on their last turn
+    const record = {
+      replayId: replayId,
+      started: started,
+      finished: getFinishedTime(started, player.lastTurn, speed),
+      ...player,
+    };
 
-      // save the record in case we ever build features around this
-      batch.set(eventRef.collection('records').doc(recordId), record);
+    // save the record in case we ever build features around this
+    batch.set(eventRef.collection('records').doc(recordId), record);
 
-      // set lastThreeOpponents if this is a 1v1 event
-      let opponents: string[] = [];
-      if (event.type === EventType.ONE_VS_ONE) {
-        const {lastThreeOpponents = []} =
-            playerDoc.data() as ILeaderboardPlayer;
-        const opponent = scores.find(p => p.name !== player.name)?.name;
-        opponents = [opponent, ...lastThreeOpponents.slice(0, 2)];
-      }
-
-      // update the player's points, streak, and record on the leaderboard
-      batch.update(playerRef, {
-        points: admin.firestore.FieldValue.increment(player.points),
-        currentStreak:
-            player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
-        record: admin.firestore.FieldValue.arrayUnion(record),
-        lastThreeOpponents: opponents,
-      });
+    // set lastThreeOpponents if this is a 1v1 event
+    let opponents: string[] = [];
+    if (event.type === EventType.ONE_VS_ONE) {
+      const {lastThreeOpponents = []} =
+          playerDoc.data() as ILeaderboardPlayer;
+      const opponent = scores.find(p => p.name !== player.name)?.name;
+      opponents = [opponent, ...lastThreeOpponents.slice(0, 2)];
     }
+
+    // update the player's points, streak, and record on the leaderboard
+    batch.update(playerRef, {
+      points: admin.firestore.FieldValue.increment(player.points),
+      currentStreak:
+          player.rank === 1 ? admin.firestore.FieldValue.increment(1) : 0,
+      record: admin.firestore.FieldValue.arrayUnion(record),
+      lastThreeOpponents: opponents,
+    });
   }
 
   console.log('committing...');

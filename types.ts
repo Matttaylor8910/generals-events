@@ -36,6 +36,8 @@ export enum EventStatus {
 export enum GameStatus {
   STARTED = 'STARTED',
   FINISHED = 'FINISHED',
+
+  // A deprecated status that was set for games finishing after the arena countdown reached 0
   TOO_LATE = 'TOO_LATE',
 }
 
