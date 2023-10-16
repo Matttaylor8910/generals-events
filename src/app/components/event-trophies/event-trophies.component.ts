@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {EventFormat, EventStatus, EventType, IEvent, ILeaderboardPlayer} from '../../../../types';
+import {EventFormat, EventStatus, EventType, IArenaEvent, IEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
   selector: 'app-event-trophies',
@@ -63,6 +63,17 @@ export class EventTrophiesComponent {
 
   get dyp(): boolean {
     return this.event?.format === EventFormat.DYNAMIC_DYP;
+  }
+
+  get ongoingGameCount(): number {
+    // for FFA arena tourneys, we care about how many games are still ongoing
+    if (this.isArena) {
+      const {ongoingGameCount} = this.event as IArenaEvent;
+      return ongoingGameCount;
+    }
+
+    // by default, we don't really have games we're waiting on
+    return 0;
   }
 
   placeClicked(index: number) {

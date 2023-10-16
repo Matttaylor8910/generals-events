@@ -194,6 +194,12 @@ async function saveReplayToGame(
   const {scores, summary, turns} =
       await simulator.getReplayStats(replayId, event.server);
 
+
+  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
+  const finished = getFinishedTime(started, turns, speed);
+  const tooLate = false; // event.endTime < finished;
+  const afterTime = event.endTime < finished;
+
   // determine if the winner is on a streak
   const [winner, second] = scores;
   const snapshot = await eventRef.collection('players').doc(winner.name).get();
@@ -205,9 +211,11 @@ async function saveReplayToGame(
 
     // to encourage long battles, award extra points to first and second so they
     // can duke it out
-    const mins = Math.floor(turns / 60);
-    winner.points += mins;
-    second.points += Math.floor(mins / 2);
+    if (!afterTime) {
+      const mins = Math.floor(turns / 60);
+      winner.points += mins;
+      second.points += Math.floor(mins / 2);
+    }
   }
   // all other types, double points from the 3rd win in a row onward
   // we use the number 2 here because currentStreak is about to be updated to
@@ -218,9 +226,6 @@ async function saveReplayToGame(
   }
 
   // save the replay to the game doc
-  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
-  const finished = getFinishedTime(started, turns, speed);
-  const tooLate = event.endTime < finished;
   batch.update(gameSnapshot.ref, {
     replayId: replayId,
     started: started,

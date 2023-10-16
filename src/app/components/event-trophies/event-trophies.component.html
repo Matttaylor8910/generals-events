@@ -1,29 +1,37 @@
 <div class="trophies-container" [class.shown]="showTrophies" *ngIf="!dyp">
-  <ng-container *ngIf="first; else noWinner">
-    <app-event-trophy-player
-      class="other-players"
-      [player]="second"
-      [isArena]="isArena"
-      place="second"
-      (playersClicked)="placeClicked(1)"
-      *ngIf="showOtherPlaces">
-    </app-event-trophy-player>
-    <app-event-trophy-player
-      [player]="first"
-      [isArena]="isArena"
-      (playersClicked)="placeClicked(0)"
-      place="first">
-    </app-event-trophy-player>
-    <app-event-trophy-player
-      class="other-players"
-      [player]="third"
-      [isArena]="isArena"
-      place="third"
-      (playersClicked)="placeClicked(2)"
-      *ngIf="showOtherPlaces">
-    </app-event-trophy-player>
+  <ng-container *ngIf="ongoingGameCount === 0; else waiting">
+    <ng-container *ngIf="first; else noWinner">
+      <app-event-trophy-player
+        class="other-players"
+        [player]="second"
+        [isArena]="isArena"
+        place="second"
+        (playersClicked)="placeClicked(1)"
+        *ngIf="showOtherPlaces">
+      </app-event-trophy-player>
+      <app-event-trophy-player
+        [player]="first"
+        [isArena]="isArena"
+        (playersClicked)="placeClicked(0)"
+        place="first">
+      </app-event-trophy-player>
+      <app-event-trophy-player
+        class="other-players"
+        [player]="third"
+        [isArena]="isArena"
+        place="third"
+        (playersClicked)="placeClicked(2)"
+        *ngIf="showOtherPlaces">
+      </app-event-trophy-player>
+    </ng-container>
   </ng-container>
 </div>
+
+<ng-template #waiting>
+  <div class="generals-title">
+    Waiting on {{ ongoingGameCount }} {{ ongoingGameCount === 1 ? 'game' : 'games' }} to finish!
+  </div>
+</ng-template>
 
 <ng-template #noWinner>
   <div class="generals-title">
