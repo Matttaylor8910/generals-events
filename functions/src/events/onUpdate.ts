@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import {EventFormat, IEvent} from '../../../types';
+import {EventFormat, EventType, IEvent} from '../../../types';
 import {handleArenaEventUpdate} from './arena';
 import {handleDoubleElimEventUpdate} from './doubleElim';
 import {handleDynamicDYPUpdate} from './dynamicDYP';
@@ -16,9 +16,10 @@ const db = admin.firestore();
 export const onUpdateEvent =
     functions.firestore.document('events/{eventId}')
         .onUpdate(async (eventDoc, context) => {
-          const {format} = eventDoc.after?.data() ?? {} as IEvent;
+          const {format, type} = eventDoc.after?.data() ?? {} as IEvent;
 
-          await handleChatBlocklist(eventDoc)
+          await handleChatBlocklist(eventDoc);
+          await handleWinners(eventDoc, type);
 
           switch (format) {
             case EventFormat.ARENA:
@@ -32,6 +33,25 @@ export const onUpdateEvent =
               return 'Error';
           }
         });
+
+async function handleWinners(eventDoc: functions.Change<QueryDocumentSnapshot>, type: EventType) {
+  const before = ((eventDoc.before?.data() ?? {}).winners ?? []) as string[];
+  const after = ((eventDoc.after?.data() ?? {}).winners ?? []) as string[];
+  
+  // if there is any change in the winners, update the current
+  if (after.length !== before.length || after.some(name => !before.includes(name))) {
+    const homepageRef = db.collection('generals.io').doc('homepage');
+    const { champions } = (await homepageRef.get()).data() as {champions: {players: string[], type: string}[]};
+    const event = champions.find(event => event.type === type);
+    
+    // if this event's type matches one of the types in the champions array, update those players
+    // multi-stage events still are manual
+    if (event) {
+      event.players = after;
+      await homepageRef.update({champions});
+    }
+  }
+}
 
 async function handleChatBlocklist(eventDoc: functions.Change<QueryDocumentSnapshot>) {
   const before = ((eventDoc.before?.data() ?? {}).chatBlocklist ?? []) as string[];
