@@ -19,8 +19,8 @@ export const ADMINS = [
   'matt',
   'pasghetti',
   'Wuped',
-  '☻☺',
   'Fekete',
+  'mashiro'
 ];
 
 export const HIDE_COMPLETED = 'generals-hide-completed';
