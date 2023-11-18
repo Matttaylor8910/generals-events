@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import {EventFormat, EventType, IEvent} from '../../../types';
+import {EventFormat, EventType, IEvent, Visibility} from '../../../types';
 import {handleArenaEventUpdate} from './arena';
 import {handleDoubleElimEventUpdate} from './doubleElim';
 import {handleDynamicDYPUpdate} from './dynamicDYP';
@@ -37,6 +37,11 @@ export const onUpdateEvent =
 async function handleWinners(eventDoc: functions.Change<QueryDocumentSnapshot>, type: EventType) {
   const before = ((eventDoc.before?.data() ?? {}).winners ?? []) as string[];
   const after = ((eventDoc.after?.data() ?? {}).winners ?? []) as string[];
+  
+  // if this is not a public event, no-op
+  // only public events should update the champions
+  const {visibility} = eventDoc.after.data() || {} as IEvent;
+  if (visibility !== Visibility.PUBLIC) return;
   
   // if there is any change in the winners, update the current
   if (after.length !== before.length || after.some(name => !before.includes(name))) {
