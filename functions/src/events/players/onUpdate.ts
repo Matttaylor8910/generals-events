@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {EventFormat, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord} from '../../../../types';
+import {EventFormat, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord, Visibility} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
 
 try {
@@ -206,6 +206,8 @@ async function getEventWins(name: string, type: EventType): Promise<number> {
 
   return snapshot.docs.filter(doc => {
     const event = doc.data() as IEvent;
-    return !event.parentId;
+
+    // filter out customs events and private events
+    return !event.parentId && event.visibility === Visibility.PUBLIC;
   }).length;
 }
