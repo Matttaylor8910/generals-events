@@ -66,6 +66,11 @@ export class EventTrophiesComponent {
   }
 
   get ongoingGameCount(): number {
+    // if the event is finalized and the winners are set, return 0
+    if (this.event.winners?.length > 0){
+      return 0;
+    }
+
     // for FFA arena tourneys, we care about how many games are still ongoing
     if (this.isArena) {
       const {ongoingGameCount} = this.event as IArenaEvent;
