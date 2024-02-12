@@ -8,7 +8,6 @@ const SLACK_BOT = {
   channel: '#generals'
 };
 
-// currently unused, but this is how we would post data to slack
 export async function postToSlack(text: string) {
   const message: any = {
     ...SLACK_BOT,
