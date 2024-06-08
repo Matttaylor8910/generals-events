@@ -1,8 +1,9 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {IChatMessage, IEvent} from '../../../../types';
+import {IChatMessage, IDoubleElimEvent, IEvent} from '../../../../types';
 import {postToSlack} from '../../util/slack';
+import { ADMINS } from '../../../../constants';
 
 try {
   admin.initializeApp();
@@ -17,11 +18,14 @@ export const onCreateMessage =
           const eventId = context.params.eventId;
           const eventRef = db.collection('events').doc(eventId);
           const eventSnap = await eventRef.get();
-          const {name, chatBlocklist = []} = (eventSnap.data() || {}) as IEvent;
+          const event = (eventSnap.data() || {}) as IEvent;
+          const {name, chatBlocklist = []} = event;
 
+          const {qualified = []} = event as IDoubleElimEvent;
           const {sender, text} = doc.data() as IChatMessage;
+          const canSendMessage = qualified.length === 0 || qualified.includes(sender) || ADMINS.includes(sender);
 
-          if (chatBlocklist.includes(sender)) {
+          if (chatBlocklist.includes(sender) || !canSendMessage) {
             await doc.ref.delete();
             return postToSlack(`DELETED MESSAGE\n${name}:\n${sender}: ${text}`);
           } else {
