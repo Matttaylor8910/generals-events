@@ -20,7 +20,9 @@ export const ADMINS = [
   'pasghetti',
   'Wuped',
   'Fekete',
-  'mashiro'
+  'mashiro',
+  'EklipZ',
+  'ZekeBeastie',
 ];
 
 export const HIDE_COMPLETED = 'generals-hide-completed';
