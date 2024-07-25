@@ -18,10 +18,11 @@ export class ChatComponent implements OnInit {
 
   @Input() event: IEvent;
   @Input() disqualified: boolean;
+  @Input() inEvent: boolean;
 
   // in the case of a multi stage event, we want to use one eventId for a
   // unified chat box across events
-  @Input() parentEvent?: IMultiStageEvent;
+  @Input() parentEvent: IMultiStageEvent;
 
   @Output() nameClicked = new EventEmitter<string>();
 
@@ -40,10 +41,22 @@ export class ChatComponent implements OnInit {
   }
 
   get disallowNewMessages(): boolean {
+    // if the disableChat flag is set to true, no new messages
+    if (this.parentEvent?.disableChat) {
+      return true;
+    }
+
+    // if the disableJoin flag is set to true, only players already in the event can participate
+    if (this.parentEvent?.disableJoin && !this.inEvent) {
+      return true;
+    }
+
+    // if there's no end time, just keep the chat open
     if (!this.parentEvent?.endTime) {
       return false;
     }
 
+    // if there is an end time, keep the chat open for 5 mins
     const endTime = this.parentEvent?.endTime ?? this.event?.endTime;
     return endTime < Date.now() - FIVE_MINS;
   }

@@ -37,6 +37,10 @@ export class ArenaQueueComponent implements OnDestroy {
     return this.status === EventStatus.ONGOING;
   }
 
+  get canJoinQueue(): boolean {
+    return !this.event?.disableJoin || this.inEvent;
+  }
+
   get inQueue(): boolean {
     return this.status !== EventStatus.ALMOST_DONE &&
         this.event?.queue?.includes(this.generals.name);
