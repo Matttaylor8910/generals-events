@@ -85,7 +85,12 @@ export class CreateEventPage {
   height = .75;
   cities = .5;
   mountains = .5;
-  swamps = 0;
+  city_fairness = 0.0;
+  swamps = 0.0;
+  deserts = 0.0;
+  observatories = 0.0;
+  lookouts = 0.0;
+  modifiers = null;
 
   name: string;
   duration: number;
@@ -179,7 +184,12 @@ export class CreateEventPage {
         height: this.height,
         cities: this.cities,
         mountains: this.mountains,
+        city_fairness: this.city_fairness,
         swamps: this.swamps,
+        deserts: this.deserts,
+        observatories: this.observatories,
+        lookouts: this.lookouts,
+        modifiers: this.modifiers,
         speed: this.speed,
         defeat_spectate,
         map,

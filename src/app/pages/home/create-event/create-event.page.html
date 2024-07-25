@@ -171,13 +171,65 @@
           </ion-range>
         </ion-item>
 
-        <!-- swamp density of the map -->
-        <label>Swamp Density: {{ swamps | number:'1.1-2' }}</label>
+        <!-- swamp ratio of the map -->
+        <label>Swamp Ratio: {{ swamps | number:'1.1-2' }}</label>
         <ion-item>
           <ion-range min="0" max="1" step=".01" [(ngModel)]="swamps">
             <ion-label slot="start">low</ion-label>
             <ion-label slot="end">high</ion-label>
           </ion-range>
+        </ion-item>
+
+        <!-- desert density of the map -->
+        <label>Desert Ratio: {{ deserts | number:'1.1-2' }}</label>
+        <ion-item>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="deserts">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- lookout ratio of the map -->
+        <label>Lookout Ratio: {{ lookouts | number:'1.1-2' }}</label>
+        <ion-item>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="lookouts">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- observatory ratio of the map -->
+        <label>Observatory Ratio: {{ observatories | number:'1.1-2' }}</label>
+        <ion-item>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="observatories">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- City Fairness of the map -->
+        <label>City Fairness: {{ city_fairness | number:'1.1-2' }}</label>
+        <ion-item>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="city_fairness">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- modifiers of the map -->
+        <label>Modifiers:</label>
+        <ion-item>
+          <ion-select label="Modifiers" label-placement="fixed" placeholder="Wut" [multiple]="true" [(ngModel)]="modifiers">
+            <ion-select-option value="0">Leapfrog</ion-select-option>
+            <ion-select-option value="1">City State</ion-select-option>
+            <ion-select-option value="2">Misty Veil</ion-select-option>
+            <ion-select-option value="3">Crystal Clear</ion-select-option>
+            <ion-select-option value="4">Silent War</ion-select-option>
+            <ion-select-option value="5">Defenseless</ion-select-option>
+            <ion-select-option value="6">Watchtower</ion-select-option>
+            <ion-select-option value="7">Torus</ion-select-option>
+            <ion-select-option value="8">Creeping Fog</ion-select-option>
+          </ion-select>
         </ion-item>
       </ng-container>
     </ng-container>

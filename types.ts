@@ -420,15 +420,27 @@ export interface IGeneralsGameOptions {
   // the mountain density, between 0 and 1, e.g. 0.75
   mountains?: number;
 
-  // the swamp density, between 0 and 1, e.g. 0.75
+  // the swamp ratio, between 0 and 1, e.g. 0.75
   swamps?: number;
+
+  // the desert ratio, between 0 and 1, e.g. 0.75
+  deserts?: number;
+
+  // the lookout ratio, between 0 and 1, e.g. 0.75
+  lookouts?: number;
+
+  // the observatory ratio, between 0 and 1, e.g. 0.75
+  observatories?: number;
+
+  // the city fairness, between 0 and 1, e.g. 0.75
+  city_fairness?: number;
 
   // the team to join when you reach a lobby
   team?: number;
 
   // the modifiers to use, can be a single number or multiple comma separated
   // e.g. modifiers=1 or modifiers=0,2
-  modifiers?: string; 
+  modifiers?: string;
 }
 
 export interface IGeneralsRankings {
