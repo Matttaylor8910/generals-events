@@ -186,16 +186,35 @@ function deserialize(serialized) {
   replay.chat = (obj[i++] || []).map(deserializeChat);
   replay.playerColors = obj[i++] || replay.usernames.map((u, i) => i);
   replay.lights = obj[i++] || [];
+
   const options = (obj[i++] || [
-    1, Constants.DEFAULT_CITY_DENSITY_OPTION,
-    Constants.DEFAULT_MOUNTAIN_DENSITY_OPTION,
-    Constants.DEFAULT_SWAMP_DENSITY_OPTION
+    1, Constants.DEFAULT_CITY_DENSITY_OPTION, Constants.DEFAULT_MOUNTAIN_DENSITY_OPTION, Constants.DEFAULT_SWAMP_DENSITY_OPTION, // added in 11
+    Constants.DEFAULT_CITY_FAIRNESS_OPTION, Constants.DEFAULT_SPAWN_FAIRNESS_OPTION, Constants.DEFAULT_DESERT_DENSITY_OPTION, Constants.DEFAULT_LOOKOUT_DENSITY_OPTION, Constants.DEFAULT_OBSERVATORY_DENSITY_OPTION // added in 13
   ]);
   replay.speed = options[0];
   replay.city_density = options[1];
   replay.mountain_density = options[2];
   replay.swamp_density = options[3];
   replay.modifiers = obj[i++] || [];
+  
+  // v13
+  replay.observatories = obj[i++] || [];
+  replay.lookouts = obj[i++] || [];
+  replay.deserts = obj[i++] || [];
+
+  if (replay.version > 12) {
+    replay.city_fairness = options[4];
+    replay.spawn_fairness = options[5];
+    replay.desert_density = options[6];
+    replay.lookout_density = options[7];
+    replay.observatory_density = options[8];
+  } else {
+    replay.city_fairness = -1;
+    replay.spawn_fairness = -1;
+    replay.desert_density = 0.0;
+    replay.lookout_density = 0.0;
+    replay.observatory_density = 0.0;
+  }
 
   return replay;
 };

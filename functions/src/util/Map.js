@@ -1,9 +1,12 @@
 'use strict';
 
+const Constants = require('./Constants');
+
 // @param teams Optional. If supplied, teams[i] is the team for player i.
-function Map(width, height, teams) {
+function Map(width, height, teams, modifiers = null) {
   this.width = width;
   this.height = height;
+  this.modifiers = modifiers || [];
   if (teams) this.teams = teams;
 
   this._map = [];
@@ -14,27 +17,114 @@ function Map(width, height, teams) {
       this._armies.push(0);
     }
   }
+
+  // Certain functions need to be different implementations for Torus vs not-torus:
+  if (!this.modifiers.includes(Constants.MODIFIER_INDEXES.Torus)) {
+    // NORMAL IMPL
+
+    /**
+     * Less performant than indexFrom. Also, try to avoid using this at all by using movable / visible caches instead (but not when using the map editor).
+     * 
+     * @param {*} row 
+     * @param {*} col 
+     * @returns -1 if not valid coordinates, otherwise the index of the tile.
+     */
+    this.indexFromChecked = function (row, col) {
+      if (row >= this.height || row < 0) return -1;
+      if (col >= this.width || col < 0) return -1;
+      return row * this.width + col;
+    };
+
+    // TODO with the movable stuff, in theory we should be able to remove almost all uses of this.
+    this.indexFrom = function (row, col) {
+      return row * this.width + col;
+    };
+    
+    // Returns the Manhattan distance between index1 and index2. Use the basic manhattan distance function as the real distance function.
+    this.distance = function (index1, index2) {
+      const x1 = Math.floor(index1 / this.width);
+      const y1 = index1 % this.width;
+      const x2 = Math.floor(index2 / this.width);
+      const y2 = index2 % this.width;
+      return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+    }
+  } else {
+    // TORUS IMPL
+    // Override the default implementation of specific functions to ones that supports torus maps. 
+    //  This lets us keep the fast implementation by default by not having if-checks in every one of these functions.
+    this.indexFromChecked = function (row, col) {
+      if (row >= this.height) 
+        row -= this.height;
+
+      if (row < 0) 
+        row += this.height;
+
+      if (col >= this.width) 
+        col -= this.width;
+
+      if (col < 0) 
+        col += this.width;
+
+      return row * this.width + col;
+    };
+
+    // There is now no difference between these functions in Torus map case, as the edges are always handled by wrapping, now.
+    this.indexFrom = this.indexFromChecked;
+    
+    // For Torus we need to consider wrapping. We'll do that by checking the normal manhattan distances, 
+    // as well as the reflected versions (both up, and right) manhattan distances, and taking the minimum.
+    this.distance = function (index1, index2) {
+      const x1 = Math.floor(index1 / this.width);
+      const y1 = index1 % this.width;
+      const x2 = Math.floor(index2 / this.width);
+      const y2 = index2 % this.width;
+
+      let xMin = Math.min(Math.abs(x1 - x2), Math.abs(x1 - x2 + this.width), Math.abs(x2 - x1 + this.width));
+      let yMin = Math.min(Math.abs(y1 - y2), Math.abs(y1 - y2 + this.height), Math.abs(y2 - y1 + this.height));
+
+      return xMin + yMin;
+    };
+  }
+
+  this._precomputeMovable();
+}
+
+Map.prototype._precomputeMovable = function () {
+  this.movableLookup = new Array(this._map.length);
+  
+  for (let i = 0; i < this._map.length; i++) {
+    const thisTileMovable = [];
+    const { row: r, col: c } = this.locationOf(i);
+
+    const up = this.indexFromChecked(r - 1, c);
+    if (up != -1) thisTileMovable.push(up);
+    const down = this.indexFromChecked(r + 1, c);
+    if (down != -1) thisTileMovable.push(down);
+    const left = this.indexFromChecked(r, c - 1);
+    if (left != -1) thisTileMovable.push(left);
+    const right = this.indexFromChecked(r, c + 1);
+    if (right != -1) thisTileMovable.push(right);
+
+    this.movableLookup[i] = thisTileMovable;
+  }
 }
 
 Map.prototype.size = function() {
   return this.width * this.height;
 };
 
-Map.prototype.indexFrom = function(row, col) {
-  return row * this.width + col;
-};
-
 // Returns whether index 1 is adjacent to index 2.
 Map.prototype.isAdjacent = function(i1, i2) {
-  var r1 = Math.floor(i1 / this.width);
-  var c1 = Math.floor(i1 % this.width);
-  var r2 = Math.floor(i2 / this.width);
-  var c2 = Math.floor(i2 % this.width);
-  return (Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1);
+  return this.movableLookup[i1].includes(i2);
 };
 
 Map.prototype.isValidTile = function(index) {
   return index >= 0 && index < this._map.length;
+};
+
+Map.prototype.isObstacle = function (index) {
+  const t = this._map[index];
+  return t === Terrain.TILE_MOUNTAIN || t === Terrain.TILE_OBSERVATORY || t === Terrain.TILE_LOOKOUT;
 };
 
 Map.prototype.tileAt = function(index) {
@@ -92,7 +182,7 @@ Map.prototype.attack = function(start, end, is50, generals) {
   }
 
   // Check if the attack goes to a mountain.
-  if (this.tileAt(end) === Map.TILE_MOUNTAIN) {
+  if (this.isObstacle(end)) {
     return false;
   }
 
@@ -160,19 +250,12 @@ Map.prototype.replaceAll = function(val1, val2, scale) {
   }
 };
 
-// Returns the Manhattan distance between index1 and index2.
-Map.prototype.distance = function(index1, index2) {
-  var r1 = Math.floor(index1 / this.width);
-  var c1 = index1 % this.width;
-  var r2 = Math.floor(index2 / this.width);
-  var c2 = index2 % this.width;
-  return Math.abs(r1 - r2) + Math.abs(c1 - c2);
-};
-
 // Nonnegative numbers represent player indices.
 Map.TILE_EMPTY = -1;
 Map.TILE_MOUNTAIN = -2;
 Map.TILE_FOG = -3;
 Map.TILE_FOG_OBSTACLE = -4;
+Map.TILE_LOOKOUT = -5;
+Map.TILE_OBSERVATORY = -6;
 
 module.exports = Map;
