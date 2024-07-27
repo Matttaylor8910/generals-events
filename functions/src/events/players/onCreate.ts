@@ -21,6 +21,11 @@ export const onCreatePlayer =
           const eventSnap = await eventRef.get();
           const event = (eventSnap.data() || {}) as IArenaEvent;
 
+          // if the disableJoin flag is on, delete any users that are somehow otherwise created
+          if (event.disableJoin) {
+            return doc.ref.delete();
+          }
+
           const {name} = doc.data() as ILeaderboardPlayer;
 
           const recordSnapshots = await eventRef.collection('records')

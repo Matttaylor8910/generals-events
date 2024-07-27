@@ -50,8 +50,8 @@
 </ion-header>
 
 <ion-content>
-  <div class="page-container" [class.bracket]="showWide" *ngIf="event && !blocked; else loading">
-    <ng-container *ngIf="event.exists; else empty">
+  <div class="page-container" [class.bracket]="showWide" *ngIf="event; else loading">
+    <ng-container *ngIf="event.exists && !blocked; else empty">
       <div class="left-panel">
         <div class="panel-container">
           <app-event-summary
@@ -61,6 +61,7 @@
           <app-chat
             [event]="event"
             [parentEvent]="parent"
+            [inEvent]="inEvent"
             [disqualified]="disqualified"
             (nameClicked)="selectPlayers($event)">
           </app-chat>

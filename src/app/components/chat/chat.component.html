@@ -16,7 +16,10 @@
       [disabled]="disableChat"
       *ngIf="!disallowNewMessages"
     >
-    <div class="chat-closed" *ngIf="disallowNewMessages">
+    <div 
+      class="chat-closed" 
+      *ngIf="disallowNewMessages"
+    >
       Chat is now closed.
       <a class="discord-link" href="https://discord.com/invite/QP63V5Y" target="_blank">
         Join discord <ion-icon name="logo-discord"></ion-icon>
