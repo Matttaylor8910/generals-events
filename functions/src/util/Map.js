@@ -89,6 +89,12 @@ function Map(width, height, teams, modifiers = null) {
   this._precomputeMovable();
 }
 
+Map.prototype.locationOf = function (index) {
+  const row = Math.floor(index / this.width);
+  const col = index % this.width;
+  return { row, col };
+};
+
 Map.prototype._precomputeMovable = function () {
   this.movableLookup = new Array(this._map.length);
   
