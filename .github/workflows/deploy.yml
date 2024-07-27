@@ -33,7 +33,7 @@ jobs:
       - name: Build prod app
         run: npm run build
 
-      - uses: w9jds/firebase-action@master
+      - uses: w9jds/firebase-action@v2
         with:
           args: deploy
         env:
