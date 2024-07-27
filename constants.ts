@@ -7,8 +7,8 @@ export enum GeneralsServer {
 }
 
 export const SITE_URLS = {
-  [GeneralsServer.NA]: 'https://generals.io',
-  // [GeneralsServer.NA]: 'http://localhost:8080',
+  // [GeneralsServer.NA]: 'https://generals.io',
+  [GeneralsServer.NA]: 'http://localhost:8080',
   [GeneralsServer.EU]: 'https://eu.generals.io',
   [GeneralsServer.BOT]: 'https://bot.generals.io',
   [GeneralsServer.EKLIPZ]: 'http://45.50.38.248:8080',

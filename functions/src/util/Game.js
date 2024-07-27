@@ -18,6 +18,14 @@ function Game(sockets, teams) {
   this.scores = [];
   this.deaths = [];
 
+  this.map = null;
+  this.generals = [];
+  this.cities = [];
+  this.deserts = [];
+  this.swamps = [];
+  this.modifiers = [];
+  this.lights = [];
+
   for (var i = 0; i < sockets.length; i++) {
     this.inputBuffer.push([]);
     this.scores.push({
@@ -31,8 +39,20 @@ Game.prototype.addMountain = function(index) {
   this.map.setTile(index, Map.TILE_MOUNTAIN);
 };
 
+Game.prototype.addLookout = function(index) {
+  this.map.setTile(index, Map.TILE_LOOKOUT);
+};
+
+Game.prototype.addObservatory = function(index) {
+  this.map.setTile(index, Map.TILE_OBSERVATORY);
+};
+
 Game.prototype.addSwamp = function(index) {
   this.swamps.push(index);
+};
+
+Game.prototype.addDesert = function(index) {
+  this.deserts.push(index);
 };
 
 Game.prototype.addCity = function(index, army) {
@@ -67,17 +87,26 @@ Game.createFromReplay = function(gameReplay) {
   game.cities = [];
   game.generals = [];
   game.swamps = [];
+  game.deserts = [];
   game.lights = gameReplay.lights;
-  game.modifiers = gameReplay.modifiers;
+  game.modifiers = gameReplay.modifiers || [];
 
   // Init the game map from the replay.
-  game.map =
-      new Map(gameReplay.mapWidth, gameReplay.mapHeight, gameReplay.teams);
+  game.map = new Map(gameReplay.mapWidth, gameReplay.mapHeight, gameReplay.teams, game.modifiers);
   gameReplay.mountains.forEach(m => {
     game.addMountain(m);
   });
+  gameReplay.lookouts.forEach(m => {
+    game.addLookout(m);
+  });
+  gameReplay.observatories.forEach(m => {
+    game.addObservatory(m);
+  });
   gameReplay.swamps.forEach(s => {
     game.addSwamp(s);
+  });
+  gameReplay.deserts.forEach(d => {
+    game.addDesert(d);
   });
   gameReplay.cities.forEach((city, i) => {
     game.addCity(city, gameReplay.cityArmies[i]);
@@ -92,12 +121,14 @@ Game.createFromReplay = function(gameReplay) {
   return game;
 };
 
+Game
+
 // Returns true when the game is over.
 Game.prototype.update = function() {
   // Handle buffered attacks.
   for (var sock = 0; sock < this.sockets.length; sock++) {
     // Flip priorities every other turn.
-    var i = this.turn % 2 === 0 ? sock : this.sockets.length - 1 - sock;
+    var i = (this.turn & 1) === 0 ? sock : this.sockets.length - 1 - sock;
 
     while (this.inputBuffer[i].length) {
       var attack = this.inputBuffer[i].splice(0, 1)[0];
@@ -135,6 +166,14 @@ Game.prototype.update = function() {
     for (var i = 0; i < size; i++) {
       if (this.map.tileAt(i) >= 0) {
         this.map.incrementArmyAt(i);
+      }
+    }
+
+    // We just incremented deserts too though, which dont gain any army. So reduce them back down specifically.
+    for (var i = 0; i < this.deserts.length; i++) {
+      const desertIdx = this.deserts[i];
+      if (this.map.tileAt(desertIdx) >= 0) {
+        this.map.decrementArmyAt(desertIdx);
       }
     }
   }
@@ -239,8 +278,7 @@ Game.prototype.handleAttack = function(index, start, end, is50, attackIndex) {
     }
 
     // Turn the general into a city.
-    if (this.modifiers && this.modifiers.includes(0)) {
-      // leapfrog modifier (0)
+    if (this.modifiers.includes(Constants.MODIFIER_INDEXES.Leapfrog)) {
       this.cities.push(this.generals[index]);
       this.generals[index] = this.generals[generalIndex];
     } else {

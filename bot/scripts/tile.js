@@ -1,4 +1,4 @@
-// Terrain Constants.
+// Map Constants.
 // Any tile with a nonnegative value is owned by the player corresponding to its value.
 // For example, a tile with value 1 is owned by the player with playerIndex = 1.
 module.exports.EMPTY = -1;
