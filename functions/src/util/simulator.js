@@ -132,7 +132,13 @@ function simulate(replay) {
   // if the player that came in second quit or surrendered, give that kill to
   // the player who won
   if (afks.find(afk => afk.index === game.scores[1].i)) {
-    players[winnerIndex].kills++;
+    const secondPlace = players[game.scores[1].i].name;
+
+    // only increment if they aren't already in their list of kills
+    // this is an edge case where someone quits right as they're captured
+    if (!players[winnerIndex].killed.includes(secondPlace)) {
+      players[winnerIndex].kills++;
+    }
   }
 
   // scoring right now is a combination of rank + # of kills
