@@ -18,13 +18,11 @@ jobs:
         with:
           node-version: 16.20.2
 
-      - name: Install @angular/cli
-        run: npm i -D -E @angular/cli --force
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
 
-      - name: Use coturiv/setup-ionic
-        uses: coturiv/setup-ionic@v1
-        with:
-          cordova-version: 8
+      - name: Install Ionic CLI
+        run: npm install -g @ionic/cli
 
       - name: Install app dependencies
         run: npm ci --force
