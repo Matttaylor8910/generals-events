@@ -37,4 +37,6 @@ jobs:
         run: npm install -g firebase-tools@11.23.1 
 
       - name: Deploy to Firebase
-        run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
