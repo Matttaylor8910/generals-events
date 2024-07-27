@@ -130,7 +130,7 @@ Map.prototype.isValidTile = function(index) {
 
 Map.prototype.isObstacle = function (index) {
   const t = this._map[index];
-  return t === Terrain.TILE_MOUNTAIN || t === Terrain.TILE_OBSERVATORY || t === Terrain.TILE_LOOKOUT;
+  return t === Map.TILE_MOUNTAIN || t === Map.TILE_OBSERVATORY || t === Map.TILE_LOOKOUT;
 };
 
 Map.prototype.tileAt = function(index) {
