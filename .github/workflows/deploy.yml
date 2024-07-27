@@ -7,23 +7,35 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.20.2
+
       - name: Install @angular/cli
         run: npm i -D -E @angular/cli --force
+
       - name: Use coturiv/setup-ionic
         uses: coturiv/setup-ionic@master
         with:
           cordova-version: 8
+
       - name: Install app dependencies
         run: npm ci --force
+
       - name: Install functions dependencies
         run: cd functions && npm i --force && cd ..
+
       - name: Build prod app
         run: npm run build
-      - uses: w9jds/firebase-action@master
+
+      - uses: w9jds/firebase-action@v3.0.2
         with:
           args: deploy
         env:
