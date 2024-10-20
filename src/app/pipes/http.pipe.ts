@@ -24,8 +24,9 @@ export class HttpPipe implements PipeTransform {
         stylizedText += '<br>';
       }
       return stylizedText;
-    } else
+    } else {
       return text;
+    }
   }
 
   // From https://stackoverflow.com/a/47140708
