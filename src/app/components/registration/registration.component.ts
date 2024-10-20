@@ -45,10 +45,7 @@ export class RegistrationComponent {
 
     // for events you must qualify for, show a count of qualified
     if (this.showQualified) {
-      const qualified =
-          this.players?.filter(p => this.event?.qualified?.includes(p.name))
-              ?.length ??
-          0;
+      const qualified = this.players?.filter(this.isQualified.bind(this))?.length ?? 0;
 
       // only show the number of qualifiers if it's less than the total number
       // of players registered. "28 players registered (28 players qualify)"
