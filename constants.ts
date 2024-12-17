@@ -26,7 +26,6 @@ export const ADMINS = [
   'Fekete',
   'mashiro',
   'EklipZ',
-  'ZekeBeastie',
 ];
 
 export const HIDE_COMPLETED = 'generals-hide-completed';
