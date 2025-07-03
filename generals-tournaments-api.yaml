@@ -665,16 +665,19 @@ components:
 
     MatchResults:
       type: object
-      additionalProperties:
-        type: object
-        properties:
-          team1Score:
-            type: integer
-            description: Team 1 score
-          team2Score:
-            type: integer
-            description: Team 2 score
       description: Match results by match number
+      additionalProperties:
+        $ref: '#/components/schemas/MatchScore'
+
+    MatchScore:
+      type: object
+      properties:
+        team1Score:
+          type: integer
+          description: Team 1 score
+        team2Score:
+          type: integer
+          description: Team 2 score
 
     DynamicDYPRound:
       type: object
