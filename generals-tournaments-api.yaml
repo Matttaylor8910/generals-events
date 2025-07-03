@@ -150,6 +150,186 @@ components:
     ReplayData:
       type: object
       description: Full replay data from simulator
+      properties:
+        version:
+          type: integer
+          description: Replay version number
+        id:
+          type: string
+          description: Replay ID
+        mapWidth:
+          type: integer
+          description: Width of the game map
+        mapHeight:
+          type: integer
+          description: Height of the game map
+        usernames:
+          type: array
+          items:
+            type: string
+          description: List of player usernames
+        stars:
+          type: array
+          items:
+            type: integer
+          description: Player star counts
+        cities:
+          type: array
+          items:
+            type: integer
+          description: City positions on the map
+        cityArmies:
+          type: array
+          items:
+            type: integer
+          description: Army counts in cities
+        generals:
+          type: array
+          items:
+            type: integer
+          description: General positions for each player
+        mountains:
+          type: array
+          items:
+            type: integer
+          description: Mountain positions on the map
+        moves:
+          type: array
+          items:
+            $ref: '#/components/schemas/GameMove'
+          description: All moves made during the game
+        afks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AFKEvent'
+          description: AFK events during the game
+        teams:
+          type: array
+          items:
+            type: integer
+          description: Team assignments for players
+        map:
+          type: string
+          description: Map data
+        neutrals:
+          type: array
+          items:
+            type: integer
+          description: Neutral army positions
+        neutralArmies:
+          type: array
+          items:
+            type: integer
+          description: Neutral army counts
+        swamps:
+          type: array
+          items:
+            type: integer
+          description: Swamp positions on the map
+        chat:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          description: Chat messages during the game
+        playerColors:
+          type: array
+          items:
+            type: integer
+          description: Player color assignments
+        lights:
+          type: array
+          items:
+            type: integer
+          description: Light positions on the map
+        speed:
+          type: integer
+          description: Game speed setting
+        city_density:
+          type: number
+          description: City density setting
+        mountain_density:
+          type: number
+          description: Mountain density setting
+        swamp_density:
+          type: number
+          description: Swamp density setting
+        modifiers:
+          type: array
+          items:
+            type: integer
+          description: Game modifiers applied
+        observatories:
+          type: array
+          items:
+            type: integer
+          description: Observatory positions
+        lookouts:
+          type: array
+          items:
+            type: integer
+          description: Lookout positions
+        deserts:
+          type: array
+          items:
+            type: integer
+          description: Desert positions
+        city_fairness:
+          type: number
+          description: City fairness setting
+        spawn_fairness:
+          type: number
+          description: Spawn fairness setting
+        desert_density:
+          type: number
+          description: Desert density setting
+        lookout_density:
+          type: number
+          description: Lookout density setting
+        observatory_density:
+          type: number
+          description: Observatory density setting
+
+    GameMove:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: Player index making the move
+        start:
+          type: integer
+          description: Starting position
+        end:
+          type: integer
+          description: Ending position
+        is50:
+          type: boolean
+          description: Whether this is a 50% move
+        turn:
+          type: integer
+          description: Turn number when move was made
+
+    AFKEvent:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: Player index who went AFK
+        turn:
+          type: integer
+          description: Turn number when AFK occurred
+
+    ChatMessage:
+      type: object
+      properties:
+        sender:
+          type: string
+          description: Username of message sender
+        text:
+          type: string
+          description: Message content
+        timestamp:
+          type: integer
+          description: Unix timestamp of message
 
     ReplayStats:
       type: object
@@ -158,37 +338,420 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PlayerScore'
+          description: Player statistics for the game
         summary:
-          type: object
+          type: array
+          items:
+            type: string
+          description: Text summary of game events
         turns:
           type: integer
+          description: Total number of turns in the game
 
     PlayerScore:
       type: object
       properties:
         name:
           type: string
+          description: Player username
         kills:
           type: integer
+          description: Number of players killed
         rank:
           type: integer
+          description: Final ranking (1 = winner)
         lastTurn:
           type: integer
+          description: Last turn the player was alive
         killed:
-          type: boolean
+          type: array
+          items:
+            type: string
+          description: List of players this player killed
         killedBy:
-          type: string
+          type: array
+          items:
+            type: string
+          description: List of players who killed this player
         tilesAfterFirstRound:
           type: integer
+          description: Number of tiles controlled after first round (turn 50)
 
     Event:
       type: object
       properties:
         id:
           type: string
+          description: Unique event identifier
+        name:
+          type: string
+          description: Event name
+        format:
+          type: string
+          enum: [Double Elimination, Arena, Dynamic DYP, '']
+          description: Event format type
+        type:
+          type: string
+          enum: [FFA, 1v1, 2v2, Multi-Stage Event]
+          description: Game type
+        visibility:
+          type: string
+          enum: [Public, Private, Part of Multi-Stage Event]
+          description: Event visibility setting
         startTime:
           type: integer
-        # Additional event properties would be defined here based on actual data structure
+          description: Unix timestamp of event start
+        endTime:
+          type: integer
+          description: Unix timestamp of event end
+        playerCount:
+          type: integer
+          description: Total number of players in the event
+        replays:
+          type: array
+          items:
+            type: string
+          description: List of replay IDs from this event
+        winners:
+          type: array
+          items:
+            type: string
+          description: List of winner usernames
+        server:
+          type: string
+          enum: [na, eu, bot, ek, loc]
+          description: Generals.io server for the event
+        parentId:
+          type: string
+          description: Parent event ID for multi-stage events
+        doublesPairingStrategy:
+          type: string
+          enum: [Bring Your Partner]
+          description: Partner selection strategy for 2v2 events
+        options:
+          $ref: '#/components/schemas/GameOptions'
+          description: Game configuration options
+        chatBlocklist:
+          type: array
+          items:
+            type: string
+          description: List of blocked chat users
+        disableChat:
+          type: boolean
+          description: Whether chat is disabled
+        disableJoin:
+          type: boolean
+          description: Whether joining is disabled
+        # Arena-specific properties
+        playersPerGame:
+          type: integer
+          description: Number of players per game (Arena events)
+        queue:
+          type: array
+          items:
+            type: string
+          description: Players in the queue (Arena events)
+        ongoingGameCount:
+          type: integer
+          description: Number of games currently in progress
+        completedGameCount:
+          type: integer
+          description: Number of completed games
+        # Double elimination properties
+        checkInTime:
+          type: integer
+          description: Check-in deadline timestamp
+        checkedInPlayers:
+          type: array
+          items:
+            type: string
+          description: List of checked-in players
+        winningSets:
+          $ref: '#/components/schemas/WinningSets'
+          description: Games needed to win in each bracket
+        twitchChannel:
+          type: string
+          description: Twitch channel for streaming
+        bracket:
+          $ref: '#/components/schemas/DoubleEliminationBracket'
+          description: Tournament bracket structure
+        qualified:
+          type: array
+          items:
+            type: string
+          description: List of qualified players
+        tsp:
+          type: object
+          additionalProperties:
+            type: number
+          description: Tournament seed points by player
+        # Dynamic DYP properties
+        afks:
+          type: array
+          items:
+            type: string
+          description: List of AFK players
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicDYPRound'
+          description: Dynamic DYP rounds
+        results:
+          $ref: '#/components/schemas/MatchResults'
+          description: Match results
+        finals:
+          $ref: '#/components/schemas/DynamicDYPFinals'
+          description: Finals structure
+
+    GameOptions:
+      type: object
+      properties:
+        defeat_spectate:
+          type: boolean
+          description: Allow spectating after defeat
+        spectate:
+          type: boolean
+          description: Join as spectator
+        spectate_chat:
+          type: boolean
+          description: Hide spectator chat from players
+        map:
+          type: string
+          description: Custom map name
+        speed:
+          type: string
+          enum: [0.25x, 0.5x, 0.75x, 1x, 1.5x, 2x, 3x, 4x]
+          description: Game speed
+        width:
+          type: number
+          description: Map width (0-1)
+        height:
+          type: number
+          description: Map height (0-1)
+        cities:
+          type: number
+          description: City density (0-1)
+        mountains:
+          type: number
+          description: Mountain density (0-1)
+        swamps:
+          type: number
+          description: Swamp ratio (0-1)
+        deserts:
+          type: number
+          description: Desert ratio (0-1)
+        lookouts:
+          type: number
+          description: Lookout ratio (0-1)
+        observatories:
+          type: number
+          description: Observatory ratio (0-1)
+        city_fairness:
+          type: number
+          description: City fairness (0-1)
+        team:
+          type: integer
+          description: Team to join
+        modifiers:
+          type: string
+          description: Game modifiers
+
+    WinningSets:
+      type: object
+      properties:
+        winners:
+          type: integer
+          description: Games needed to advance in winners bracket
+        losers:
+          type: integer
+          description: Games needed to advance in losers bracket
+        semifinals:
+          type: integer
+          description: Games needed to win semifinals
+        finals:
+          type: integer
+          description: Games needed to win finals
+
+    DoubleEliminationBracket:
+      type: object
+      properties:
+        winners:
+          type: array
+          items:
+            $ref: '#/components/schemas/BracketRound'
+          description: Winners bracket rounds
+        losers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BracketRound'
+          description: Losers bracket rounds
+        results:
+          $ref: '#/components/schemas/MatchResults'
+          description: Match results
+
+    BracketRound:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Round name
+        complete:
+          type: boolean
+          description: Whether round is complete
+        matches:
+          type: array
+          items:
+            $ref: '#/components/schemas/BracketMatch'
+          description: Matches in this round
+        winningSets:
+          type: integer
+          description: Games needed to win in this round
+
+    BracketMatch:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchTeam'
+          description: Teams in this match
+        number:
+          type: integer
+          description: Match number
+        final:
+          type: boolean
+          description: Whether this is a final match
+        bye:
+          type: boolean
+          description: Whether this is a bye match
+        status:
+          type: string
+          enum: [COMPLETE, READY, NOT_STARTED]
+          description: Match status
+        noRightBorder:
+          type: boolean
+          description: CSS helper for display
+        lobby:
+          type: string
+          description: Lobby to use for this match
+
+    MatchTeam:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Team display name
+        players:
+          type: array
+          items:
+            type: string
+          description: Players in this team
+        score:
+          type: integer
+          description: Current games won in this match
+        status:
+          type: string
+          enum: [UNDECIDED, WINNER, LOSER, ELIMINATED]
+          description: Team status
+        dq:
+          type: boolean
+          description: Whether team is disqualified
+        placeholder:
+          type: string
+          description: Placeholder text
+        tsp:
+          type: number
+          description: Tournament seed points
+
+    MatchResults:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          team1Score:
+            type: integer
+            description: Team 1 score
+          team2Score:
+            type: integer
+            description: Team 2 score
+      description: Match results by match number
+
+    DynamicDYPRound:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Round name
+        complete:
+          type: boolean
+          description: Whether round is complete
+        matches:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicDYPMatch'
+          description: Matches in this round
+
+    DynamicDYPMatch:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicDYPTeam'
+          description: Teams in this match
+        ready:
+          type: array
+          items:
+            type: string
+          description: Ready players
+        number:
+          type: integer
+          description: Match number
+        status:
+          type: string
+          enum: [COMPLETE, READY, NOT_STARTED]
+          description: Match status
+        lobby:
+          type: string
+          description: Lobby to use
+
+    DynamicDYPTeam:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            type: string
+          description: Players in this team
+        score:
+          type: integer
+          description: Team score
+
+    DynamicDYPFinals:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/DynamicDYPFinalsTeam'
+          description: Teams in finals
+        currentlyChoosing:
+          type: string
+          description: Player currently choosing partner
+        bracket:
+          type: array
+          items:
+            $ref: '#/components/schemas/BracketRound'
+          description: Finals bracket
+
+    DynamicDYPFinalsTeam:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            type: string
+          description: Players in this team
 
     LobbyResponse:
       type: object
@@ -197,11 +760,11 @@ components:
           oneOf:
             - type: string
             - type: null
-
-
+          description: Lobby string or null if no lobby assigned
 
     Error:
       type: object
       properties:
         error:
-          type: string 
+          type: string
+          description: Error message 
