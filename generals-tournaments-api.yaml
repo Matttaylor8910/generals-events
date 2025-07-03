@@ -1,0 +1,207 @@
+openapi: 3.1.0
+info:
+  title: Generals Tournaments API
+  version: 1.0.0
+  description: API for bot players to participate in generals.io events
+servers:
+  - url: https://us-central1-generals-tournaments.cloudfunctions.net/api/v1
+paths:
+  /replays/{replayId}:
+    get:
+      operationId: getReplayById
+      summary: Get replay by ID
+      parameters:
+        - in: path
+          name: replayId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: server
+          required: false
+          schema:
+            type: string
+            enum: [na, bot]
+            default: na
+      responses:
+        '200':
+          description: Replay data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayData'
+        '500':
+          description: Error retrieving replay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /replays/{replayId}/stats:
+    get:
+      operationId: getReplayStats
+      summary: Get replay statistics
+      parameters:
+        - in: path
+          name: replayId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: server
+          required: false
+          schema:
+            type: string
+            enum: [na, bot]
+            default: na
+      responses:
+        '200':
+          description: Replay statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayStats'
+        '500':
+          description: Error retrieving replay stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /upcomingevents:
+    get:
+      operationId: getUpcomingEvents
+      summary: Get list of upcoming events
+      responses:
+        '200':
+          description: List of upcoming events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '500':
+          description: Error retrieving events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events/{eventId}:
+    get:
+      operationId: getEventById
+      summary: Get event by ID
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event data or null if not found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Event'
+                  - type: null
+        '500':
+          description: Error retrieving event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events/{eventId}/lobby/{name}:
+    get:
+      operationId: getEventLobby
+      summary: Get lobby for player in event
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lobby information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyResponse'
+        '500':
+          description: Error retrieving lobby
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+components:
+  schemas:
+    ReplayData:
+      type: object
+      description: Full replay data from simulator
+
+    ReplayStats:
+      type: object
+      properties:
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerScore'
+        summary:
+          type: object
+        turns:
+          type: integer
+
+    PlayerScore:
+      type: object
+      properties:
+        name:
+          type: string
+        kills:
+          type: integer
+        rank:
+          type: integer
+        lastTurn:
+          type: integer
+        killed:
+          type: boolean
+        killedBy:
+          type: string
+        tilesAfterFirstRound:
+          type: integer
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        startTime:
+          type: integer
+        # Additional event properties would be defined here based on actual data structure
+
+    LobbyResponse:
+      type: object
+      properties:
+        lobby:
+          oneOf:
+            - type: string
+            - type: null
+
+
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string 
