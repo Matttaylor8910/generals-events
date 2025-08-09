@@ -16,7 +16,7 @@ export class UpdateMatchPage implements OnInit {
   @Input() roundIdx: number;
   @Input() matchIdx: number;
 
-  scores = [0, 1, 2, 3, 4];
+  scores: number[] = [0];
   newMatch: IBracketMatch;
 
   constructor(
@@ -26,6 +26,9 @@ export class UpdateMatchPage implements OnInit {
 
   ngOnInit() {
     this.newMatch = cloneDeep(this.match);
+    const winningSets = this.getWinningSetsForCurrentContext();
+    const maxScore = Math.max(0, Number(winningSets || 0));
+    this.scores = Array.from({length: maxScore + 1}, (_, i) => i);
   }
 
   get canSave(): boolean {
@@ -100,11 +103,11 @@ export class UpdateMatchPage implements OnInit {
           [`${bracketLocation}`]: bracket,
           winners: winners,
           endTime: Date.now(),
-        });
+        } as any);
       } else {
         this.eventService.updateEvent(this.event.id, {
           [`${bracketLocation}`]: bracket,
-        });
+        } as any);
       }
     } else {
       const bracket = this.event.bracket[this.bracketName];
@@ -121,5 +124,36 @@ export class UpdateMatchPage implements OnInit {
       });
     }
     this.modalController.dismiss();
+  }
+
+  private getWinningSetsForCurrentContext(): number {
+    // Dynamic DYP finals bracket
+    if (this.event.format === EventFormat.DYNAMIC_DYP) {
+      const dypEvent = this.event as unknown as IDynamicDYPEvent;
+      const bracketRounds = dypEvent?.finals?.bracket;
+      const round = bracketRounds?.[this.roundIdx];
+      if (round?.winningSets) {
+        return round.winningSets;
+      }
+      return 0;
+    }
+
+    // Double elimination bracket
+    const rounds: any = (this.event as any)?.bracket?.[this.bracketName];
+    const round = rounds?.[this.roundIdx];
+    if (round?.winningSets) {
+      return round.winningSets;
+    }
+
+    // Fallback to event-level settings by bracket name when available
+    const ws = (this.event as any)?.winningSets;
+    if (ws) {
+      if (this.bracketName === 'winners' && ws.winners) return ws.winners;
+      if (this.bracketName === 'losers' && ws.losers) return ws.losers;
+      if (this.bracketName === 'semifinals' && ws.semifinals) return ws.semifinals;
+      if (this.bracketName === 'finals' && ws.finals) return ws.finals;
+    }
+
+    return 0;
   }
 }
