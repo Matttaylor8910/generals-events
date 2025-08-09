@@ -666,6 +666,7 @@ components:
     MatchResults:
       type: object
       description: Match results by match number
+      properties: {}
       additionalProperties:
         $ref: '#/components/schemas/MatchScore'
 
