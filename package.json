@@ -11,9 +11,9 @@
     "e2e": "ng e2e",
     "update": "git pull && npm i && cd functions && npm i && cd ..",
     "build": "ionic build --prod --release",
-    "deploy-functions": "npm run update && firebase deploy --only functions",
-    "deploy-hosting": "npm run update && npm run build && firebase deploy --only hosting",
-    "deploy": "npm run update && npm run build && firebase deploy",
+    "deploy-functions": "nvm use && npm run update && nvm use 18 && firebase deploy --only functions",
+    "deploy-hosting": "nvm use && npm run update && npm run build && nvm use 18 && firebase deploy --only hosting",
+    "deploy": "nvm use && npm run update && npm run build && nvm use 18 && firebase deploy",
     "indexes": "firebase firestore:indexes > firestore.indexes.json"
   },
   "private": true,
