@@ -549,6 +549,9 @@ components:
         city_fairness:
           type: number
           description: City fairness (0-1)
+        spawn_fairness:
+          type: number
+          description: Spawn fairness (0-1)
         team:
           type: integer
           description: Team to join
@@ -771,4 +774,4 @@ components:
       properties:
         error:
           type: string
-          description: Error message 
+          description: Error message

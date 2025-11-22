@@ -216,6 +216,15 @@
           </ion-range>
         </ion-item>
 
+        <!-- Spawn Fairness of the map -->
+        <label>Spawn Fairness: {{ spawn_fairness | number:'1.1-2' }}</label>
+        <ion-item>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="spawn_fairness">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+
         <!-- modifiers of the map -->
         <label>Modifiers:</label>
         <ion-item>

@@ -437,6 +437,9 @@ export interface IGeneralsGameOptions {
   // the city fairness, between 0 and 1, e.g. 0.75
   city_fairness?: number;
 
+  // the spawn fairness, between 0 and 1, e.g. 0.75
+  spawn_fairness?: number;
+
   // the team to join when you reach a lobby
   team?: number;
 

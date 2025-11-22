@@ -86,6 +86,7 @@ export class CreateEventPage {
   cities = .5;
   mountains = .5;
   city_fairness = 0.0;
+  spawn_fairness = 0.0;
   swamps = 0.0;
   deserts = 0.0;
   observatories = 0.0;
@@ -185,6 +186,7 @@ export class CreateEventPage {
         cities: this.cities,
         mountains: this.mountains,
         city_fairness: this.city_fairness,
+        spawn_fairness: this.spawn_fairness,
         swamps: this.swamps,
         deserts: this.deserts,
         observatories: this.observatories,
