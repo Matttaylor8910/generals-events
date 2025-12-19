@@ -1,9 +1,11 @@
 import {DatePipe} from '@angular/common';
-import {Component} from '@angular/core';
-import {ModalController} from '@ionic/angular';
+import {Component, OnInit} from '@angular/core';
+import {ModalController, NavParams} from '@ionic/angular';
 import {extend} from 'lodash';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
-import {DoublesPairingStrategy, EventFormat, EventType, GameSpeed, IDoubleElimEvent, IEvent, Visibility} from 'types';
+import {DoublesPairingStrategy, EventFormat, EventType, GameSpeed, IDoubleElimEvent, IArenaEvent, IEvent, Visibility} from 'types';
 
 const arenaEventTypes = {
   [EventType.FFA]: {
@@ -59,27 +61,32 @@ const months = [
   templateUrl: './create-event.page.html',
   styleUrls: ['./create-event.page.scss'],
 })
-export class CreateEventPage {
+export class CreateEventPage implements OnInit {
+  private destroyed$ = new Subject<void>();
+  eventId: string;
+  event: IEvent;
+  isEditMode = false;
+
   EventFormat = EventFormat;
   Visibility = Visibility;
 
   visibilities = Object.values(Visibility);
-  visibility = this.visibilities[0];
+  visibility: Visibility;
 
   types = Object.values(EventType);
-  type = this.types[0];
+  type: EventType;
 
-  formats = typeFormats[this.type];
-  format = this.formats[0];
+  formats: EventFormat[];
+  format: EventFormat;
 
   pairingStrategies = Object.values(DoublesPairingStrategy);
-  pairingStrategy = this.pairingStrategies[0];
+  pairingStrategy: DoublesPairingStrategy;
 
-  date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
-  time = '12:00:00';
+  date: string;
+  time: string;
 
   speeds = Object.values(GameSpeed);
-  speed = GameSpeed.SPEED_1X;
+  speed: GameSpeed;
   mapURL = '';
   width = .75;
   height = .75;
@@ -98,7 +105,7 @@ export class CreateEventPage {
   parentId: string;
 
   checkInOptions = Object.values(CheckInTimes);
-  checkIn = this.checkInOptions[0];
+  checkIn: CheckInTimes;
 
   setsOptions = Object.values(WinningSets);
   winningSets = {
@@ -113,7 +120,132 @@ export class CreateEventPage {
   constructor(
       private readonly eventService: EventService,
       private readonly modalController: ModalController,
+      private readonly navParams: NavParams,
   ) {}
+
+  ngOnInit() {
+    this.eventId = this.navParams.get('eventId');
+    if (this.eventId) {
+      this.isEditMode = true;
+      this.eventService.getEvent(this.eventId)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe(event => {
+            this.event = event;
+            this.loadEventData();
+          });
+    } else {
+      // Initialize defaults for create mode
+      this.visibility = this.visibilities[0];
+      this.type = this.types[0];
+      this.formats = typeFormats[this.type];
+      this.format = this.formats[0];
+      this.pairingStrategy = this.pairingStrategies[0];
+      this.date = new DatePipe('en-US').transform(new Date(), 'yyyy-MM-dd');
+      this.time = '12:00:00';
+      this.speed = GameSpeed.SPEED_1X;
+      this.checkIn = this.checkInOptions[0];
+    }
+  }
+
+  loadEventData() {
+    if (!this.event) return;
+
+    // Basic fields
+    this.name = this.event.name;
+    this.type = this.event.type;
+    this.format = this.event.format;
+    this.visibility = this.event.visibility;
+    this.parentId = this.event.parentId;
+
+    // Date and time
+    const startDate = new Date(this.event.startTime);
+    this.date = new DatePipe('en-US').transform(startDate, 'yyyy-MM-dd');
+    this.time = new DatePipe('en-US').transform(startDate, 'HH:mm:ss');
+
+    // Arena-specific fields
+    if (this.format === EventFormat.ARENA) {
+      const arenaEvent = this.event as IArenaEvent;
+      if (arenaEvent.endTime && this.event.startTime) {
+        const durationMs = arenaEvent.endTime - this.event.startTime;
+        this.duration = Math.round(durationMs / (60 * 1000)); // Convert to minutes
+      }
+    }
+
+    // Double elim or Dynamic DYP check-in time
+    if (this.format === EventFormat.DOUBLE_ELIM || this.format === EventFormat.DYNAMIC_DYP) {
+      const eventWithCheckIn = this.event as IDoubleElimEvent;
+      if (eventWithCheckIn.checkInTime && this.event.startTime) {
+        const checkInDiffMs = this.event.startTime - eventWithCheckIn.checkInTime;
+        const checkInDiffMinutes = Math.round(checkInDiffMs / (60 * 1000));
+        
+        // Find the closest matching check-in option
+        if (checkInDiffMinutes <= 15) {
+          this.checkIn = CheckInTimes.CHECKIN_15;
+        } else if (checkInDiffMinutes <= 30) {
+          this.checkIn = CheckInTimes.CHECKIN_30;
+        } else if (checkInDiffMinutes <= 45) {
+          this.checkIn = CheckInTimes.CHECKIN_45;
+        } else {
+          this.checkIn = CheckInTimes.CHECKIN_60;
+        }
+      } else {
+        this.checkIn = this.checkInOptions[0];
+      }
+    }
+
+    // Double elim winning sets
+    if (this.format === EventFormat.DOUBLE_ELIM) {
+      const doubleElimEvent = this.event as IDoubleElimEvent;
+      if (doubleElimEvent.winningSets) {
+        // Reverse lookup from number to WinningSets enum
+        const reverseWinningSets = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.winners);
+        if (reverseWinningSets) {
+          this.winningSets.winners = reverseWinningSets[0] as WinningSets;
+        }
+        
+        const reverseLosers = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.losers);
+        if (reverseLosers) {
+          this.winningSets.losers = reverseLosers[0] as WinningSets;
+        }
+        
+        const reverseSemis = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.semifinals);
+        if (reverseSemis) {
+          this.winningSets.semifinals = reverseSemis[0] as WinningSets;
+        }
+        
+        const reverseFinals = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.finals);
+        if (reverseFinals) {
+          this.winningSets.finals = reverseFinals[0] as WinningSets;
+        }
+      }
+
+      // Pairing strategy
+      if (this.type === EventType.TWO_VS_TWO && doubleElimEvent.doublesPairingStrategy) {
+        this.pairingStrategy = doubleElimEvent.doublesPairingStrategy;
+      }
+    }
+
+    // Game options
+    if (this.event.options) {
+      const options = this.event.options;
+      this.speed = options.speed || GameSpeed.SPEED_1X;
+      this.mapURL = options.map ? `/maps/${options.map}` : '';
+      this.width = options.width ?? .75;
+      this.height = options.height ?? .75;
+      this.cities = options.cities ?? .5;
+      this.mountains = options.mountains ?? .5;
+      this.city_fairness = options.city_fairness ?? 0.0;
+      this.spawn_fairness = options.spawn_fairness ?? 0.0;
+      this.swamps = options.swamps ?? 0.0;
+      this.deserts = options.deserts ?? 0.0;
+      this.observatories = options.observatories ?? 0.0;
+      this.lookouts = options.lookouts ?? 0.0;
+      this.modifiers = options.modifiers || null;
+    }
+
+    // Set formats based on type
+    this.formats = typeFormats[this.type];
+  }
 
   get namePlaceholder(): string {
     const date = new Date(this.date);
@@ -171,13 +303,12 @@ export class CreateEventPage {
     const [base, map = ''] = this.mapURL?.split('/maps/');
     const defeat_spectate = this.type === EventType.ONE_VS_ONE;
 
-    const event: Partial<IEvent> = {
+    const eventData: Partial<IEvent> = {
       name: this.name || this.namePlaceholder,
       format: this.format,
       type: this.type,
       visibility: this.visibility,
       startTime: this.getDate().getTime(),
-      checkedInPlayers: [],
 
       // custom options for the lobby
       options: {
@@ -200,19 +331,32 @@ export class CreateEventPage {
 
     // attach parentId for events that provide it
     if (this.visibility === Visibility.MULTI_STAGE_EVENT) {
-      event.parentId = this.parentId;
+      eventData.parentId = this.parentId;
+    } else {
+      // Remove parentId if visibility changed away from multi-stage
+      eventData.parentId = null;
     }
 
     if (this.format === EventFormat.ARENA) {
-      extend(event, this.getArenaEventFields(event.startTime));
+      extend(eventData, this.getArenaEventFields(eventData.startTime));
     } else if (this.format === EventFormat.DOUBLE_ELIM) {
-      extend(event, this.getDoubleElimEventFields(event.startTime));
+      extend(eventData, this.getDoubleElimEventFields(eventData.startTime));
     } else if (this.format === EventFormat.DYNAMIC_DYP) {
-      extend(event, {checkInTime: this.getCheckInTime(event.startTime)});
+      extend(eventData, {checkInTime: this.getCheckInTime(eventData.startTime)});
     }
 
-    await this.eventService.createEvent(event);
+    if (this.isEditMode && this.eventId) {
+      await this.eventService.updateEvent(this.eventId, eventData);
+    } else {
+      eventData.checkedInPlayers = [];
+      await this.eventService.createEvent(eventData);
+    }
+    
     this.modalController.dismiss();
+  }
+
+  ngOnDestroy() {
+    this.destroyed$.next();
   }
 
   private getArenaEventFields(startTime: number) {
@@ -220,11 +364,17 @@ export class CreateEventPage {
     const duration = Number(this.duration);
     const endDate = new Date(startTime + (duration * 60 * 1000));
 
-    return {
+    const fields: any = {
       endTime: endDate.getTime(),
       playersPerGame: arenaEventTypes[this.type].playersPerGame,
-      queue: [],
     };
+
+    // Only set queue for new events
+    if (!this.isEditMode) {
+      fields.queue = [];
+    }
+
+    return fields;
   }
 
   private getDoubleElimEventFields(startTime: number) {

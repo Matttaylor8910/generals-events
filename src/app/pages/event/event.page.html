@@ -26,6 +26,9 @@
 
     <ion-buttons slot="end">
       <ng-container *ngIf="isAdmin && event">
+        <ion-button tooltip="Edit Event" (click)="editEvent()">
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
         <ion-button tooltip="Delete Event" (click)="deleteEvent()">
           <ion-icon name="trash-outline"></ion-icon>
         </ion-button>

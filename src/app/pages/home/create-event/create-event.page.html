@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>New Event</ion-title>
+    <ion-title>{{ isEditMode ? 'Edit Event' : 'New Event' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="create-event">
+  <div class="create-event" *ngIf="!isEditMode || event">
     <!-- name of event -->
     <label>Name</label>
     <input
@@ -247,8 +247,8 @@
 
 <ion-footer>
   <ion-toolbar>
-    <ion-button class="generals-button color-secondary" (click)="create()" [disabled]="invalid">
-      {{ saving ? 'Creating...' : 'Create Event' }}
+    <ion-button class="generals-button color-secondary" (click)="create()" [disabled]="invalid || (isEditMode && !event)">
+      {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Event') }}
     </ion-button>
   </ion-toolbar>
 </ion-footer>

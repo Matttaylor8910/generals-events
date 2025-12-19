@@ -1,5 +1,6 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {ModalController} from '@ionic/angular';
 import {cloneDeep} from 'lodash';
 import {Observable, Subject} from 'rxjs';
 import {takeUntil, tap} from 'rxjs/operators';
@@ -11,6 +12,7 @@ import * as moment from 'moment-timezone';
 import * as firebase from 'firebase';
 
 import {ADMINS} from '../../../../constants';
+import {CreateEventPage} from '../home/create-event/create-event.page';
 
 @Component({
   selector: 'app-event',
@@ -43,6 +45,7 @@ export class EventPage implements OnDestroy {
       private readonly router: Router,
       private readonly eventService: EventService,
       private readonly utilService: UtilService,
+      private readonly modalController: ModalController,
   ) {
     this.eventId = this.route.snapshot.params.id;
 
@@ -326,6 +329,16 @@ export class EventPage implements OnDestroy {
       // nav there
       this.router.navigate(['/', eventId]);
     }
+  }
+
+  async editEvent() {
+    const modal = await this.modalController.create({
+      component: CreateEventPage,
+      componentProps: {
+        eventId: this.event.id,
+      },
+    });
+    return await modal.present();
   }
 
   async deleteEvent() {
