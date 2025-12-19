@@ -348,7 +348,10 @@ export class CreateEventPage implements OnInit {
     if (this.isEditMode && this.eventId) {
       await this.eventService.updateEvent(this.eventId, eventData);
     } else {
-      eventData.checkedInPlayers = [];
+      // Only set checkedInPlayers for events that support it (not Arena events)
+      if (this.format !== EventFormat.ARENA) {
+        (eventData as any).checkedInPlayers = [];
+      }
       await this.eventService.createEvent(eventData);
     }
     
