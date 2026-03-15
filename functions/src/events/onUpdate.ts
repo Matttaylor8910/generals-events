@@ -13,6 +13,12 @@ try {
 }
 const db = admin.firestore();
 
+type HomepageChampion = {
+  players: string[];
+  type: string;
+  eventName?: string;
+};
+
 export const onUpdateEvent =
     functions.firestore.document('events/{eventId}')
         .onUpdate(async (eventDoc, context) => {
@@ -37,22 +43,23 @@ export const onUpdateEvent =
 async function handleWinners(eventDoc: functions.Change<QueryDocumentSnapshot>, type: EventType) {
   const before = ((eventDoc.before?.data() ?? {}).winners ?? []) as string[];
   const after = ((eventDoc.after?.data() ?? {}).winners ?? []) as string[];
-  
+  const {visibility, name} = eventDoc.after.data() || {} as IEvent;
+
   // if this is not a public event, no-op
   // only public events should update the champions
-  const {visibility} = eventDoc.after.data() || {} as IEvent;
   if (visibility !== Visibility.PUBLIC) return;
-  
+
   // if there is any change in the winners, update the current
   if (after.length !== before.length || after.some(name => !before.includes(name))) {
     const homepageRef = db.collection('generals.io').doc('homepage');
-    const { champions } = (await homepageRef.get()).data() as {champions: {players: string[], type: string}[]};
+    const { champions } = (await homepageRef.get()).data() as {champions: HomepageChampion[]};
     const event = champions.find(event => event.type === type);
-    
+
     // if this event's type matches one of the types in the champions array, update those players
     // multi-stage events still are manual
     if (event) {
       event.players = after;
+      event.eventName = name;
       await homepageRef.update({champions});
     }
   }
@@ -66,7 +73,7 @@ async function handleChatBlocklist(eventDoc: functions.Change<QueryDocumentSnaps
     const diff = after.filter(a => !before.includes(a));
     const batch = db.batch();
     const messagesRef = eventDoc.after.ref.collection('messages');
-    
+
     // for every username that was added to the chatBlocklist, find all messages sent
     // by them and delete them
     await Promise.all(diff.map(username => {
