@@ -285,6 +285,7 @@ class ReplaySimulationCore {
     this.clearMoves(socket.id);
     this.alivePlayers--;
     this.winners = undefined;
+    this.isOver();
   }
 
   clearMoves(socket_id) {
