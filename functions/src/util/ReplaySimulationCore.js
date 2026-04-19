@@ -104,6 +104,8 @@ class ReplaySimulationCore {
     gameReplay.mountains.forEach((m) => this.addMountain(m));
     gameReplay.observatories.forEach((m) => this.addObservatory(m));
     gameReplay.lookouts.forEach((m) => this.addLookout(m));
+    (gameReplay.tunnels || []).forEach((t, i) => this.addTunnel(t, gameReplay.tunnelLimits && gameReplay.tunnelLimits[i]));
+    (gameReplay.strongholds || []).forEach((s, i) => this.addStronghold(s, gameReplay.strongholdStrengths && gameReplay.strongholdStrengths[i]));
     gameReplay.deserts.forEach((d) => this.addDesert(d));
     gameReplay.swamps.forEach((s) => this.addSwamp(s));
     gameReplay.cities.forEach((city, i) => this.addCity(city, gameReplay.cityArmies[i]));
@@ -128,6 +130,18 @@ class ReplaySimulationCore {
 
   addLookout(index) {
     this.map.setTile(index, Map.TILE_LOOKOUT);
+  }
+
+  addTunnel(index, limit) {
+    if (typeof this.map.setTunnel === 'function') {
+      this.map.setTunnel(index, limit);
+    }
+  }
+
+  addStronghold(index, strength) {
+    if (typeof this.map.setStronghold === 'function') {
+      this.map.setStronghold(index, strength);
+    }
   }
 
   addDesert(index) {
