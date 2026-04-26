@@ -219,6 +219,57 @@ Map.prototype.getCappedIncomingArmy = function(end, sentArmy) {
   return Math.min(sentArmy, this.getTunnelLimit(end));
 };
 
+// Refunds army overflow that exceeded the tunnel limit after a series of attacks
+// resolved on the same turn. Each entry in tunnelMoveExecutions is
+// { start, end, incomingArmy } where incomingArmy is the amount that was capped
+// in by that move. Any overflow on a tunnel is moved back to the start tile of
+// the most recently executed contributing move first (LIFO is acceptable since
+// we walk forward and stop once the overflow is consumed). The refund per move
+// can never exceed that move's incomingArmy.
+//
+// This is shared between the live game (shared/Game.js) and the replay
+// simulator (ReplaySimulationCore) so tunnel resolution is identical in both.
+Map.prototype.refundTunnelOverflow = function(tunnelMoveExecutions) {
+  if (!tunnelMoveExecutions || !tunnelMoveExecutions.length) {
+    return;
+  }
+
+  const overflowByTunnel = {};
+  for (let i = 0; i < tunnelMoveExecutions.length; i++) {
+    const execution = tunnelMoveExecutions[i];
+    const limit = this.getTunnelLimit(execution.end);
+    if (limit <= 0) {
+      continue;
+    }
+
+    const overflow = this.armyAt(execution.end) - limit;
+    if (overflow > 0) {
+      overflowByTunnel[execution.end] = overflow;
+    }
+  }
+
+  if (Object.keys(overflowByTunnel).length === 0) {
+    return;
+  }
+
+  for (let i = 0; i < tunnelMoveExecutions.length; i++) {
+    const execution = tunnelMoveExecutions[i];
+    const overflowRemaining = overflowByTunnel[execution.end] || 0;
+    if (overflowRemaining <= 0) {
+      continue;
+    }
+
+    const refund = Math.min(overflowRemaining, execution.incomingArmy);
+    if (refund <= 0) {
+      continue;
+    }
+
+    this.setArmy(execution.start, this.armyAt(execution.start) + refund);
+    this.setArmy(execution.end, this.armyAt(execution.end) - refund);
+    overflowByTunnel[execution.end] = overflowRemaining - refund;
+  }
+};
+
 Map.prototype.tileAt = function(index) {
   return this._map[index];
 };

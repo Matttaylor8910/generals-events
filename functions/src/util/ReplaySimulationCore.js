@@ -391,6 +391,9 @@ class ReplaySimulationCore {
     const defection = this.map.modFlags && this.map.modFlags[Constants.MODIFIER_INDEXES.Defection];
     const defectionCredit = defection ? this.sockets.map(() => 0) : null;
     const consumedMoveIndices = new Set();
+    // Track tunnel-targeted moves so we can refund overflow when multiple
+    // attacks combine to push a tunnel above its limit. Mirrors live Game.update.
+    const tunnelMoveExecutions = [];
 
     for (let i = 0; i < moves.length; i++) {
       if (consumedMoveIndices.has(i)) {
@@ -445,7 +448,22 @@ class ReplaySimulationCore {
         }
       }
 
-      anyMove |= this.handleAttack(pI, move.start, move.end, move.is50, move.attackIndex);
+      // Match live Game.update: snapshot the capped tunnel incoming for this
+      // move BEFORE handleAttack mutates the start tile, so we can refund
+      // overflow that was contributed by this specific move if multiple
+      // attacks pushed the tunnel above its limit.
+      const tunnelIncomingArmy = this.map.getTunnelLimit(move.end) > 0
+        ? this.map.getCappedIncomingArmy(move.end, this.map.getMoveArmy(move.start, move.is50))
+        : 0;
+      const succeeded = this.handleAttack(pI, move.start, move.end, move.is50, move.attackIndex);
+      anyMove |= succeeded;
+      if (succeeded && tunnelIncomingArmy > 0 && this.map.getTunnelLimit(move.end) > 0) {
+        tunnelMoveExecutions.push({
+          start: move.start,
+          end: move.end,
+          incomingArmy: tunnelIncomingArmy,
+        });
+      }
       anyMove = true;
       this.sockets[pI].moveCount += 1;
       this.sockets[pI].lastMoveTurn = this.turn;
@@ -460,6 +478,8 @@ class ReplaySimulationCore {
         }
       }
     }
+
+    this.map.refundTunnelOverflow(tunnelMoveExecutions);
 
     const hasRunTooLong = this.turn > Constants.MAX_GAME_MOVES_AT_NORMAL_SPEED;
     if (!anyMove || hasRunTooLong) {
