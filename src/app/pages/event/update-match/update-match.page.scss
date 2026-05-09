@@ -7,6 +7,16 @@ ion-segment-button {
   flex-direction: column;
   justify-content: center;
 
+  .late-bye-opponent {
+    margin-bottom: 24px;
+
+    p {
+      margin: 0 16px 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--ion-color-medium);
+    }
+  }
 
   .teams .name {
     margin-top: 20px;

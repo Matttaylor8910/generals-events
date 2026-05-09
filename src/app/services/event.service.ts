@@ -335,6 +335,45 @@ export class EventService {
     return this.afs.collection('events').doc(eventId).update(data);
   }
 
+  /**
+   * Create a leaderboard player doc if missing (does not overwrite existing).
+   */
+  async ensureLeaderboardPlayer(eventId: string, name: string): Promise<void> {
+    const ref = this.db.collection('events')
+                  .doc(eventId)
+                  .collection('players')
+                  .doc(name);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      await ref.set({
+        name,
+        rank: 0,
+        points: 0,
+        currentStreak: 0,
+        dq: false,
+        record: [],
+      });
+    }
+  }
+
+  /**
+   * Single batch: event fields update plus optional deletes of match tracking
+   * docs under events/{id}/matches/{matchNumber}.
+   */
+  commitBracketAdminBatch(
+      eventId: string,
+      updates: {[key: string]: unknown},
+      deleteMatchDocIds: string[] = [],
+  ): Promise<void> {
+    const batch = this.db.batch();
+    const eventRef = this.db.collection('events').doc(eventId);
+    batch.update(eventRef, updates);
+    for (const id of deleteMatchDocIds) {
+      batch.delete(eventRef.collection('matches').doc(id));
+    }
+    return batch.commit();
+  }
+
   deleteEvent(eventId: string) {
     return this.afs.collection('events').doc(eventId).delete();
   }

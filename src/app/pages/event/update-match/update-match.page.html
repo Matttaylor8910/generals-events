@@ -6,6 +6,31 @@
 
 <ion-content>
   <div class="update-match-container" *ngIf="newMatch as match">
+    <div class="late-bye-opponent" *ngIf="showLateByeOpponent">
+      <p>
+        This first-round match was a bye and already advanced the player into the next
+        winners round. Add an opponent here to fill the match — the fed-through slot
+        in the next round is cleared and that match is reset (only if no games are
+        recorded there yet).
+      </p>
+      <ion-item>
+        <ion-label position="stacked">Opponent Generals.io username</ion-label>
+        <ion-input
+          [(ngModel)]="lateOpponentName"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        ></ion-input>
+      </ion-item>
+      <ion-button
+        class="generals-button"
+        (click)="addLateByeOpponent()"
+        [disabled]="!lateOpponentName?.trim()"
+      >
+        Add opponent &amp; reset next round
+      </ion-button>
+    </div>
+
     <div class="teams">
       <div class="team" *ngFor="let team of match.teams; index as i">
         <h2 class="name">

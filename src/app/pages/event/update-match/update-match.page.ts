@@ -1,8 +1,23 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {cloneDeep} from 'lodash';
+import {
+  applyLateOpponentToWinnersBye,
+  getLateByeOpponentEligibility,
+} from 'src/app/components/bracket-event/bracket-late-opponent';
 import {EventService} from 'src/app/services/event.service';
-import {EventFormat, IBracketMatch, IDoubleElimEvent, IDynamicDYPEvent, IEvent, MatchStatus, MatchTeamStatus} from 'types';
+import {UtilService} from 'src/app/services/util.service';
+import firebase from 'firebase';
+import {
+  EventFormat,
+  EventType,
+  IBracketMatch,
+  IDoubleElimEvent,
+  IDynamicDYPEvent,
+  IEvent,
+  MatchStatus,
+  MatchTeamStatus,
+} from 'types';
 
 @Component({
   selector: 'app-update-match',
@@ -18,10 +33,12 @@ export class UpdateMatchPage implements OnInit {
 
   scores: number[] = [0];
   newMatch: IBracketMatch;
+  lateOpponentName = '';
 
   constructor(
       private readonly eventService: EventService,
       private readonly modalController: ModalController,
+      private readonly utilService: UtilService,
   ) {}
 
   ngOnInit() {
@@ -32,7 +49,66 @@ export class UpdateMatchPage implements OnInit {
   }
 
   get canSave(): boolean {
-    return this.match?.teams.every(t => !!t.name);
+    if (!this.match?.teams.every(t => !!t.name)) {
+      return false;
+    }
+    if (this.event.format === EventFormat.DOUBLE_ELIM &&
+        this.match.teams.length < 2) {
+      return false;
+    }
+    return true;
+  }
+
+  get showLateByeOpponent(): boolean {
+    return this.event.format === EventFormat.DOUBLE_ELIM &&
+        this.event.type === EventType.ONE_VS_ONE &&
+        this.bracketName === 'winners' &&
+        !!this.event?.bracket &&
+        getLateByeOpponentEligibility(
+            this.event.bracket,
+            this.roundIdx,
+            this.matchIdx,
+            this.bracketName,
+            this.match,
+            !!this.event.endTime,
+            ).eligible;
+  }
+
+  async addLateByeOpponent() {
+    const name = this.lateOpponentName.trim();
+    if (!name || !this.event?.bracket || this.event.format !== EventFormat.DOUBLE_ELIM) {
+      return;
+    }
+    const bracket = cloneDeep(this.event.bracket);
+    const result = applyLateOpponentToWinnersBye(
+        bracket, this.matchIdx, name);
+
+    if (!('ok' in result && result.ok)) {
+      this.utilService.showToast(
+          'error' in result ? result.error : 'Could not add opponent.');
+      return;
+    }
+
+    try {
+      await this.eventService.ensureLeaderboardPlayer(this.event.id, name);
+      await this.eventService.commitBracketAdminBatch(
+          this.event.id,
+          {
+            'bracket.winners': bracket.winners,
+            [`bracket.results.${result.downstreamMatchNumber}`]:
+                firebase.firestore.FieldValue.delete(),
+            checkedInPlayers:
+                firebase.firestore.FieldValue.arrayUnion(name),
+          },
+          [String(result.downstreamMatchNumber)],
+      );
+      this.utilService.showToast(
+          `Added ${name} and reset winners match ${result.downstreamMatchNumber}.`);
+      await this.modalController.dismiss();
+    } catch (e) {
+      console.error(e);
+      this.utilService.showToast('Failed to update bracket.');
+    }
   }
 
   async save() {
