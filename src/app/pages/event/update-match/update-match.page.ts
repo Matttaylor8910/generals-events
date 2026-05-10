@@ -4,6 +4,8 @@ import {cloneDeep} from 'lodash';
 import {
   applyLateOpponentToWinnersBye,
   getLateByeOpponentEligibility,
+  hasPrematureFeedInWinners1,
+  repairPrematureFeedsFromWinners1,
 } from 'src/app/components/bracket-event/bracket-late-opponent';
 import {EventService} from 'src/app/services/event.service';
 import {UtilService} from 'src/app/services/util.service';
@@ -14,7 +16,6 @@ import {
   IBracketMatch,
   IDoubleElimEvent,
   IDynamicDYPEvent,
-  IEvent,
   MatchStatus,
   MatchTeamStatus,
 } from 'types';
@@ -74,6 +75,16 @@ export class UpdateMatchPage implements OnInit {
             ).eligible;
   }
 
+  get showPrematureFeedRepair(): boolean {
+    return this.event.format === EventFormat.DOUBLE_ELIM &&
+        this.event.type === EventType.ONE_VS_ONE &&
+        this.bracketName === 'winners' &&
+        this.roundIdx === 0 &&
+        !!this.event?.bracket &&
+        !this.event.endTime &&
+        hasPrematureFeedInWinners1(this.event.bracket, this.match);
+  }
+
   async addLateByeOpponent() {
     const name = this.lateOpponentName.trim();
     if (!name || !this.event?.bracket || this.event.format !== EventFormat.DOUBLE_ELIM) {
@@ -108,6 +119,42 @@ export class UpdateMatchPage implements OnInit {
     } catch (e) {
       console.error(e);
       this.utilService.showToast('Failed to update bracket.');
+    }
+  }
+
+  async repairPrematureFeeds() {
+    if (!this.event?.bracket || this.event.format !== EventFormat.DOUBLE_ELIM) {
+      return;
+    }
+    const bracket = cloneDeep(this.event.bracket);
+    const result = repairPrematureFeedsFromWinners1(bracket, this.matchIdx);
+
+    if (!('ok' in result && result.ok)) {
+      this.utilService.showToast(
+          'error' in result ? result.error : 'Could not repair.');
+      return;
+    }
+
+    const updates: {[key: string]: unknown} = {
+      'bracket.winners': bracket.winners,
+    };
+    for (const n of result.touchedMatchNumbers) {
+      updates[`bracket.results.${n}`] =
+          firebase.firestore.FieldValue.delete();
+    }
+
+    try {
+      await this.eventService.commitBracketAdminBatch(
+          this.event.id,
+          updates,
+          result.touchedMatchNumbers.map(String),
+      );
+      this.utilService.showToast(
+          `Cleared stale feed(s); reset match(es) ${result.touchedMatchNumbers.join(', ')}.`);
+      await this.modalController.dismiss();
+    } catch (e) {
+      console.error(e);
+      this.utilService.showToast('Failed to repair bracket.');
     }
   }
 

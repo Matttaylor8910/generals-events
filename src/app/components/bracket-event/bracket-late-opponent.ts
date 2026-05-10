@@ -31,6 +31,121 @@ function sameTeamPlayers(a?: IMatchTeam, b?: IMatchTeam): boolean {
   return isEqual(sortBy(a.players), sortBy(b.players));
 }
 
+/**
+ * Same bracket side after a bye advance — Firestore/clients sometimes have only
+ * `name` or only `players`; 1v1 should still match.
+ */
+export function teamsMatchByeFeed(r0: IMatchTeam, fed?: IMatchTeam): boolean {
+  if (!fed || !r0) {
+    return false;
+  }
+  if (sameTeamPlayers(r0, fed)) {
+    return true;
+  }
+  const a = r0.name?.trim();
+  const b = fed.name?.trim();
+  if (a && b && a === b) {
+    return true;
+  }
+  const rp = r0.players?.[0];
+  const fp = fed.players?.[0];
+  if (rp && fp && rp === fp) {
+    return true;
+  }
+  if (a && fp && a === fp) {
+    return true;
+  }
+  if (rp && b && rp === b) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Locate where the bye-advanced team sits in winners round 2 (full scan —
+ * formula slot can disagree with real data in edge cases).
+ */
+function findFedTeamPlacementInWinners1(
+    bracket: IDoubleEliminationBracket,
+    r0Team: IMatchTeam,
+): {next: IBracketMatch; fedSlot: number}|null {
+  for (const m of bracket.winners[1].matches) {
+    for (let i = 0; i < m.teams.length; i++) {
+      if (teamsMatchByeFeed(r0Team, m.teams[i])) {
+        return {next: m, fedSlot: i};
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * When round 1 is not finished but someone from this match still appears in
+ * winners round 2 (stale bye feed), offer a one-click cleanup.
+ */
+export function hasPrematureFeedInWinners1(
+    bracket: IDoubleEliminationBracket|undefined,
+    match: IBracketMatch,
+): boolean {
+  if (!bracket?.winners?.[1] || match.status === MatchStatus.COMPLETE) {
+    return false;
+  }
+  for (const t of match.teams) {
+    if (findFedTeamPlacementInWinners1(bracket, t)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Clear any of this match's teams that still appear in winners round 2 while
+ * this match is not complete (fixes stuck bye fallout after a bad clear slot).
+ */
+export function repairPrematureFeedsFromWinners1(
+    bracket: IDoubleEliminationBracket,
+    r0MatchIdx: number,
+): {ok: true; touchedMatchNumbers: number[]}|{error: string} {
+  const r0 = bracket.winners[0].matches[r0MatchIdx];
+  if (r0.status === MatchStatus.COMPLETE) {
+    return {error: 'This round 1 match is already complete.'};
+  }
+
+  const touched = new Set<number>();
+
+  for (const team of r0.teams) {
+    const p = findFedTeamPlacementInWinners1(bracket, team);
+    if (!p) {
+      continue;
+    }
+    const results = bracket.results[String(p.next.number)];
+    if (results &&
+        (results.team1Score > 0 || results.team2Score > 0)) {
+      return {
+        error: `Match ${p.next.number} already has recorded games — stop and fix manually.`,
+      };
+    }
+    p.next.teams[p.fedSlot] = {};
+    p.next.status = MatchStatus.NOT_STARTED;
+    for (const t of p.next.teams) {
+      if (t?.name) {
+        t.score = 0;
+        t.status = MatchTeamStatus.UNDECIDED;
+      }
+    }
+    p.next.bye = false;
+    touched.add(p.next.number);
+  }
+
+  bracket.winners[0].complete = false;
+  bracket.winners[1].complete = false;
+
+  if (!touched.size) {
+    return {error: 'No extra feed-through from this match was found.'};
+  }
+  return {ok: true, touchedMatchNumbers: [...touched]};
+}
+
 export interface LateByeEligibility {
   eligible: boolean;
   reason?: string;
@@ -64,13 +179,15 @@ export function getLateByeOpponentEligibility(
     return {eligible: false, reason: 'Expected a single-player bye match.'};
   }
 
-  const w0len = bracket.winners[0].matches.length;
-  const w1len = bracket.winners[1].matches.length;
-  const slot = getWinnersNextSlot(matchIdx, w0len, w1len);
-  const next = bracket.winners[1].matches[slot.matchIdx];
-  if (!next) {
-    return {eligible: false, reason: 'Next match not found.'};
+  const placement =
+      findFedTeamPlacementInWinners1(bracket, match.teams[0]);
+  if (!placement) {
+    return {
+      eligible: false,
+      reason: 'Could not find this player in winners round 2 (nothing to pull back).',
+    };
   }
+  const next = placement.next;
   if (next.status === MatchStatus.COMPLETE) {
     return {
       eligible: false,
@@ -82,13 +199,6 @@ export function getLateByeOpponentEligibility(
     return {
       eligible: false,
       reason: 'The next match already has recorded games.',
-    };
-  }
-  const fedTeam = next.teams[slot.teamIdx];
-  if (!sameTeamPlayers(match.teams[0], fedTeam)) {
-    return {
-      eligible: false,
-      reason: 'Bracket does not look like a bye feed-through (mismatch).',
     };
   }
   return {eligible: true};
@@ -118,10 +228,14 @@ export function applyLateOpponentToWinnersBye(
   }
 
   const w = bracket.winners;
-  const slot = getWinnersNextSlot(
-      matchIdx, w[0].matches.length, w[1].matches.length);
   const r0 = w[0].matches[matchIdx];
-  const next = w[1].matches[slot.matchIdx];
+  const place = findFedTeamPlacementInWinners1(bracket, r0.teams[0]);
+  if (!place) {
+    return {
+      error: 'Could not find this player in winners round 2 — fix manually or retry.',
+    };
+  }
+  const next = place.next;
 
   const existing = r0.teams[0];
   existing.status = MatchTeamStatus.UNDECIDED;
@@ -140,7 +254,7 @@ export function applyLateOpponentToWinnersBye(
   r0.bye = false;
   r0.status = MatchStatus.NOT_STARTED;
 
-  next.teams[slot.teamIdx] = {};
+  next.teams[place.fedSlot] = {};
   next.status = MatchStatus.NOT_STARTED;
   for (const t of next.teams) {
     if (t?.name) {

@@ -31,6 +31,17 @@
       </ion-button>
     </div>
 
+    <div class="late-bye-opponent feed-repair" *ngIf="showPrematureFeedRepair">
+      <p>
+        This round 1 match is not finished, but someone from it still appears in
+        the next winners round (usually after a bye was undone incorrectly). Remove
+        those stale slots and reset those matches.
+      </p>
+      <ion-button class="generals-button" (click)="repairPrematureFeeds()">
+        Remove stale feed-through &amp; reset next-round match(es)
+      </ion-button>
+    </div>
+
     <div class="teams">
       <div class="team" *ngFor="let team of match.teams; index as i">
         <h2 class="name">
