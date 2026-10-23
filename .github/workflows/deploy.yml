@@ -1,42 +1,61 @@
 name: Deploy to Firebase
 
+# Deploys hosting, Firestore rules/indexes, and Cloud Functions on every push
+# to master. Authenticates as the github-deploy service account whose key is
+# stored in the FIREBASE_DEPLOY_SA_KEY repository secret. To (re)create that
+# service account and secret run scripts/setup-github-deploy.sh.
+
 on:
   push:
     branches: [ master ]
+
+concurrency:
+  group: deploy-master
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      # The Angular 10 app only builds on Node 16
+      - name: Set up Node.js 16 for the app build
+        uses: actions/setup-node@v4
         with:
           node-version: 16.20.2
-
-      - name: Install Angular CLI
-        run: npm install -g @angular/cli
-
-      - name: Install Ionic CLI
-        run: npm install -g @ionic/cli
+          cache: npm
 
       - name: Install app dependencies
         run: npm ci --force
 
       - name: Install functions dependencies
-        run: cd functions && npm i --force && cd ..
+        run: npm --prefix functions ci --force
 
       - name: Build prod app
-        run: npm run build
+        run: npx ionic build --prod --release
+
+      # The functions run on Node 20 and the Firebase CLI needs Node 20 to
+      # load them for deployment
+      - name: Set up Node.js 20 for the deploy
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools@11.23.1 
+        run: npm install -g firebase-tools@13
+
+      - name: Write service account credentials
+        run: echo "$FIREBASE_DEPLOY_SA_KEY" > "$RUNNER_TEMP/firebase-deploy-key.json"
+        env:
+          FIREBASE_DEPLOY_SA_KEY: ${{ secrets.FIREBASE_DEPLOY_SA_KEY }}
 
       - name: Deploy to Firebase
-        run: firebase deploy
+        run: firebase deploy --project generals-tournaments --non-interactive --force
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-deploy-key.json
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-deploy-key.json"
