@@ -17,12 +17,16 @@ REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 SECRET_NAME=FIREBASE_DEPLOY_SA_KEY
 
 # Roles needed by `firebase deploy` for hosting, rules, indexes and 1st gen
-# functions that read Secret Manager secrets.
+# functions that read Secret Manager secrets. cloudscheduler.admin is for the
+# scheduled functions (updateSeasonEvent, getEventStars) and
+# artifactregistry.repoAdmin lets the CLI clean up function build images.
 ROLES=(
   roles/firebase.admin
   roles/iam.serviceAccountUser
   roles/secretmanager.viewer
   roles/serviceusage.serviceUsageConsumer
+  roles/cloudscheduler.admin
+  roles/artifactregistry.repoAdmin
 )
 
 echo ">>> service account"
