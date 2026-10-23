@@ -31,10 +31,29 @@ if ! gcloud iam service-accounts describe "$SA" --project "$PROJECT" >/dev/null 
     --display-name="GitHub Actions: firebase deploy"
 fi
 
+# a freshly created account takes a few seconds to become visible to IAM
+echo ">>> waiting for the service account to propagate"
+for attempt in $(seq 1 12); do
+  if gcloud iam service-accounts describe "$SA" --project "$PROJECT" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 5
+done
+
 echo ">>> roles"
 for ROLE in "${ROLES[@]}"; do
-  gcloud projects add-iam-policy-binding "$PROJECT" \
-    --member="serviceAccount:${SA}" --role="$ROLE" --condition=None --format=none
+  for attempt in $(seq 1 6); do
+    if gcloud projects add-iam-policy-binding "$PROJECT" \
+        --member="serviceAccount:${SA}" --role="$ROLE" --condition=None --format=none 2>/tmp/iam-err; then
+      break
+    fi
+    if [ "$attempt" -eq 6 ]; then
+      cat /tmp/iam-err >&2
+      exit 1
+    fi
+    echo "    $ROLE not applied yet, retrying in 10s"
+    sleep 10
+  done
 done
 
 echo ">>> key -> GitHub secret ${SECRET_NAME} on ${REPO}"
