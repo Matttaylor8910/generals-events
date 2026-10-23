@@ -1,8 +1,219 @@
 rules_version = '2';
+
+// Who can write what:
+//  - Cloud Functions use the admin SDK and bypass these rules entirely. All
+//    results (points, records, brackets, games, matches) are written by them.
+//  - Players log in with a Firebase custom token minted by the generals.io
+//    server, so their Firebase uid is their generals.io username. They may
+//    only register themselves, queue themselves, check themselves in, pick
+//    partners, and chat as themselves.
+//  - Event organizers are the usernames listed in generals.io/admins. They
+//    may manage events.
+//  - Everyone, logged in or not, may read. The generals.io homepage reads the
+//    events list and the homepage doc without logging in.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    // ---------------------------------------------------------------- helpers
+
+    function signedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    // organizers are listed in the generals.io/admins doc as {names: [...]}.
+    // Nothing in the auth token itself grants admin rights.
+    function isAdmin() {
+      return signedIn()
+          && me() in get(/databases/$(database)/documents/generals.io/admins).data.get('names', []);
+    }
+
+    // the uid IS the generals.io username
+    function me() {
+      return request.auth.uid;
+    }
+
+    function isMe(name) {
+      return signedIn() && me() == name;
+    }
+
+    // true if the update only touches the given fields
+    function changesOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    // list field `field` either did not change, or only gained me
+    function onlyAddedMe(field) {
+      let before = resource.data.get(field, []).toSet();
+      let after = request.resource.data.get(field, []).toSet();
+      return before == after
+          || (after.difference(before) == [me()].toSet()
+              && before.difference(after).size() == 0);
+    }
+
+    // list field `field` either did not change, or only lost me
+    function onlyRemovedMe(field) {
+      let before = resource.data.get(field, []).toSet();
+      let after = request.resource.data.get(field, []).toSet();
+      return before == after
+          || (before.difference(after) == [me()].toSet()
+              && after.difference(before).size() == 0);
+    }
+
+    function eventData(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId)).data;
+    }
+
+    function playerPath(eventId, name) {
+      return /databases/$(database)/documents/events/$(eventId)/players/$(name);
+    }
+
+    // a registered, not disqualified, player of the event
+    function isActivePlayer(eventId) {
+      return exists(playerPath(eventId, me()))
+          && get(playerPath(eventId, me())).data.get('dq', false) != true;
+    }
+
+    // ----------------------------------------------------------------- events
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || playerSelfServiceUpdate(eventId);
+
+      // players may add/remove themselves from the arena queue and check
+      // themselves in, nothing else on the event document
+      function playerSelfServiceUpdate(eventId) {
+        return signedIn()
+            && changesOnly(['queue', 'checkedInPlayers'])
+            && onlyAddedMe('checkedInPlayers')
+            && (onlyAddedMe('queue') || onlyRemovedMe('queue'))
+            && isActivePlayer(eventId);
+      }
+
+      // -------------------------------------------------------- leaderboard
+
+      match /players/{name} {
+        allow read: if true;
+        allow create: if isAdmin() || selfRegistration(eventId, name);
+        allow delete: if isAdmin() || isMe(name);
+        allow update: if isAdmin() || partnerUpdate(eventId, name);
+
+        // a player may register themselves with a blank record
+        function selfRegistration(eventId, name) {
+          let d = request.resource.data;
+          return isMe(name)
+              && d.keys().hasOnly(['name', 'rank', 'points', 'currentStreak', 'dq', 'record'])
+              && d.name == name
+              && d.rank == 0
+              && d.points == 0
+              && d.currentStreak == 0
+              && d.dq == false
+              && d.record.size() == 0
+              && eventData(eventId).get('disableJoin', false) != true;
+        }
+
+        // 2v2 partner selection touches your own doc, and the doc of the
+        // player you are (or were) paired with
+        function partnerUpdate(eventId, name) {
+          let after = request.resource.data;
+          return signedIn()
+              && changesOnly(['partner', 'partnerStatus', 'teamName'])
+              && after.get('partner', '') is string
+              && after.get('partnerStatus', '') is string
+              && after.get('teamName', '') is string
+              && after.get('teamName', '').size() <= 50
+              && isActivePlayer(eventId)
+              && (isMe(name) || pairedWithMe(name));
+        }
+
+        // you may only touch another player's partner fields while they are
+        // pointed at you, and you cannot point them at anybody else
+        function pairedWithMe(name) {
+          return name != me()
+              && resource.data.get('partner', '') == me()
+              && request.resource.data.get('partner', '') == me();
+        }
+      }
+
+      // --------------------------------------------------------------- chat
+
+      match /messages/{messageId} {
+        allow read: if true;
+        allow create: if signedIn() && validMessage() && chatOpen(eventId);
+        allow update: if false;
+        allow delete: if isAdmin();
+
+        function validMessage() {
+          let d = request.resource.data;
+          return d.keys().hasOnly(['sender', 'text', 'timestamp'])
+              && d.sender == me()
+              && d.text is string
+              && d.text.size() > 0
+              && d.text.size() <= 1000
+              && d.timestamp == request.time;
+        }
+
+        function chatOpen(eventId) {
+          let event = eventData(eventId);
+          return event.get('disableChat', false) != true
+              && !(me() in event.get('chatBlocklist', []));
+        }
+      }
+
+      // --------------------------------------------- lobby redirects (arena)
+
+      match /redirect/{redirectId} {
+        // only the players being sent to a lobby may see it
+        allow read: if isAdmin() || (signedIn() && me() in resource.data.players);
+        allow create, delete: if isAdmin();
+        // players clear their own redirect once they have followed it
+        allow update: if isAdmin()
+            || (signedIn() && changesOnly(['players']) && onlyRemovedMe('players'));
+      }
+
+      // ----------------------------------- results, written by functions only
+
+      match /games/{gameId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      match /matches/{matchId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      match /dyp-matches/{matchId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+
+      match /records/{recordId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ------------------------------------------------------- player profiles
+
+    match /players/{name} {
+      allow read: if true;
+      allow write: if false;
+
+      match /replays/{chunkId} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    // ------------------------------------------------- generals.io homepage
+
+    // homepage: read by the game client for the promoted event, champions, and
+    // the season championship modal (responses go through the API).
+    // admins: the organizer list that isAdmin() checks.
+    match /generals.io/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

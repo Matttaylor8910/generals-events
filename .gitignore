@@ -30,3 +30,6 @@ npm-debug.log*
 /plugins
 /www
 *.cache
+
+# service account keys must never be committed
+*-key.json

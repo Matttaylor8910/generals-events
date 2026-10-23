@@ -1,8 +1,9 @@
+import * as crypto from 'crypto';
 import * as express from 'express';
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
-import {GeneralsServer} from '../../../../constants';
+import {GeneralsServer, SITE_URLS} from '../../../../constants';
 import * as simulator from '../../util/simulator';
 
 try {
@@ -12,14 +13,88 @@ try {
 }
 const db: admin.firestore.Firestore = admin.firestore();
 
+// Comma separated list of keys that bots must send to use the endpoints that
+// change data. Set with: firebase functions:secrets:set API_KEYS
+const API_KEYS_ENV = 'API_KEYS';
+
+// Only the generals.io sites may call this API from a browser
+const ALLOWED_ORIGINS = new Set<string>(Object.values(SITE_URLS));
+
+/**
+ * Minimal CORS so the game client can POST season event responses
+ */
+function cors(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+) {
+  const origin = request.get('origin');
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    response.set('Access-Control-Allow-Origin', origin);
+    response.set('Vary', 'Origin');
+    response.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    response.set('Access-Control-Max-Age', '3600');
+  }
+  if (request.method === 'OPTIONS') {
+    response.status(204).end();
+    return;
+  }
+  next();
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Endpoints that write to the database require an API key, sent as either
+ * `Authorization: Bearer <key>` or an `x-api-key` header. Without this anyone
+ * could add anyone to an event or clear their lobby redirect.
+ */
+function requireApiKey(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+) {
+  const keys = (process.env[API_KEYS_ENV] || '')
+                   .split(',')
+                   .map(key => key.trim())
+                   .filter(key => key.length > 0);
+  if (keys.length === 0) {
+    response.status(503).json({
+      error: 'This API has no keys configured, writes are disabled',
+    });
+    return;
+  }
+
+  const authorization = request.get('authorization') || '';
+  const provided = authorization.startsWith('Bearer ') ?
+      authorization.slice('Bearer '.length).trim() :
+      (request.get('x-api-key') || '').trim();
+
+  if (!provided || !keys.some(key => safeEqual(key, provided))) {
+    response.status(401).json({
+      error: 'A valid API key is required. Ping @matt in the generals.io ' +
+          'discord to get one for your bot.',
+    });
+    return;
+  }
+  next();
+}
+
 // the express server that will live inside the cloud function
 const app = express();
 const main = express();
-main.use('/v1', app);
 main.use(express.json());
+main.use(cors);
+main.use('/v1', app);
 
 // the actual cloud function
-export const api = functions.https.onRequest(main);
+export const api =
+    functions.runWith({secrets: [API_KEYS_ENV]}).https.onRequest(main);
 
 app.get('/', async (request, response) => {
   response.send(`
@@ -104,7 +179,7 @@ app.get('/events/:eventId', async (request, response) => {
  * Every time this endpoint returns a lobby string, that redirect gets cleared
  * Each redirect can only be read one time
  */
-app.get('/events/:eventId/lobby/:name', async (request, response) => {
+app.get('/events/:eventId/lobby/:name', requireApiKey, async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
@@ -135,7 +210,7 @@ app.get('/events/:eventId/lobby/:name', async (request, response) => {
 /**
  * Add a given player to a given event
  */
-app.post('/events/:eventId/join/:name', async (request, response) => {
+app.post('/events/:eventId/join/:name', requireApiKey, async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
@@ -147,6 +222,7 @@ app.post('/events/:eventId/join/:name', async (request, response) => {
     const eventSnapshot = await eventRef.get();
     if (!eventSnapshot.exists) {
       response.json({success: false, message: 'event doesn\'t exist'});
+      return;
     }
 
     // ensure this user doesn't already exist
@@ -156,6 +232,7 @@ app.post('/events/:eventId/join/:name', async (request, response) => {
         success: false,
         message: `${name} is already in this event`,
       });
+      return;
     }
 
     // add the player to the event
@@ -180,7 +257,7 @@ app.post('/events/:eventId/join/:name', async (request, response) => {
 /**
  * Add a given player to the queue in a given event
  */
-app.post('/events/:eventId/queue/:name', async (request, response) => {
+app.post('/events/:eventId/queue/:name', requireApiKey, async (request, response) => {
   try {
     const {eventId, name} = request.params;
     if (!eventId) throw new Error('eventId is blank');
@@ -189,7 +266,8 @@ app.post('/events/:eventId/queue/:name', async (request, response) => {
     // ensure the event exists
     const snapshot = await db.collection('events').doc(eventId).get();
     if (!snapshot.exists) {
-      response.json({success: false, message: 'event doesn\'t esist'});
+      response.json({success: false, message: 'event doesn\'t exist'});
+      return;
     }
 
     // add the player to the event queue
@@ -200,5 +278,42 @@ app.post('/events/:eventId/queue/:name', async (request, response) => {
     response.json({success: true});
   } catch (error) {
     response.status(500).send(error);
+  }
+});
+
+/**
+ * Record a qualified player's answer to the season championship modal shown on
+ * generals.io. The generals.io SERVER calls this (never the game client) after
+ * resolving the player's username from their credential, so it is a
+ * server-to-server call protected by the API key like the bot endpoints.
+ *
+ * body: {username: string, response: 'yes' | 'maybe' | 'no'}
+ */
+app.post('/season-event/respond', requireApiKey, async (request, response) => {
+  try {
+    const {username, response: answer} = request.body || {};
+    if (typeof username !== 'string' || !username.trim() ||
+        username.includes('/')) {
+      response.status(400).json({error: 'username is required'});
+      return;
+    }
+
+    const {arrayUnion, arrayRemove} = admin.firestore.FieldValue;
+    const updates: {[answer: string]: {[field: string]: unknown}} = {
+      // they are registering, so they no longer need to be prompted
+      yes: {'seasonEndEvent.qualified': arrayRemove(username)},
+      maybe: {'seasonEndEvent.remindLater': arrayUnion(username)},
+      no: {'seasonEndEvent.notInterested': arrayUnion(username)},
+    };
+    if (typeof answer !== 'string' || !updates[answer]) {
+      response.status(400).json({error: 'response must be yes, maybe, or no'});
+      return;
+    }
+
+    await db.collection('generals.io').doc('homepage').update(updates[answer]);
+    response.json({success: true});
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({error: 'could not record response'});
   }
 });

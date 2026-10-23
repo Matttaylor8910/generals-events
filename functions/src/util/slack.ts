@@ -1,20 +1,27 @@
-// firebase functions:config:set slack.url="your://url.here"
-import * as functions from 'firebase-functions';
+// firebase functions:secrets:set SLACK_WEBHOOK_URL
+// Functions that post to slack must declare the secret with
+// functions.runWith({secrets: [SLACK_SECRET]})
 import * as request from 'request';
 
-const SLACK_URL = functions.config().slack.url;
+export const SLACK_SECRET = 'SLACK_WEBHOOK_URL';
+
 const SLACK_BOT = {
   username: 'Generals Events',
   channel: '#generals'
 };
 
 export async function postToSlack(text: string) {
+  const url = process.env[SLACK_SECRET];
   const message: any = {
     ...SLACK_BOT,
     text
   };
 
+  if (!url) {
+    console.warn('SLACK_WEBHOOK_URL is not set, not posting: ', message);
+    return;
+  }
+
   console.log('Posting the following to slack: ', message);
-  console.log('Using this URL: ', SLACK_URL);
-  return request.post(SLACK_URL, {json: message});
+  return request.post(url, {json: message});
 }

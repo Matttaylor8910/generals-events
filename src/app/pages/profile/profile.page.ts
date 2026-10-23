@@ -3,6 +3,7 @@ import {ActivatedRoute} from '@angular/router';
 import {take} from 'rxjs/operators';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {ProfileService} from 'src/app/services/profile.service';
+import {UtilService} from 'src/app/services/util.service';
 import {IGeneralsReplay, IPlayerProfile, IProfileStats, PlayerProfileStatus} from 'types';
 
 @Component({
@@ -22,6 +23,7 @@ export class ProfilePage {
       public readonly generals: GeneralsService,
       private readonly route: ActivatedRoute,
       private readonly profileService: ProfileService,
+      private readonly utilService: UtilService,
   ) {
     this.name = this.route.snapshot.params.name;
     this.profileService.getProfile(this.name).subscribe(profile => {
@@ -42,7 +44,16 @@ export class ProfilePage {
   }
 
   getGames() {
-    this.generals.getReplaysForUser(this.name);
+    // loading replays is expensive, so the function requires a login
+    if (!this.generals.name) {
+      this.utilService.showToast(
+          'Log in from an event page to load this profile');
+      return;
+    }
+    this.generals.getReplaysForUser(this.name).catch(error => {
+      console.error(error);
+      this.utilService.showToast('Could not load replays for this profile');
+    });
   }
 
   getReplays() {

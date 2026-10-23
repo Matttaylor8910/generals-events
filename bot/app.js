@@ -46,6 +46,12 @@ const safeName = encodeURIComponent(name);
 if (!userId) {
   throw `no bot for index ${botIndex}`;
 }
+if (!config.apiKey) {
+  throw 'config.apiKey is required to join events, see README.md';
+}
+
+// the events API requires a key for anything that changes an event
+const API_AUTH = {headers: {Authorization: `Bearer ${config.apiKey}`}};
 
 socket.on('disconnect', function() {
   console.error('Disconnected from server.');
@@ -146,7 +152,7 @@ function loadEvent() {
 
 function joinEvent() {
   console.log(`${name}\tjoining event ${eventId}`);
-  http.post(`${BASE_URL}/events/${eventId}/join/${safeName}`)
+  http.post(`${BASE_URL}/events/${eventId}/join/${safeName}`, null, API_AUTH)
       .then(() => {
         joinEventQueue();
       })
@@ -166,7 +172,7 @@ function joinEventQueue() {
     eventOver();
   } else {
     console.log(`joining queue as ${name}`);
-    http.post(`${BASE_URL}/events/${eventId}/queue/${safeName}`)
+    http.post(`${BASE_URL}/events/${eventId}/queue/${safeName}`, null, API_AUTH)
         .then(() => {
           pollLobby();
         })
@@ -181,7 +187,7 @@ function pollLobby() {
   if (endTime < Date.now()) {
     return eventOver();
   }
-  http.get(`${BASE_URL}/events/${eventId}/lobby/${safeName}`)
+  http.get(`${BASE_URL}/events/${eventId}/lobby/${safeName}`, API_AUTH)
       .then(response => {
         if (response.data.lobby) {
           joinCustomGameQueue(response.data.lobby);

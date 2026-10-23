@@ -6,3 +6,6 @@ lib/**/*.js.map
 typings/
 
 node_modules/
+
+# local secret values for the emulator, see .secret.local.example
+.secret.local

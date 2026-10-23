@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
 import {IChatMessage, IEvent} from '../../../../types';
-import {postToSlack} from '../../util/slack';
+import {postToSlack, SLACK_SECRET} from '../../util/slack';
 
 try {
   admin.initializeApp();
@@ -12,7 +12,8 @@ try {
 const db = admin.firestore();
 
 export const onCreateMessage =
-    functions.firestore.document('events/{eventId}/messages/{messageId}')
+    functions.runWith({secrets: [SLACK_SECRET]})
+        .firestore.document('events/{eventId}/messages/{messageId}')
         .onCreate(async (doc, context) => {
           const eventId = context.params.eventId;
           const eventRef = db.collection('events').doc(eventId);

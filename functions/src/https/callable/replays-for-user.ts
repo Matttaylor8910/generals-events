@@ -15,7 +15,18 @@ const db = admin.firestore();
 
 export const getReplaysForUser =
     functions.runWith({memory: '1GB', timeoutSeconds: 360})
-        .https.onCall(async (name) => {
+        .https.onCall(async (name: unknown, context) => {
+          // this kicks off a lot of requests to generals.io, so only let
+          // logged in users trigger it
+          if (!context.auth) {
+            throw new functions.https.HttpsError(
+                'unauthenticated', 'Log in to load a profile');
+          }
+          if (typeof name !== 'string' || !name.trim() || name.includes('/')) {
+            throw new functions.https.HttpsError(
+                'invalid-argument', 'A player name is required');
+          }
+
           // make a reference to the player and get their current status
           const playerRef = db.collection('players').doc(name);
           const player = await playerRef.get();

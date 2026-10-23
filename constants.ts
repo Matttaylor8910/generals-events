@@ -14,8 +14,13 @@ export const SITE_URLS = {
   [GeneralsServer.LOCAL]: 'http://localhost:8080',
 };
 
+// the sender name used for system messages in event chat, never a real login
+export const SYSTEM_SENDER = 'Automated Message';
+
+// event organizers, used for UI gating only. The database checks the names in
+// the generals.io/admins document (see firestore.rules), keep the two in sync.
 export const ADMINS = [
-  'Automated Message',
+  SYSTEM_SENDER,
   'only_human',
   'googleman',
   'Lazerpent',

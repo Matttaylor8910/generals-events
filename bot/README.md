@@ -16,7 +16,9 @@ const bots = [
 ];
 
 module.exports = {
-  bots: bots
+  bots: bots,
+  // key for the events API, ping @matt in the generals.io discord to get one
+  apiKey: 'yourApiKeyHere',
 };
 ```
 
