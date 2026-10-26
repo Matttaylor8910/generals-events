@@ -149,7 +149,10 @@ export class UtilService {
     for (let i = 0; i < entries.length; i++) {
       const [key, value] = entries[i];
       str += i === 0 ? '?' : '&';
-      str += `${key}=${value ?? ''}`;
+      // encode keys and values so map/option metadata can never inject or
+      // override a query parameter
+      str += `${encodeURIComponent(key)}=` +
+          encodeURIComponent(String(value ?? ''));
     }
 
     return str;

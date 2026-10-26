@@ -72,20 +72,25 @@ async function crawlRounds(
 
         // if all players are ready, update the match status
         if (match.status === MatchStatus.NOT_STARTED &&
-            match.ready.length === 4) {
+            match.ready.length === getPlayersPerMatch(match)) {
           await setMatchReady(snapshot, match);
         }
 
         // if the match is ready, see if it's over
         if (match.status === MatchStatus.READY) {
           const matchResults = event.results[String(match.number)] || {};
-          const {team1Score = 0, team2Score = 0} = matchResults;
+          let totalScore = 0;
 
-          match.teams[0].score = team1Score;
-          match.teams[1].score = team2Score;
+          match.teams.forEach((team, index) => {
+            const score = matchResults[`team${index + 1}Score`] || 0;
+            team.score = score;
+            totalScore += score;
+          });
 
           // TODO: un-hardcode this "play 3 games"
-          if (team1Score + team2Score === 3) {
+          // use >= so an overcounted or corrected score can never stall the
+          // match forever
+          if (totalScore >= 3) {
             await setMatchComplete(snapshot, match);
           }
         }
@@ -135,4 +140,8 @@ async function setMatchComplete(
     // when we cannot set matches as complete, it's because they were never
     // started in the first place, meaning it was probably a bye
   }
+}
+
+function getPlayersPerMatch(match: IDynamicDYPMatch): number {
+  return flatten(match.teams.map(team => team.players)).length;
 }

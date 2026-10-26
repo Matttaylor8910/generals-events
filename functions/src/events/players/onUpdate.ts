@@ -3,6 +3,7 @@ import * as functions from 'firebase-functions';
 
 import {EventFormat, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, ILeaderboardPlayerStats, IPlayerHistoryRecord, Visibility} from '../../../../types';
 import {getCurrentStars} from '../../util/generals';
+import * as TeamArena from '../../util/TeamArena';
 
 try {
   admin.initializeApp();
@@ -16,44 +17,57 @@ export const onUpdatePlayer =
         .onUpdate(async (doc, context) => {
           console.log(`${doc.after.id} updated`);
           const player = doc.after.data() as ILeaderboardPlayer;
-          const eventSnap = await doc.after.ref.parent.parent!.get();
+          const playerRef = doc.after.ref;
+          const eventSnap = await playerRef.parent.parent!.get();
           const event = (eventSnap.data() || {}) as IArenaEvent;
-
-          const updates: Partial<ILeaderboardPlayer> =
-              recordSanityCheck(player.record, event, player.dq);
 
           const currentStars =
               await getCurrentStars(player.name, event.type, event.server);
           const eventWins = await getEventWins(player.name, event.type);
 
-          const totalSeedPoints = getTSP(event, player);
-          console.log(`${player.name} has ${totalSeedPoints} TSP`);
+          // support dq for Multi-Stage Events
+          const messageRef = db.collection('events')
+              .doc(event.parentId || context.params.eventId)
+              .collection('messages').doc();
 
-          // generate some stats from the current record
-          updates.stats = {
-            eventWins,
-            currentStars,
-            totalSeedPoints,
-            ...getStats(updates.record!),
-          } as ILeaderboardPlayerStats;
+          return db.runTransaction(async tx => {
+            const playerSnap = await tx.get(playerRef);
+            if (!playerSnap.exists) return;
+            const eventTxSnap = await tx.get(playerRef.parent.parent!);
+            const current = playerSnap.data() as ILeaderboardPlayer;
+            const freshEvent = (eventTxSnap.data() || {}) as IArenaEvent;
 
-          // if this player just got disqualied, update their doc and send a
-          // message to the chat to let people know
-          if (updates.dq && !player.dq) {
-            // TODO: support dq for multiple reasons
-            const reason = 'playing in multiple games at once';
+            const updates: Partial<ILeaderboardPlayer> =
+                recordSanityCheck(
+                    (current.record || []).map(existing => ({...existing})),
+                    freshEvent, current.dq);
 
-            // support dq for Multi-Stage Events
-            const eventRef = db.collection('events').doc(event.parentId || context.params.eventId);
-            await eventRef.collection('messages').add({
-              sender: 'Automated Message',
-              text: `${player.name} has been disqualified for ${reason}.`,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-              color: 'red',
-            });
-          }
+            const totalSeedPoints = getTSP(freshEvent, current);
+            console.log(`${current.name} has ${totalSeedPoints} TSP`);
 
-          return doc.after.ref.update(updates);
+            // generate some stats from the current record
+            updates.stats = {
+              eventWins,
+              currentStars,
+              totalSeedPoints,
+              ...getStats(updates.record!),
+            } as ILeaderboardPlayerStats;
+
+            // if this player just got disqualied, update their doc and send a
+            // message to the chat to let people know
+            if (updates.dq && !current.dq) {
+              // TODO: support dq for multiple reasons
+              const reason = 'playing in multiple games at once';
+              tx.set(messageRef, {
+                sender: 'Automated Message',
+                text: `${current.name} has been disqualified for ${reason}.`,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                color: 'red',
+              });
+            }
+
+            tx.update(playerRef, updates);
+          });
         });
 
 export function recordSanityCheck(
@@ -61,7 +75,9 @@ export function recordSanityCheck(
     event: IArenaEvent,
     currentDq = false,
     ): Partial<ILeaderboardPlayer> {
-  record.sort((a, b) => a.finished - b.finished);
+  // sort by finish time, falling back to start time for records whose finish
+  // is unknown (legacy Chess Clock replays)
+  record.sort((a, b) => (a.finished ?? a.started) - (b.finished ?? b.started));
   let dq = currentDq;
 
   // compare the original and the newly sorted games in the record to see if
@@ -86,8 +102,11 @@ export function recordSanityCheck(
       currentStreak = 0;
     }
 
-    // FFA doesn't do streaks right now
-    if (event.type === EventType.FFA) {
+    // only records tagged as two-team games streak; untagged keep the legacy event rule
+    const streakEligible = game.teamCount !== undefined ?
+        game.teamCount === 2 :
+        event.type !== EventType.FFA && !TeamArena.isTeamArena(event);
+    if (!streakEligible) {
       // do nothing
     }
     // if this player should be on a streak, but their record indicates they are
@@ -109,14 +128,27 @@ export function recordSanityCheck(
       // do nothing
     }
 
-    // this player played in two games at the same time, disqualify them
-    if (nextGame?.started < game.finished) {
+    // finally increment to check the next record
+    i++;
+  }
+
+  // overlap detection runs on a copy ordered by start time, independently
+  // of the finish-sorted record above: an unknown-finish record sorted
+  // between two known games by finish time would otherwise mask their
+  // overlap. Only a finite known finish can close an interval, so a legacy
+  // clock record with an unknown finish still can never end an interval —
+  // but a later game that started while a known-finish game was still
+  // running is unambiguously overlapping
+  const byStart = record.slice().sort((a, b) => a.started - b.started);
+  for (let i = 0; i + 1 < byStart.length; i++) {
+    const game = byStart[i];
+    const nextGame = byStart[i + 1];
+    if (Number.isFinite(game.finished) &&
+        game.replayId !== nextGame.replayId &&
+        nextGame.started < (game.finished as number)) {
       console.log(`${game.replayId} overlaps with ${nextGame.replayId}`);
       dq = true;
     }
-
-    // finally increment to check the next record
-    i++;
   }
 
   return {

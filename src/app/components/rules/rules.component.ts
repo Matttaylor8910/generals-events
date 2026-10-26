@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent} from 'types';
+import {isTeamArena} from 'team-arena';
+import {DoublesPairingStrategy, EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent} from 'types';
 
 @Component({
   selector: 'app-rules',
@@ -25,6 +26,15 @@ export class RulesComponent {
 
   get isArena(): boolean {
     return this.event?.format === EventFormat.ARENA;
+  }
+
+  get isTeamArena(): boolean {
+    return isTeamArena(this.event);
+  }
+
+  get randomPartners(): boolean {
+    return this.isTeamArena && this.event?.doublesPairingStrategy ===
+        DoublesPairingStrategy.RANDOM_PARTNERS;
   }
 
   get isBracket(): boolean {

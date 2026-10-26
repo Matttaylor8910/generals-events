@@ -4,7 +4,10 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
 import {GeneralsServer, SITE_URLS} from '../../../../constants';
+import {GameStatus, IEventTeamLobby} from '../../../../types';
 import * as simulator from '../../util/simulator';
+import * as TeamArena from '../../util/TeamArena';
+import * as EventGameOptions from '../../util/EventGameOptions';
 
 try {
   admin.initializeApp();
@@ -125,15 +128,18 @@ app.get('/replays/:replayId/stats', async (request, response) => {
 
   try {
     if (!replayId) throw new Error('replayId is blank');
-    const {scores, summary, turns} =
+    const {scores, summary, turns, elapsedMs} =
         await simulator.getReplayStats(replayId, server);
     response.json({
       scores: scores.map(score => {
-        const {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound} = score;
-        return {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound};
+        const {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound, elapsedMs: scoreElapsedMs} = score;
+        return {name, kills, rank, lastTurn, killed, killedBy, tilesAfterFirstRound,
+            ...(scoreElapsedMs !== undefined ?
+                {elapsedMs: scoreElapsedMs} : {})};
       }),
       summary,
-      turns
+      turns,
+      ...(elapsedMs !== undefined ? {elapsedMs} : {}),
     });
   } catch (error) {
     response.status(500).send({
@@ -192,16 +198,50 @@ app.get('/events/:eventId/lobby/:name', requireApiKey, async (request, response)
                           .get();
 
     // find the first lobby, or null
-    const {lobby} = redirects?.docs[0]?.data() || {lobby: null};
+    const data = redirects?.docs[0]?.data() || {};
+    const {lobby = null} = data;
+
+    // team arena redirects carry the immutable roster payload bots need to
+    // build the event_team lobby query. The contract and the dispatch-time
+    // options/server snapshots are validated BEFORE the acknowledgement
+    // below consumes the redirect: a malformed or stale dispatch is left
+    // for diagnosis instead of being destroyed.
+    let teamPayload = null;
+    if (lobby && data.eventTeam) {
+      const eventSnap =
+          await db.collection('events').doc(eventId).get();
+      const event = eventSnap.data() || {};
+      const contract = TeamArena.loadLobby(data.eventTeam);
+      if (contract.gameSize !== event.playersPerGame) {
+        throw new Error(
+            'redirect team contract does not match this event');
+      }
+      const options = data.options === undefined ?
+          undefined :
+          EventGameOptions.normalizeEventGameOptions(data.options);
+      teamPayload = {
+        lobby,
+        eventTeam: contract,
+        arenaTeams: data.arenaTeams,
+        gameId: data.gameId,
+        players: contract.gameSize,
+        options,
+        server: data.server,
+      };
+    }
 
     // Each redirect can only be read one time
-    if (lobby !== null) {
+    if (lobby !== undefined && lobby !== null) {
       await redirects.docs[0].ref.update({
         players: admin.firestore.FieldValue.arrayRemove(name),
       });
     }
 
-    response.json({lobby});
+    if (teamPayload) {
+      response.json(teamPayload);
+    } else {
+      response.json({lobby});
+    }
   } catch (error) {
     response.status(500).send(error);
   }
@@ -255,6 +295,111 @@ app.post('/events/:eventId/join/:name', requireApiKey, async (request, response)
 });
 
 /**
+ * Authoritative dispatch lookup for a reserved team arena lobby, used by
+ * the game server to initialize the room instead of trusting browser
+ * query params. Body is exactly {lobby, username}; the API-key caller is
+ * trusted to supply the socket-authenticated username like the existing
+ * bots protocol. Returns the immutable STARTED dispatch snapshot —
+ * {lobby, eventTeam, options, server} — with public names/config only.
+ * Nothing here consumes the player's own redirect or accepts client
+ * roster/options writes.
+ */
+app.post('/events/:eventId/team-arena/lobby', requireApiKey,
+    async (request, response) => {
+  try {
+    const {eventId} = request.params;
+    const body = request.body || {};
+    const {lobby, username} = body;
+    if (!eventId || eventId.includes('/')) {
+      response.status(400).json({error: 'invalid eventId'});
+      return;
+    }
+    if (Object.keys(body).some(
+        key => !['lobby', 'username'].includes(key))) {
+      response.status(400).json({error: 'unexpected field'});
+      return;
+    }
+    const match = typeof lobby === 'string' &&
+        lobby.match(/^event_team_(.+)_([1-9][0-9]*)$/);
+    if (!match || match[1] !== eventId) {
+      response.status(400).json({error: 'invalid lobby'});
+      return;
+    }
+    if (typeof username !== 'string' || !username ||
+        username !== username.trim() || username.includes('/') ||
+        username.length > 30) {
+      response.status(400).json({error: 'invalid username'});
+      return;
+    }
+
+    const gameDoc =
+        await db.doc(`events/${eventId}/games/game_${match[2]}`).get();
+    const game = gameDoc.data();
+    // only the immutable STARTED dispatch proves the roster: a cancelled,
+    // scored, or stale game can never initialize a room
+    if (!gameDoc.exists || !game || game.lobby !== lobby ||
+        game.status !== GameStatus.STARTED) {
+      response.status(403).json({error: 'no dispatched game'});
+      return;
+    }
+    let contract: IEventTeamLobby;
+    try {
+      contract = TeamArena.loadLobby(game.eventTeam);
+    } catch (e) {
+      response.status(403).json({error: 'dispatch snapshot missing'});
+      return;
+    }
+    // the stored players/arenaTeams must exactly mirror the normalized
+    // contract rosters: same names, same teams, unique nonempty ids —
+    // never a nominal-count comparison
+    const flat = contract.teams.reduce(
+        (all, team) => all.concat(team), [] as string[]);
+    const storedPlayers = Array.isArray(game.players) ? game.players : [];
+    const rosterMatches = flat.length === storedPlayers.length &&
+        new Set(storedPlayers).size === storedPlayers.length &&
+        flat.every(name => storedPlayers.includes(name));
+    const teamSnapshots = Array.isArray(game.arenaTeams) ?
+        game.arenaTeams : [];
+    const ids = new Set(teamSnapshots.map(
+        (team: {id?: string}) => team && team.id));
+    const teamsMatch =
+        teamSnapshots.length === contract.teams.length &&
+        ids.size === teamSnapshots.length &&
+        ![...ids].some(id => !id) &&
+        teamSnapshots.every((team: {players?: string[]}, i: number) => {
+            const players = team && team.players;
+            return Array.isArray(players) &&
+                players.length === contract.teams[i].length &&
+                contract.teams[i].every(name => players.includes(name));
+        });
+    if (!rosterMatches || !teamsMatch ||
+        !contract.teams.some(team => team.includes(username))) {
+      response.status(403).json({error: 'player is not in this game'});
+      return;
+    }
+    // the dispatch-time options/server snapshots must exist and be valid;
+    // the normalizer maps undefined → {} so presence is checked first
+    if (!game.options || typeof game.options !== 'object' ||
+        Array.isArray(game.options) ||
+        !Object.values(GeneralsServer).includes(
+            game.server as GeneralsServer)) {
+      response.status(403).json({error: 'dispatch snapshot missing'});
+      return;
+    }
+    const options =
+        EventGameOptions.normalizeEventGameOptions(game.options);
+    if (options === null) {
+      response.status(403).json({error: 'dispatch snapshot missing'});
+      return;
+    }
+    response.json(
+        {lobby, eventTeam: contract, options, server: game.server});
+  } catch (error) {
+    response.status(500).send(error);
+  }
+});
+
+/**
  * Add a given player to the queue in a given event
  */
 app.post('/events/:eventId/queue/:name', requireApiKey, async (request, response) => {
@@ -267,6 +412,17 @@ app.post('/events/:eventId/queue/:name', requireApiKey, async (request, response
     const snapshot = await db.collection('events').doc(eventId).get();
     if (!snapshot.exists) {
       response.json({success: false, message: 'event doesn\'t exist'});
+      return;
+    }
+
+    // team arenas queue whole ready teams through the event page
+    // readiness flow; individuals cannot write the legacy queue directly
+    if (TeamArena.isTeamArena(snapshot.data())) {
+      response.json({
+        success: false,
+        message: 'This is a team arena event; use the event page to ready ' +
+            'up with your team instead of the queue endpoint',
+      });
       return;
     }
 

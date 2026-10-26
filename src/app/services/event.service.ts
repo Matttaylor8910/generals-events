@@ -5,9 +5,14 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {ADMINS} from '../../../constants';
-import {GameStatus, IEvent, IEventInfo, IGame, ILeaderboardPlayer, PartnerStatus, Visibility} from '../../../types';
+import {environment} from 'src/environments/environment';
+import {isTeamArena, loadEventTeam} from '../../../team-arena';
+
+import {EventType, GameStatus, IArenaEvent, IArenaGameTeam, IDoubleElimEvent, IEvent, IEventInfo, IEventTeamLobby, IGame, ILeaderboardPlayer, IRedirect, PartnerStatus, Visibility} from '../../../types';
 
 import {GeneralsService} from './generals.service';
+import {TeamArenaService} from './team-arena.service';
+import {TeamBracketService} from './team-bracket.service';
 
 @Injectable({providedIn: 'root'})
 export class EventService {
@@ -15,12 +20,17 @@ export class EventService {
   constructor(
       private readonly afs: AngularFirestore,
       private readonly generals: GeneralsService,
+      private readonly teamArenaService: TeamArenaService,
+      private readonly teamBracketService: TeamBracketService,
   ) {
     this.db = firebase.default.firestore();
   }
 
   async createEvent(event: Partial<IEvent>): Promise<string> {
-    const defaults = {visibility: Visibility.PUBLIC};
+    const defaults = {visibility: Visibility.PUBLIC,
+        // local emulator runs create events against the local GIO server
+        ...((environment as any).localEmulators ?
+            {server: 'loc' as any} : {})};
     const reset = {replays: [], playerCount: 0};
     event = {...defaults, ...event, ...reset};
 
@@ -45,7 +55,7 @@ export class EventService {
   }
 
   /**
-   * Get a list of events. You can optionally just get child events for 
+   * Get a list of events. You can optionally just get child events for
    * a multi-stage event
    *
    * @param parentEventId optional parent event if looking for children
@@ -100,7 +110,18 @@ export class EventService {
         }));
   }
 
-  addPlayer(eventId: string, name: string) {
+  async addPlayer(eventId: string, name: string) {
+    // team arena registrations may be re-attempted (queue auto-join, page
+    // reload); create-if-missing so a repeated join can never reset a
+    // scored record or double-count the player via the onCreate trigger
+    const eventRef = this.db.collection('events').doc(eventId);
+    const eventDoc = await eventRef.get();
+    if (isTeamArena(eventDoc.data())) {
+      // team arena registration is a server-side callable operation
+      // against the authenticated caller's own username
+      return this.teamArenaService.register(eventId);
+    }
+
     return this.afs.collection('events')
         .doc(eventId)
         .collection<ILeaderboardPlayer>('players')
@@ -115,12 +136,38 @@ export class EventService {
         });
   }
 
-  removePlayer(eventId: string, name: string) {
-    return this.afs.collection('events')
-        .doc(eventId)
-        .collection<ILeaderboardPlayer>('players')
-        .doc(name)
-        .delete();
+  async removePlayer(eventId: string, name: string): Promise<void> {
+    const eventRef = this.db.collection('events').doc(eventId);
+
+    // client-side consistency only: players may withdraw themselves and
+    // event organizers may purge a registration. This is NOT authorization;
+    // real enforcement must live in the Firestore rules.
+    const caller = this.generals.name;
+    if (caller !== name && !ADMINS.includes(caller)) {
+      throw new Error('You can only remove yourself from an event');
+    }
+
+    const eventDoc = await eventRef.get();
+
+    // team arenas remove the arena roster membership atomically with the
+    // registration so queued/playing invariants stay consistent; team
+    // totals and records are preserved on the event document
+    if (isTeamArena(eventDoc.data())) {
+      return this.teamArenaService.withdrawPlayer(eventId, name);
+    }
+
+    // non-big-team events keep the existing single doc delete
+    if (eventDoc.data()?.type !== EventType.BIG_TEAM) {
+      return this.afs.collection('events')
+          .doc(eventId)
+          .collection<ILeaderboardPlayer>('players')
+          .doc(name)
+          .delete();
+    }
+
+    // big team withdrawal (roster cleanup + delete) is a backend
+    // operation for the same reason: no client can orphan roster state
+    return this.teamBracketService.withdrawPlayer(eventId, name);
   }
 
   getPlayers(eventId: string): Observable<ILeaderboardPlayer[]> {
@@ -202,8 +249,11 @@ export class EventService {
           let rank = 1;
           for (const player of players) {
             // sort the records in descending order for the leaderboard UI:
-            // the games that happened most recently at the beginning
-            player.record.sort((a, b) => b.finished - a.finished);
+            // the games that happened most recently at the beginning;
+            // records with an unknown finish (legacy clock replays) order
+            // by their start time instead
+            player.record.sort((a, b) =>
+                (b.finished ?? b.started) - (a.finished ?? a.started));
             player.rank = rank++;
           }
 
@@ -211,18 +261,34 @@ export class EventService {
         }));
   }
 
-  joinQueue(eventId: string, name: string) {
+  async joinQueue(eventId: string, name: string) {
+    // team arenas queue whole ready teams via TeamArenaService.setReady;
+    // the legacy queue array must never carry an individual arena member
+    const eventDoc =
+        await this.db.collection('events').doc(eventId).get();
+    if (isTeamArena(eventDoc.data())) {
+      throw new Error(
+          'Team arena events use per-player readiness, not the queue');
+    }
     return this.afs.collection('events').doc(eventId).update(
         {queue: firebase.default.firestore.FieldValue.arrayUnion(name)});
   }
 
-  leaveQueue(eventId: string, name: string) {
+  async leaveQueue(eventId: string, name: string) {
+    const eventDoc =
+        await this.db.collection('events').doc(eventId).get();
+    if (isTeamArena(eventDoc.data())) {
+      // readiness is the queue; leaving the queue means unreadying
+      return this.teamArenaService.setReady(eventId, false);
+    }
     return this.afs.collection('events').doc(eventId).update(
         {queue: firebase.default.firestore.FieldValue.arrayRemove(name)});
   }
 
   getRedirect(eventId: string, name: string):
-      Observable<{lobby: string, id: string}> {
+      Observable<Pick<IRedirect,
+          'lobby' | 'gameId' | 'arenaTeams' | 'options' |
+          'server'> & {id: string, eventTeam?: IEventTeamLobby}> {
     return this.afs.collection('events')
         .doc(eventId)
         .collection(
@@ -235,9 +301,26 @@ export class EventService {
           if (!redirects?.length) {
             return null;
           }
+          // an acknowledged redirect drops this player from its list, so
+          // anything still matching is unacknowledged; prefer the latest
+          // dispatch when several are somehow pending at once
+          const latest = redirects.reduce((a, b) =>
+              (b.payload.doc.data()?.started || 0) >
+              (a.payload.doc.data()?.started || 0) ? b : a);
+          const data = latest.payload.doc.data() as IRedirect;
           return {
-            lobby: redirects[0].payload.doc.data()?.lobby,
-                id: redirects[0].payload.doc.id,
+            lobby: data?.lobby,
+            id: latest.payload.doc.id,
+            gameId: data?.gameId,
+            // the document holds the stored codec shape; decode to the
+            // wire contract at this boundary before anything sees it
+            eventTeam: data?.eventTeam ?
+                loadEventTeam(data.eventTeam) : undefined,
+            arenaTeams: data?.arenaTeams,
+            // dispatch-time snapshots: the game can never be invalidated by
+            // a later event edit
+            options: data?.options,
+            server: data?.server,
           }
         }));
   }
@@ -320,19 +403,98 @@ export class EventService {
     return this.selectPartner(eventId, currentPartner, name);
   }
 
-  setTeamName(eventId: string, players: string[], teamName: string):
-      Promise<void[]> {
-    return Promise.all(players.map(player => {
-      return this.afs.collection('events')
-          .doc(eventId)
-          .collection('players')
-          .doc(player)
-          .update({teamName});
-    }));
+  /**
+   * Atomically write a big team roster to every member's player doc. The
+   * roster may be partial while the captain is still building the team, but
+   * it can only ever grow: existing members must all agree on the same prior
+   * roster and captain, and no prior member may be dropped.
+   *
+   * These are client-side consistency checks only; they are NOT a substitute
+   * for authorization in the Firestore rules.
+   */
+  /**
+   * Big Team roster mutations run on the backend via the
+   * teamBracketAction callable. These thin methods only forward the
+   * action; identity comes from the caller's auth token server-side.
+   */
+  sendBigTeamInvite(eventId: string, target: string): Promise<void> {
+    return this.teamBracketService.sendInvite(eventId, target);
+  }
+
+  acceptBigTeamInvite(eventId: string, captain: string): Promise<void> {
+    return this.teamBracketService.acceptInvite(eventId, captain);
+  }
+
+  declineBigTeamInvite(eventId: string, captain: string): Promise<void> {
+    return this.teamBracketService.declineInvite(eventId, captain);
+  }
+
+  cancelBigTeamInvite(eventId: string, target: string): Promise<void> {
+    return this.teamBracketService.cancelInvite(eventId, target);
+  }
+
+  /**
+   * Remove the authenticated caller from their actual server-side roster.
+   */
+  leaveBigTeam(eventId: string): Promise<void> {
+    // the backend reads the caller's actual roster and applies the
+    // canonical captain-transfer/clear semantics server-side
+    return this.teamBracketService.leaveTeam(eventId);
+  }
+
+  async setTeamName(
+      eventId: string,
+      players: string[],
+      teamName: string,
+      ): Promise<void> {
+    const eventRef = this.db.collection('events').doc(eventId);
+    const sliced = (teamName || '').slice(0, 20);
+
+    // 2v2 team names keep the existing write-per-member behavior
+    const eventDoc = await eventRef.get();
+    if (eventDoc.data()?.type !== EventType.BIG_TEAM) {
+      await Promise.all(players.map(player => {
+        return this.afs.collection('events')
+            .doc(eventId)
+            .collection('players')
+            .doc(player)
+            .update({teamName: sliced});
+      }));
+      return;
+    }
+
+    // big team renames are captain-only mirrored writes on the backend
+    return this.teamBracketService.renameTeam(eventId, sliced);
   }
 
   updateEvent(eventId: string, data: Partial<IEvent>) {
-    return this.afs.collection('events').doc(eventId).update(data);
+    // live team arenas lock their structural configuration server-side:
+    // once any team, readiness entry, in-flight game, or completed match
+    // exists, changing the mode/type/format/team size/game size would
+    // invalidate existing rosters and dispatched lobby contracts
+    const eventRef = this.db.collection('events').doc(eventId);
+    return this.db.runTransaction(async tx => {
+      const eventDoc = await tx.get(eventRef);
+      const event = eventDoc.data() as IArenaEvent;
+      if (eventDoc.exists && isTeamArena(event)) {
+        const live = !!(
+            event.arenaTeams?.length ||
+            Object.keys(event.arenaReady || {}).length ||
+            event.arenaPlaying?.length ||
+            event.arenaMatchNumber ||
+            event.ongoingGameCount || event.completedGameCount);
+        const structural: (keyof IEvent)[] = [
+          'format', 'type', 'doublesPairingStrategy', 'teamSize',
+          'playersPerGame'];
+        if (live && structural.some(field =>
+            data[field] !== undefined &&
+            JSON.stringify(data[field]) !== JSON.stringify(event[field]))) {
+          throw new Error(
+              'Team arena structure cannot change once games exist');
+        }
+      }
+      tx.update(eventRef, data);
+    });
   }
 
   /**

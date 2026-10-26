@@ -8,6 +8,7 @@ import {UtilService} from 'src/app/services/util.service';
 import {EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam} from 'types';
 
 import {ADMINS} from '../../../../constants';
+import {getConfirmedBigTeams, isValidTeamMembers, isValidTeamSize, teamIdentity} from '../../../../teams';
 
 import {getShuffledBracket} from './bracket-creator';
 
@@ -56,7 +57,8 @@ export class BracketEventComponent {
               'The event has started! Good luck have fun!', 5000);
         }
       }
-    } else if (changes['event'] !== undefined) {
+    } else if (changes['event'] !== undefined ||
+               changes['players'] !== undefined) {
       this.generatePreviewBracket();
     }
   }
@@ -141,6 +143,10 @@ export class BracketEventComponent {
   }
 
   getConfirmedTeams(): IMatchTeam[] {
+    if (this.event?.type === EventType.BIG_TEAM) {
+      return this.getConfirmedBigTeams();
+    }
+
     const teams = [];
     const partnerMap = new Map<string, string>();
 
@@ -160,26 +166,34 @@ export class BracketEventComponent {
     return teams;
   }
 
+  getConfirmedBigTeams(): IMatchTeam[] {
+    return getConfirmedBigTeams(this.event, this.players);
+  }
+
+  /**
+   * The teams currently eligible to be placed in the bracket
+   */
+  private getEligibleTeams(): IMatchTeam[] {
+    // 1v1 just passes the list of checked in players
+    if (this.event.type === EventType.ONE_VS_ONE) {
+      return this.players
+          .filter(player => this.event.checkedInPlayers.includes(player.name))
+          .map(player => ({name: player.name, players: [player.name]}));
+    }
+
+    // 2v2 and Big Team use confirmed teams
+    // TODO: support DYP!
+    return this.getConfirmedTeams();
+  }
+
   createBracket() {
     try {
-      let teams = [];
-
-      // 1v1 just passes the list of checked in players
-      if (this.event.type === EventType.ONE_VS_ONE) {
-        this.players.forEach(player => {
-          if (this.event.checkedInPlayers.includes(player.name)) {
-            teams.push({name: player.name, players: [player.name]});
-          }
-        });
+      const bracket = getShuffledBracket(this.event, this.getEligibleTeams());
+      if (!bracket) {
+        this.utilService.showToast('Error creating bracket... are there enough players?');
+        return;
       }
-
-      // 2v2 passes the list of confirmed teams
-      // TODO: support DYP!
-      else {
-        teams = this.getConfirmedTeams();
-      }
-
-      this.bracket = getShuffledBracket(this.event, teams);
+      this.bracket = bracket;
     } catch {
       this.utilService.showToast('Error creating bracket... are there enough players?');
     }
@@ -213,10 +227,67 @@ export class BracketEventComponent {
   }
 
   startEvent() {
+    // UI consistency only: real authorization lives in the Firestore rules
+    if (!this.isAdmin) {
+      this.utilService.showToast('Only event organizers can start the event');
+      return;
+    }
+    if (this.event?.bracket || this.event?.endTime) {
+      this.utilService.showToast('The event has already started');
+      return;
+    }
+    if (!this.bracket) {
+      this.utilService.showToast('Create a bracket before starting the event');
+      return;
+    }
+
+    // the team partitions actually in the generated bracket: every real
+    // (non-bye, non-placeholder) first round team by canonical identity
+    const bracketTeams = new Set<string>();
+    let participants = 0;
+    let malformed = false;
+    this.bracket.winners?.[0]?.matches?.forEach(match => {
+      match.teams.forEach(team => {
+        if (!team.players?.length) {
+          return;
+        }
+        if (!isValidTeamMembers(team.players)) {
+          malformed = true;
+          return;
+        }
+        bracketTeams.add(teamIdentity(team.players));
+        participants += team.players.length;
+      });
+    });
+
+    // the teams eligible to be in the bracket right now, with valid rosters
+    const eligibleTeams = this.getEligibleTeams().filter(team => {
+      if (!isValidTeamMembers(team.players)) {
+        return false;
+      }
+      // Big Team candidates must carry a proper roster for this event
+      return this.event.type !== EventType.BIG_TEAM ||
+          (isValidTeamSize(this.event.teamSize) &&
+           team.players.length === this.event.teamSize);
+    });
+    const eligibleIdentities = eligibleTeams.map(team => {
+      return teamIdentity(team.players);
+    });
+
+    // a stale bracket no longer matches the current eligible team
+    // partitions, even when it contains the same players on different teams
+    if (malformed || !bracketTeams.size || !eligibleTeams.length ||
+        bracketTeams.size !== eligibleTeams.length ||
+        !eligibleIdentities.every(identity => bracketTeams.has(identity))) {
+      this.utilService.showToast(
+          'The bracket is stale, regenerate it before starting the event');
+      return;
+    }
+
     this.eventService.updateEvent(this.event.id, {
       bracket: this.bracket,
       startTime: Date.now(),
-      playerCount: this.event.checkedInPlayers.length,
+      playerCount: participants,
     });
   }
 
@@ -244,32 +315,50 @@ export class BracketEventComponent {
   }
 
   generatePreviewBracket() {
-    if (this.event?.tsp && this.players) {
-      const cloned = cloneDeep(this.event);
-      if (cloned.checkedInPlayers.length < 3) {
-        if (this.event?.qualified?.length > 0) {
-          cloned.checkedInPlayers =
-              this.players.filter(this.canPlayInEvent.bind(this))
-                  .map(p => p.name);
-        } else {
-          cloned.checkedInPlayers = this.players.map(p => p.name);
-        }
+    if (!this.event?.tsp || !this.players) {
+      delete this.preview;
+      return;
+    }
+
+    const cloned = cloneDeep(this.event);
+    cloned.checkedInPlayers = cloned.checkedInPlayers || [];
+
+    // Big Team previews must use the actual check-in list: unchecked teams
+    // are never eligible. Other event types keep the existing fallback that
+    // previews everyone as potentially checked in.
+    if (this.event.type !== EventType.BIG_TEAM &&
+        cloned.checkedInPlayers.length < 3) {
+      if (this.event?.qualified?.length > 0) {
+        cloned.checkedInPlayers =
+            this.players.filter(this.canPlayInEvent.bind(this))
+                .map(p => p.name);
+      } else {
+        cloned.checkedInPlayers = this.players.map(p => p.name);
       }
-      const teams = [];
+    }
+
+    // Big Team events preview the confirmed teams; other events preview
+    // each checked in player as their own 1v1 team
+    let teams: IMatchTeam[];
+    if (this.event.type === EventType.BIG_TEAM) {
+      teams = getConfirmedBigTeams(cloned, this.players);
+    } else {
+      teams = [];
       this.players.forEach(player => {
         if (cloned.checkedInPlayers.includes(player.name)) {
           teams.push({name: player.name, players: [player.name]});
         }
       });
+    }
 
-      // we need a minimum of 3 teams for the bracket to render
-      if (teams.length >= 3) {
-        const bracket = getShuffledBracket(cloned, teams);
-        delete this.preview;
-        setTimeout(() => {
-          this.preview = bracket;
-        }, 500);
-      }
+    // brackets now support a minimum of two teams; drop any stale preview
+    // when fewer teams remain eligible or one cannot be generated
+    const bracket = teams.length >= 2 ?
+        getShuffledBracket(cloned, teams) : null;
+    if (bracket) {
+      this.preview = bracket;
+    } else {
+      delete this.preview;
     }
   }
 

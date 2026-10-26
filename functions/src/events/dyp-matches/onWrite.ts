@@ -4,9 +4,11 @@ import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 import {flatten} from 'lodash';
 
 import {GeneralsServer} from '../../../../constants';
-import {GameSpeed, IArenaEvent, IDynamicDYPMatchDocument, IGeneralsReplay, MatchStatus} from '../../../../types';
+import {GameSpeed, IArenaEvent, IDynamicDYPMatchDocument, IGeneralsReplay, ILeaderboardPlayer, MatchStatus} from '../../../../types';
 import {getReplaysForUsername} from '../../util/generals';
 import * as simulator from '../../util/simulator';
+import * as TeamArena from '../../util/TeamArena';
+import {recordSanityCheck} from '../players/onUpdate';
 import {getFinishedTime, timeoutAfter, keepLookingIn10Seconds} from '../../util/util';
 
 try {
@@ -148,73 +150,211 @@ async function saveReplayToMatch(
     eventRef: admin.firestore.DocumentReference,
     event: IArenaEvent,
     ): Promise<void> {
-  const {number, players} = matchSnapshot.data() as IDynamicDYPMatchDocument;
-
-  const batch = db.batch();
-  batch.update(eventRef, {
-    replays: admin.firestore.FieldValue.arrayUnion(replay.id),
-    completedGameCount: admin.firestore.FieldValue.increment(1),
-  });
+  const {number, teams} = matchSnapshot.data() as IDynamicDYPMatchDocument;
 
   console.log(`getting replay stats for ${replay.id}`);
 
-  // pull down the replay and save it to the game doc
-  const {scores, summary, turns} =
-      await simulator.getReplayStats(replay.id, event.server);
+  // pull down the replay and save it to the game doc; the event's options
+  // verify the replay was actually played with the configured modifiers
+  const expectedTeams = (teams || []).map((team, index) => ({
+    id: String(index),
+    name: (team as any).name || String(index),
+    players: team.players || [],
+  }));
+  const teamMatch = expectedTeams.some(team => team.players.length > 1);
+
+  const stats: any = teamMatch ?
+      await simulator.getTeamArenaReplayStats(
+          replay.id, event.server, event.options, expectedTeams) :
+      await simulator.getReplayStats(
+          replay.id, event.server, event.options);
+  const {summary, turns, elapsedMs} = stats;
+  let scores: any[] = stats.scores;
+
+  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
+  const finished =
+      getFinishedTime(replay.started, turns, speed, elapsedMs);
+
+  let scoredTeams: any[] | undefined;
+  if (teamMatch) {
+    const speedFactor = parseFloat(event.options?.speed || '1x') || 1;
+    const afterTime = finished !== null &&
+        Number.isFinite(event.endTime) && event.endTime < finished;
+    const durationMinutes = afterTime ? 0 :
+        elapsedMs === undefined ? Math.floor(turns / (60 * speedFactor)) :
+        (elapsedMs === null ? 0 : Math.floor(elapsedMs / 60000));
+    ({teams: scoredTeams, scores} = TeamArena.scoreTeamArena(
+        expectedTeams, stats.scores, stats.teamOutcomes!,
+        durationMinutes));
+  }
 
   // determine which team won
-  const winner = scores[0];
-  const index = players.indexOf(winner.name);
-  const winners =
-      [0, 1].includes(index) ? players.slice(0, 2) : players.slice(2);
+  let winningTeamIndex;
+  if (scoredTeams) {
+    const winning = scoredTeams.find(team => team.rank === 1)!;
+    winningTeamIndex =
+        expectedTeams.findIndex(team => team.id === winning.id);
+  } else {
+    const winner = scores[0];
+    winningTeamIndex = teams.findIndex(team => {
+      return team.players.includes(winner.name);
+    });
+  }
+  const winners = winningTeamIndex >= 0 ?
+      expectedTeams[winningTeamIndex].players : [scores[0].name];
 
   // increment the score in the results map
-  const teamToIncrement = [0, 1].includes(index) ? 'team1Score' : 'team2Score';
+  const teamToIncrement = `team${winningTeamIndex + 1}Score`;
   console.log(`incrementing team ${teamToIncrement} for match ${number}`);
+
+  if (scoredTeams) {
+    await db.runTransaction(async tx => {
+      const eventDoc = await tx.get(eventRef);
+      const matchDoc = await tx.get(matchSnapshot.ref);
+      const eventData = (eventDoc.data() || {}) as IArenaEvent;
+      const matchData =
+          (matchDoc.data() || {}) as IDynamicDYPMatchDocument;
+      if ((eventData.replays || []).includes(replay.id) ||
+          (matchData.replays || []).some(
+              (entry: any) => entry.replayId === replay.id)) {
+        console.log(`${replay.id} already recorded for match ${number}`);
+        return;
+      }
+      const playerDocs =
+          new Map<string, admin.firestore.DocumentSnapshot>();
+      for (const player of scores) {
+        playerDocs.set(player.name, await tx.get(
+            eventRef.collection('players').doc(player.name)));
+      }
+
+      tx.update(eventRef, {
+        replays: admin.firestore.FieldValue.arrayUnion(replay.id),
+        completedGameCount: admin.firestore.FieldValue.increment(1),
+        [`results.${number}.${teamToIncrement}`]:
+            admin.firestore.FieldValue.increment(1),
+      });
+
+      const finalScores: any[] = [];
+      for (const player of scores.map(score => ({...score}))) {
+        const playerDoc = playerDocs.get(player.name);
+        if (!playerDoc || !playerDoc.exists) {
+          finalScores.push({...player});
+          continue;
+        }
+        const playerRef =
+            eventRef.collection('players').doc(player.name);
+
+        const teamIndex = expectedTeams.findIndex(team => {
+          return team.players.includes(player.name);
+        });
+        const opponents = flatten(expectedTeams
+            .filter((_, index) => index !== teamIndex)
+            .map(team => team.players));
+
+        // scored players already carry their team's rank
+        const finishedAt = getFinishedTime(replay.started,
+            player.lastTurn, speed, player.elapsedMs ?? elapsedMs);
+        if (winners.includes(player.name)) {
+          // set the lastTurn for each of the winners to be the max between teammates
+          // for the purpose of showing an accurate quickest win stat
+          const lastTurns =
+              scores.filter(s => winners.includes(s.name))
+                  .map(s => s.lastTurn);
+          player.lastTurn = Math.max(...lastTurns);
+        }
+
+        // determine finished for this player; exact clock replays use the
+        // player's death offset (or the game duration for survivors), an
+        // unknown legacy clock duration yields an unknown finish
+        const record = {
+          replayId: replay.id,
+          started: replay.started,
+          finished: finishedAt,
+          ...player,
+
+          // TODO make this an offical object at some point
+          opponents,
+        };
+
+        const history =
+            (((playerDoc.data() || {}) as ILeaderboardPlayer).record || [])
+                .map(existing => ({...existing}));
+        const sanity = recordSanityCheck(
+            [...history, record], event, (playerDoc.data() || {}).dq);
+        const finalized = sanity.record!.find(
+            r => r.replayId === replay.id) || record;
+        tx.update(playerRef, {
+          record: sanity.record,
+          points: sanity.points,
+          currentStreak: sanity.currentStreak,
+        });
+        finalScores.push({
+          ...player, points: finalized.points, streak: finalized.streak});
+      }
+
+      // save the replay to the match doc
+      tx.update(matchSnapshot.ref, {
+        updated: Date.now(),
+        replays: admin.firestore.FieldValue.arrayUnion({
+          replayId: replay.id,
+          started: replay.started,
+          finished,
+          ...(elapsedMs !== undefined ? {elapsedMs} : {}),
+          replay: {scores: finalScores, summary, turns,
+              teams: scoredTeams,
+              teamOutcomes: stats.teamOutcomes,
+              ...(elapsedMs !== undefined ? {elapsedMs} : {})},
+        }),
+      });
+    });
+    console.log('done!');
+    return;
+  }
+
+  const batch = db.batch();
+
   batch.update(eventRef, {
+    replays: admin.firestore.FieldValue.arrayUnion(replay.id),
+    completedGameCount: admin.firestore.FieldValue.increment(1),
     [`results.${number}.${teamToIncrement}`]:
         admin.firestore.FieldValue.increment(1)
   });
 
-  // save the replay to the match doc
-  const speed = event.options?.speed ?? GameSpeed.SPEED_1X;
-  batch.update(matchSnapshot.ref, {
-    updated: Date.now(),
-    replays: admin.firestore.FieldValue.arrayUnion({
-      replayId: replay.id,
-      started: replay.started,
-      finished: getFinishedTime(replay.started, turns, speed),
-      replay: {scores, summary, turns},
-    }),
-  });
-
+  const finalScores: any[] = [];
   for (const player of scores) {
     // determine if this player is in the event
     const playerRef = eventRef.collection('players').doc(player.name);
     const playerDoc = await playerRef.get();
-    if (!playerDoc.exists) continue;
+    if (!playerDoc.exists) {
+      finalScores.push({...player});
+      continue;
+    }
 
-    const opponents =
-        [0, 1].includes(index) ? players.slice(2) : players.slice(0, 2);
+    const teamIndex = expectedTeams.findIndex(team => {
+      return team.players.includes(player.name);
+    });
+    const opponents = flatten(expectedTeams
+        .filter((_, index) => index !== teamIndex)
+        .map(team => team.players));
 
-    // update the rank to either be 1 or 2 for dyp
+    // scored players already carry their team's rank
+    const finishedAt = getFinishedTime(replay.started, player.lastTurn,
+        speed, player.elapsedMs ?? elapsedMs);
     if (winners.includes(player.name)) {
-      player.rank = 1;
-
-      // set the lastTurn for each of the winners to be the max between the two
+      // set the lastTurn for each of the winners to be the max between teammates
       // for the purpose of showing an accurate quickest win stat
       const lastTurns =
           scores.filter(s => winners.includes(s.name)).map(s => s.lastTurn);
       player.lastTurn = Math.max(...lastTurns);
-    } else {
-      player.rank = 2;
     }
 
-    // determine finished for this player based on their last turn
+    // determine finished for this player; exact clock replays use the
+    // player's death offset (or the game duration for survivors), an
+    // unknown legacy clock duration yields an unknown finish
     const record = {
       replayId: replay.id,
       started: replay.started,
-      finished: getFinishedTime(replay.started, player.lastTurn, speed),
+      finished: finishedAt,
       ...player,
 
       // TODO make this an offical object at some point
@@ -225,7 +365,23 @@ async function saveReplayToMatch(
     batch.update(playerRef, {
       record: admin.firestore.FieldValue.arrayUnion(record),
     });
+    finalScores.push({...player});
   }
+
+  // save the replay to the match doc
+  batch.update(matchSnapshot.ref, {
+    updated: Date.now(),
+    replays: admin.firestore.FieldValue.arrayUnion({
+      replayId: replay.id,
+      started: replay.started,
+      finished,
+      ...(elapsedMs !== undefined ? {elapsedMs} : {}),
+      replay: {scores: finalScores, summary, turns,
+          ...(scoredTeams ? {teams: scoredTeams} : {}),
+          ...(stats.teamOutcomes ? {teamOutcomes: stats.teamOutcomes} : {}),
+          ...(elapsedMs !== undefined ? {elapsedMs} : {})},
+    }),
+  });
 
   console.log('committing...');
   await batch.commit();

@@ -2,40 +2,76 @@
 
   <!-- confirmed teams -->
   <h3>{{ confirmedTeamsHeader }} </h3>
+
   <div class="team" *ngFor="let team of confirmedTeams; let i = index; trackBy: trackByFn">
     <div>
       <div class="name">{{ team.name }}</div>
       <div class="placeholder" *ngIf="team.placeholder">{{ team.placeholder }}</div>
     </div>
     <div *ngIf="onTeam(team)">
-      <ion-button class="generals-button" (click)="setTeamName(team)">Set team name</ion-button>
-      <ion-button class="generals-button color-secondary" (click)="leaveTeam()">Leave Team</ion-button>
+      <ion-button *ngIf="!isBigTeam || me?.teamCaptain === generals.name" class="generals-button" [disabled]="busy" (click)="setTeamName(team)">Set team name</ion-button>
+      <ion-button class="generals-button color-secondary" [disabled]="busy" (click)="leaveTeam()">Leave Team</ion-button>
     </div>
   </div>
   <p *ngIf="confirmedTeams.length === 0">
     No confirmed teams just yet
   </p>
 
+  <!-- current incomplete team, shown only when it isn't already listed as a
+       confirmed team so players aren't stranded without a leave control -->
+  <ng-container *ngIf="showCurrentTeam">
+    <h3>Your Team (incomplete):</h3>
+    <div class="team">
+      <div>
+        <div class="name">{{ currentTeam.name }}</div>
+        <div class="placeholder" *ngIf="currentTeam.placeholder">{{ currentTeam.placeholder }}</div>
+      </div>
+      <div>
+        <ion-button *ngIf="me?.teamCaptain === generals.name" class="generals-button" [disabled]="busy" (click)="setTeamName(currentTeam)">Set team name</ion-button>
+        <ion-button class="generals-button color-secondary" [disabled]="busy" (click)="leaveTeam()">Leave Team</ion-button>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="isBigTeam">
+    <ng-container *ngIf="bigTeamInvites.length">
+      <h3>Team Invitations:</h3>
+      <div class="partner-request" *ngFor="let captain of bigTeamInvites">
+        <span>Join <b>{{ captain }}</b>'s team?</span>
+        <ion-button [disabled]="busy" (click)="acceptBigTeamInvite(captain)">Accept</ion-button>
+        <ion-button [disabled]="busy" (click)="declineBigTeamInvite(captain)">Decline</ion-button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="sentBigTeamInvites.length">
+      <h3>Sent Invitations:</h3>
+      <div class="partner-request" *ngFor="let target of sentBigTeamInvites">
+        <span>Waiting for <b>{{ target }}</b></span>
+        <ion-button [disabled]="busy" (click)="cancelBigTeamInvite(target)">Cancel Invitation</ion-button>
+      </div>
+    </ng-container>
+  </ng-container>
+
   <!-- only show the choosing partner logic if this player is taking requests -->
   <ng-container *ngIf="takingRequests; else remainingPlayers">
     <!-- available partners to choose from -->
-    <h3>Available Partners (click to choose):</h3>
+    <h3>{{ isBigTeam ? 'Available Teammates (click to invite):' : 'Available Partners (click to choose):' }}</h3>
     <div class="available-partners">
-      <ion-button *ngFor="let player of availablePartners; let i = index; trackBy: trackByFn" (click)="choosePartner(player)">
+      <ion-button *ngFor="let player of availablePartners; let i = index; trackBy: trackByFn" [disabled]="busy" (click)="choosePartner(player)">
         {{ player.name }}
       </ion-button>
 
       <p *ngIf="availablePartners.length === 0">
-        No partners to choose from
+        No {{ isBigTeam ? 'teammates' : 'partners' }} to choose from
       </p>
     </div>
 
     <!-- available partners to choose from -->
     <ng-container *ngIf="partnerRequests.length > 0">
+
       <h3>Partner Requests:</h3>
       <div class="partner-request" *ngFor="let player of partnerRequests; let i = index; trackBy: trackByFn">
         <span>Play with <b>{{ player.name }}</b>?</span>
-        <ion-button (click)="acceptPartner(player)">Accept</ion-button>
+        <ion-button [disabled]="busy" (click)="acceptPartner(player)">Accept</ion-button>
       </div>
     </ng-container>
   </ng-container>
@@ -43,14 +79,14 @@
   <ng-template #remainingPlayers>
     <ng-container *ngIf="availablePartners.length > 0; else allSet">
       <h5 *ngIf="availablePartners.length === 1">
-        {{ availablePartners[0].name }} is checked in but doesn't have a partner...
+        {{ availablePartners[0].name }} is checked in but doesn't have {{ isBigTeam ? 'a team yet' : 'a partner' }}...
       </h5>
       <h5 *ngIf="availablePartners.length > 1">
-        {{ availablePartners.length }} {{ availablePartners.length === 1 ? 'player' : 'players' }} looking for a partner...
+        {{ availablePartners.length }} {{ availablePartners.length === 1 ? 'player' : 'players' }} looking for {{ isBigTeam ? 'a team' : 'a partner' }}...
       </h5>
     </ng-container>
     <ng-template #allSet>
-      <h4>All players have partners set!</h4>
+      <h4>All players have {{ isBigTeam ? 'teams' : 'partners' }} set!</h4>
     </ng-template>
   </ng-template>
 </div>

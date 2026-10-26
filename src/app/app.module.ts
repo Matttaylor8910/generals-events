@@ -13,6 +13,13 @@ import {environment} from 'src/environments/environment';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
+import {setupLocalEmulators} from '../local-firebase';
+
+// bind the real Firebase SDK to the loopback emulators BEFORE any
+// AngularFire service materializes — must run at module evaluation,
+// ahead of AngularFireModule.initializeApp below
+setupLocalEmulators();
+const localEmulators = (environment as any).localEmulators === true;
 
 @NgModule({
   declarations: [
@@ -27,10 +34,11 @@ import {AppComponent} from './app.component';
     AngularFirestoreModule,
     AngularFireAuthModule,
     AngularFireFunctionsModule,
-    AngularFireAnalyticsModule,
+    // analytics must never contact Google when running emulators
+    ...(localEmulators ? [] : [AngularFireAnalyticsModule]),
   ],
   providers: [
-    ScreenTrackingService,
+    ...(localEmulators ? [] : [ScreenTrackingService]),
     StatusBar,
     SplashScreen,
     {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},

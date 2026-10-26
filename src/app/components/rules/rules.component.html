@@ -3,64 +3,103 @@
   <!-- ARENA RULES -->
   <ng-container *ngIf="isArena">
     <h1>First, some ground rules:</h1>
-    <div class="space-after"><span class="highlight">Do NOT cheat or seek an unfair advantage.</span> If you have to ask if something is cheating, it probably is. Players are meant to play individually, in only one game at a time. Play to win, but do it fairly.</div>
+    <div class="space-after"><span class="highlight">Do NOT cheat or seek an unfair advantage.</span> If you have to ask if something is cheating, it probably is. {{ isTeamArena ? 'Players compete on teams, in only one game at a time.' : 'Players are meant to play individually, in only one game at a time.' }} Play to win, but do it fairly.</div>
     <div class="space-after">If you are found to be cheating or skirting the rules to seek an advantage, you will be disqualified. Please report this behavior if you see it. This includes but is not limited to:</div>
-    <div>1) Joining the queue while alive in another game</div>
+    <div>1) Readying up while alive in another game</div>
     <div>2) As the host, changing game settings</div>
     <div>3) Using more than one account</div>
-    <div>4) Teaming in an FFA event</div>
+    <div *ngIf="!isTeamArena">4) Teaming in an FFA event</div>
+    <div *ngIf="isTeamArena">4) Deliberately sabotaging your own team</div>
     <div>5) Turtling, or otherwise not playing to win</div>
 
-    <h1>How does this work?</h1>
-    <div class="space-after">Now that that's out of the way, welcome! When the event starts, there will be no bracket. Instead, <span class="highlight">players will play as many games as they can in an attempt to score the most points in the set time limit.</span></div>
-    <div class="space-after">As soon as the event starts, click the Join Queue button to be sent to a custom lobby with your opponent(s).
+    <ng-container *ngIf="isTeamArena">
+      <h1>How does this work?</h1>
+      <div class="space-after">Now that that's out of the way, welcome! This is a <span class="highlight">team arena</span>: teams of {{ event.teamSize }} play as many whole-team games as they can in the set time limit, trying to score the most points.</div>
+      <ng-container *ngIf="randomPartners">
+        <div class="space-after">Teams are drawn randomly each game. When the event starts, hit <span class="highlight">Ready</span>; once {{ event.playersPerGame }} players are ready, a full game starts with freshly drawn teams. Ready up again after each game to keep playing.</div>
+      </ng-container>
+      <ng-container *ngIf="!randomPartners">
+        <div class="space-after">Create or join a team above. <span class="highlight">Every member of your team must personally hit Ready for each game.</span> Once enough fully-ready teams are queued, they are sent to a lobby together. A team can only play when it is full, unless the captain opts into short-handed play or accepts a voluntary fill player for a missing member.</div>
+      </ng-container>
+      <div>After each game, <span class="highlight">ready up again to confirm your next game.</span> Readiness expires, so stay on this page to keep playing.</div>
+
+      <h1>How are scores calculated?</h1>
+      <ng-container *ngIf="event.playersPerGame === 2 * event.teamSize">
+        <div class="space-after">Two teams face off each game: each winning player earns a base <span class="highlight">2 points</span>, and the losers get 0 — captures and game length do not change it.</div>
+        <div class="space-after">When you win three games in a row, you are on 🔥 and <span class="streak highlight">your personal award doubles to 4 points while your streak lasts!</span> The streak is yours, not your team's — it follows you across changing rosters.</div>
+      </ng-container>
+      <ng-container *ngIf="event.playersPerGame !== 2 * event.teamSize">
+        <div class="space-after">Teams share a single score, and every member of the team earns it:</div>
+        <div>1) <span class="highlight">Shared placement:</span> your team gets a point for every team it outlives, and 0 for being the first team eliminated.</div>
+        <div>2) <span class="highlight">Enemy captures:</span> +1 point for every enemy general your team captures. Capturing your own teammate does not count.</div>
+        <div class="space-after">3) <span class="highlight">Win bonus:</span> +5 points to the winning team, plus duration bonuses to the top two teams for long games.</div>
+        <div>There are no win-streak multipliers in games with more than two teams.</div>
+      </ng-container>
+      <div *ngIf="!randomPartners">Your standing team's total gains the game's shared award once — including the doubled 4 award when every partner earned it together — while your personal record and the leaderboard reflect your own awards.</div>
+
+      <h1>How is the winner decided?</h1>
+      <div class="space-after" *ngIf="randomPartners">The player with the most points at the conclusion of the event will be announced the winner.</div>
+      <div class="space-after" *ngIf="!randomPartners">The team with the most points at the conclusion of the event will be announced the winner.</div>
+      <div>Ties break on win rate, then total games played.</div>
+
+      <h1>How does it end?</h1>
+      <div class="space after">The event has a countdown clock. When it reaches zero, the rankings are frozen and the winner is announced.</div>
+      <div class="highlight">Games that are in progress when the timer hits zero still count.</div>
+      <div>A game's replay can take a little while to appear; games that have not reported a result within 20 minutes of the arena ending are cancelled so their teams are never locked out.</div>
+    </ng-container>
+
+    <ng-container *ngIf="!isTeamArena">
+      <h1>How does this work?</h1>
+      <div class="space-after">Now that that's out of the way, welcome! When the event starts, there will be no bracket. Instead, <span class="highlight">players will play as many games as they can in an attempt to score the most points in the set time limit.</span></div>
+      <div class="space-after">As soon as the event starts, click the Join Queue button to be sent to a custom lobby with your opponent(s).
+        <ng-container *ngIf="isFFA">
+          <span class="highlight">Try to leave time enough for players with slower internet connections to arrive,</span> but you can start the game if it seems everyone is there.
+        </ng-container>
+        <ng-container *ngIf="!isFFA">
+          If your opponent doesn't arrive within a few seconds, feel free to just go back and join the event queue.
+        </ng-container>
+      </div>
+      <div>Once the game {{ isFFA ? 'is over for you' : 'is over' }}, click <span class="highlight">Join Event Queue to immediately jump into your next game.</span></div>
+
+      <h1>How are scores calculated?</h1>
+
+      <!-- FFA Scoring -->
       <ng-container *ngIf="isFFA">
-        <span class="highlight">Try to leave time enough for players with slower internet connections to arrive,</span> but you can start the game if it seems everyone is there.
+        <div class="space-after">You can score points in a few ways:</div>
+        <div>1) You get <span class="highlight">1 point for each player that you outlive.</span> The first person to die gets 0 points, then 1 for the next, 2 for the next, etc. The last player alive in an 8 player FFA will be awarded 7 points.</div>
+        <div>2) You get <span class="highlight">1 point for every enemy general you capture.</span></div>
+        <div class="space-after">3) You get <span class="highlight">5 bonus points for finishing first.</span></div>
+        <div class="space-after">For example, placing second in an FFA with 8 players after capturing 2 generals would award you with 8 points, 6 for outliving 6/8 players and 2 more for the captured generals.</div>
+        <div class="space-after">To encourage longer 1v1s between 1st and 2nd in any given FFA game, <span class="highlight">1st place will get a bonus point for every minute the game goes on and 2nd place will get a bonus point every 2 minutes the game goes on.</span></div>
+      </ng-container>
+
+      <!-- Scoring for other event types -->
+      <ng-container *ngIf="!isFFA">
+        <div class="space-after highlight">If you win your game, you get 2 points. If you lose, you get no points.</div>
+        <div class="space-after">When you win three times in a row, you are on 🔥 and <span class="streak highlight">your points are doubled so long as you can hold your streak!</span> Each win will be worth 4 points instead of 2!</div>
+      </ng-container>
+
+      <div>Scores are calculated automatically within 10 seconds after the replay becomes available.</div>
+
+      <h1>How is the winner decided?</h1>
+      <div class="space-after">The player with the most points at the conclusion of the event's set time limit will be announced winner.</div>
+      <div>If two players have the same number of points, we will break the tiebased on win rate, total games, quickest win, etc</div>
+
+      <h1>How does the pairing work?</h1>
+
+      <ng-container *ngIf="isFFA">
+        <div>There is currently no matchmaking logic, so the first 8 people in the queue for an FFA event will be sent to the same lobby, the next 8 to a different lobby, and so on.</div>
       </ng-container>
       <ng-container *ngIf="!isFFA">
-        If your opponent doesn't arrive within a few seconds, feel free to just go back and join the event queue.
+        <div>Given enough players join the event, you will not be paired against the last few people you have played against. We'll try to mix up who you're playing against so you get to play more people!</div>
       </ng-container>
-    </div>
-    <div>Once the game {{ isFFA ? 'is over for you' : 'is over' }}, click <span class="highlight">Join Event Queue to immediately jump into your next game.</span></div>
 
-    <h1>How are scores calculated?</h1>
+      <h1>How does it end?</h1>
+      <div class="space after">The event has a countdown clock. When it reaches zero, the rankings are frozen and the winner is announced.</div>
+      <div class="highlight">Games that are in progress when the timer hits zero still count.</div>
 
-    <!-- FFA Scoring -->
-    <ng-container *ngIf="isFFA">
-      <div class="space-after">You can score points in a few ways:</div>
-      <div>1) You get <span class="highlight">1 point for each player that you outlive.</span> The first person to die gets 0 points, then 1 for the next, 2 for the next, etc. The last player alive in an 8 player FFA will be awarded 7 points.</div>
-      <div>2) You get <span class="highlight">1 point for every enemy general you capture.</span></div>
-      <div class="space-after">3) You get <span class="highlight">5 bonus points for finishing first.</span></div>
-      <div class="space-after">For example, placing second in an FFA with 8 players after capturing 2 generals would award you with 8 points, 6 for outliving 6/8 players and 2 more for the captured generals.</div>
-      <div class="space-after">To encourage longer 1v1s between 1st and 2nd in any given FFA game, <span class="highlight">1st place will get a bonus point for every minute the game goes on and 2nd place will get a bonus point every 2 minutes the game goes on.</span></div>
+      <h1></h1>
     </ng-container>
-
-    <!-- Scoring for other event types -->
-    <ng-container *ngIf="!isFFA">
-      <div class="space-after highlight">If you win your game, you get 2 points. If you lose, you get no points.</div>
-      <div class="space-after">When you win three times in a row, you are on 🔥 and <span class="streak highlight">your points are doubled so long as you can hold your streak!</span> Each win will be worth 4 points instead of 2!</div>
-    </ng-container>
-
-    <div>Scores are calculated automatically within 10 seconds after the replay becomes available.</div>
-
-    <h1>How is the winner decided?</h1>
-    <div class="space-after">The player with the most points at the conclusion of the event's set time limit will be announced winner.</div>
-    <div>If two players have the same number of points, we will break the tiebased on win rate, total games, quickest win, etc</div>
-
-    <h1>How does the pairing work?</h1>
-
-    <ng-container *ngIf="isFFA">
-      <div>There is currently no matchmaking logic, so the first 8 people in the queue for an FFA event will be sent to the same lobby, the next 8 to a different lobby, and so on.</div>
-    </ng-container>
-    <ng-container *ngIf="!isFFA">
-      <div>Given enough players join the event, you will not be paired against the last few people you have played against. We'll try to mix up who you're playing against so you get to play more people!</div>
-    </ng-container>
-
-    <h1>How does it end?</h1>
-    <div class="space after">The event has a countdown clock. When it reaches zero, the rankings are frozen and the winner is announced.</div>
-    <div class="highlight">Games that are in progress when the timer hits zero still count.</div>
-
-    <h1></h1>
   </ng-container>
 
   <!-- BRACKET RULES -->

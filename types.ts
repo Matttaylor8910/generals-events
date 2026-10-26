@@ -4,6 +4,7 @@ export enum EventType {
   FFA = 'FFA',
   ONE_VS_ONE = '1v1',
   TWO_VS_TWO = '2v2',
+  BIG_TEAM = 'Big Team',
   MULTI_STAGE_EVENT = 'Multi-Stage Event',
 }
 
@@ -16,6 +17,7 @@ export enum EventFormat {
 
 export enum DoublesPairingStrategy {
   BRING_YOUR_PARTNER = 'Bring Your Partner',
+  RANDOM_PARTNERS = 'Random Partners',
   // DRAW_YOUR_PARTNER = 'Draw Your Partner',
 }
 
@@ -36,6 +38,7 @@ export enum EventStatus {
 export enum GameStatus {
   STARTED = 'STARTED',
   FINISHED = 'FINISHED',
+  CANCELLED = 'CANCELLED',
 
   // A deprecated status that was set for games finishing after the arena countdown reached 0
   TOO_LATE = 'TOO_LATE',
@@ -74,6 +77,9 @@ export interface IBaseEvent {
   // 2v2 events will need a pairing strategy
   doublesPairingStrategy?: DoublesPairingStrategy;
 
+  teamSize?: number;
+  playersPerGame?: number;
+
   options: Partial<IGeneralsGameOptions>;  // all possible options
 
   chatBlocklist?: string[];
@@ -87,6 +93,53 @@ export interface IBaseEvent {
 export type IEvent =
     IArenaEvent|IDoubleElimEvent|IDynamicDYPEvent|IMultiStageEvent|ILinkEvent;
 
+// a fixed bring-your-partner team registered on a team arena event
+export interface IArenaTeam {
+  id: string;             // stable unique id from the event's team counter
+  name: string;           // display name ('' falls back to member list)
+  captain: string;
+  members: string[];      // active roster, at most event.teamSize names
+  requests: string[];     // players who asked to join, pending captain accept
+  noShows: string[];      // members the captain marked absent
+  acceptFill: boolean;        // captain opts in to voluntary random fill
+  allowShortHanded: boolean;  // captain allows queuing below teamSize
+  points: number;
+  games: number;
+  wins: number;
+  participants: string[];  // members who actually played at least one game
+}
+
+// the immutable team roster dispatched into one team arena game; players may
+// be shorter than teamSize when the team opted into short-handed play
+export interface IArenaGameTeam {
+  id: string;
+  name: string;
+  players: string[];
+}
+
+// the normalized event_team lobby contract (usernames only, never ids)
+export interface IEventTeamLobby {
+  version: number;   // currently 1
+  teamSize: number;
+  gameSize: number;  // nominal players per game, a multiple of teamSize
+  teams: string[][]; // actual dispatched rosters
+}
+
+// the Firestore-stored form of that contract: documents cannot hold nested
+// arrays, so each roster is wrapped in an object. Only storage boundaries
+// use this shape — everything on the wire keeps IEventTeamLobby.
+export interface IStoredEventTeamLobby
+    extends Omit<IEventTeamLobby, 'teams'> {
+  teams: {players: string[]}[];
+}
+
+// per-team terminal outcome of a dispatched arena game
+export interface IArenaTeamOutcome {
+  id: string;
+  winner: boolean;
+  eliminatedTurn: number|null;
+}
+
 // the arena event object located at /events/:id
 export interface IArenaEvent extends IBaseEvent {
   endTime: number;  // unix timestamp of end of event, required here
@@ -95,6 +148,17 @@ export interface IArenaEvent extends IBaseEvent {
   queue: string[];  // player names in the queue, server will start games
   ongoingGameCount: number;    // total games currently in progress
   completedGameCount: number;  // total completed games
+
+  // team arena state (Big Team or 2v2 arenas); unset on legacy arenas
+  arenaTeams?: IArenaTeam[];   // fixed rosters for bring-your-partner events
+  arenaReady?: {[username: string]: number};  // fresh ready timestamps (ms)
+  arenaQueueAt?: {[username: string]: number};  // first-ready time per
+    // player; heartbeats update arenaReady but never this, so queue order
+    // stays FIFO across renewals
+  arenaPlaying?: string[];       // players locked into an in-flight game
+  arenaParticipants?: string[];  // everyone ever dispatched into a game
+  arenaMatchNumber?: number;     // monotonically increasing match counter
+  arenaTeamNumber?: number;      // monotonically increasing BYP team counter
 }
 
 export interface IDoubleElimEvent extends IBaseEvent {
@@ -141,6 +205,9 @@ export interface ILinkEvent extends IBaseEvent {
 export interface ILeaderboardPlayer {
   name: string;    // generals.io username, will also be the id
   dq: boolean;     // can be set to true to ban a player from participating
+  withdrawn?: boolean;  // team arena withdrawal keeps the scored record so
+                        // event history/points survive; registration UI and
+                        // matchmaking treat withdrawn players as absent
   rank: number;    // the person with the most points, show ties
   points: number;  // start at 0
   currentStreak: number;  // start at 0, used to determine being on a streak
@@ -154,6 +221,10 @@ export interface ILeaderboardPlayer {
   partner?: string;
   partnerStatus?: PartnerStatus;
   teamName?: string;
+  teamCaptain?: string;
+  teamMembers?: string[];
+  // Public captain usernames; only the authenticated backend writes invites.
+  bigTeamInvites?: string[];
 }
 
 export interface ILeaderboardPlayerStats {
@@ -178,9 +249,11 @@ export interface ILeaderboardPlayerStats {
 
 export interface IReplayData {
   started: number;        // unix timestamp of start of the game
-  finished?: number;      // unix timestamp of the end of the game
+  finished?: number|null; // unix timestamp of the end of the game, or null
+                          // when unknown (legacy Chess Clock replays)
   replay?: IReplayStats;  // replay scores, summary, stats, etc
   replayId?: string;      // replay id from generals api response
+  elapsedMs?: number|null;  // exact game duration for Chess Clock replays
 }
 
 // a game that was played during an event
@@ -191,12 +264,38 @@ export interface IGame extends IReplayData {
   timesChecked?: number;  // just some metadata for the last time a game was
                           // checked to see if there was a replay
   id?: string;            // client field
+
+  // team arena dispatch metadata (immutable once the matcher writes it)
+  arenaTeams?: IArenaGameTeam[];
+  eventTeam?: IStoredEventTeamLobby;
+  lobby?: string;
+  // the lobby configuration captured at dispatch; later event edits can
+  // never retroactively invalidate a game already sent to a lobby
+  options?: Partial<IGeneralsGameOptions>;
+  server?: GeneralsServer;
+}
+
+// a redirect doc telling a player which lobby to join
+// located at /events/:id/redirect
+export interface IRedirect {
+  players: string[];            // mutable acknowledgement list
+  lobby: string;
+  started: number;
+  gameId?: string;              // team arena games are pre-created by matcher
+  arenaTeams?: IArenaGameTeam[];
+  eventTeam?: IStoredEventTeamLobby;
+  // dispatch-time snapshots of the lobby configuration and target server
+  options?: Partial<IGeneralsGameOptions>;
+  server?: GeneralsServer;
 }
 
 export interface IReplayStats {
   scores: IGamePlayerRecord[];
   summary: string[];
   turns: number;
+  elapsedMs?: number|null;  // exact duration for Chess Clock replays; null
+                            // means a legacy clock replay without timing data
+  teamOutcomes?: IArenaTeamOutcome[];  // team arena terminal outcomes
 }
 
 export interface IGamePlayerRecord {
@@ -207,6 +306,9 @@ export interface IGamePlayerRecord {
   lastTurn: number;
   tilesAfterFirstRound: number;
   streak: boolean;
+  teamCount?: number;
+  elapsedMs?: number|null;  // exact death offset for Chess Clock replays;
+                            // null while still alive / for legacy replays
 }
 
 // a record of a player's stats for this event at a given point in time
@@ -214,8 +316,9 @@ export interface IGamePlayerRecord {
 // located at /events/:id/records
 export interface IPlayerHistoryRecord extends IGamePlayerRecord {
   started: number;
-  finished: number;
+  finished: number|null;  // null when the finish time is unknown
   replayId: string;
+  teamId?: string;        // team arena games tag the dispatched team id
 }
 
 export interface IChatMessage {
@@ -227,7 +330,7 @@ export interface IChatMessage {
 
 // the replay object from the generals.io api
 export interface IGeneralsReplay {
-  type: '1v1'|'2v2'|'classic'|'custom';
+  type: '1v1'|'2v2'|'bigteam'|'classic'|'custom';
   id: string;
   started: number;
   turns: number;
@@ -301,8 +404,9 @@ export interface IMatchTeam {
 export interface IMatchResults {
   // the key is the match number
   [key: string]: {
-    team1Score: number,
-    team2Score: number,
+    team1Score?: number,
+    team2Score?: number,
+    [teamScore: string]: number|undefined,
   };
 }
 
@@ -391,6 +495,19 @@ export interface IDynamicDYPFinalsTeam {
   players: string[];
 }
 
+// Chess Clock modifier options for a game lobby; the keys match the live
+// game's modifier_options.ChessClock contract.
+export interface IChessClockOptions {
+  StartingClock?: number;       // seconds each player starts with (min 1)
+  ClockIncrement?: number;      // seconds awarded each round (min 0)
+  DontLimitMoveSpeed?: boolean; // unlimited speed when everyone has moved
+}
+
+// per-modifier option payloads; only ChessClock is currently supported
+export interface IModifierOptions {
+  ChessClock?: IChessClockOptions;
+}
+
 export interface IGeneralsGameOptions {
   // show the map when you are defeated when this value is true
   defeat_spectate?: boolean;
@@ -443,9 +560,40 @@ export interface IGeneralsGameOptions {
   // the team to join when you reach a lobby
   team?: number;
 
-  // the modifiers to use, can be a single number or multiple comma separated
-  // e.g. modifiers=1 or modifiers=0,2
-  modifiers?: string;
+  // the number of players the lobby should hold (max_players)
+  players?: number;
+
+  // the dispatched team roster for a team arena lobby, serialized as JSON on
+  // the lobby URL (the event_team query param)
+  event_team?: IEventTeamLobby;
+
+  // the tunnel density, between 0 and 1, e.g. 0.75
+  tunnels?: number;
+
+  // the minimum army a tunnel tile can hold, an integer between 5 and 400
+  tunnel_min?: number;
+
+  // the maximum army a tunnel tile can hold, an integer between 5 and 500
+  tunnel_max?: number;
+
+  // the stronghold density, between 0 and 1, e.g. 0.75
+  strongholds?: number;
+
+  // the minimum stronghold strength, an integer between 5 and 100
+  stronghold_min?: number;
+
+  // the maximum stronghold strength, an integer between 5 and 100
+  stronghold_max?: number;
+
+  // the modifiers to use: a comma separated list in URL form ('0,2,11'),
+  // or a list of numeric ids in stored options
+  modifiers?: string|number[]|string[];
+
+  // per-modifier options (currently only ChessClock)
+  modifier_options?: IModifierOptions;
+
+  // the event this lobby belongs to
+  eventId?: string;
 }
 
 export interface IGeneralsRankings {
@@ -475,8 +623,8 @@ export interface IGeneralsStarsForUsername {
 
 export interface IEventInfo {
   eventId: string;
+  startTime: number;
   date: string;
   time: string;
   timezone: string;
-  timerIframeUrl: string;
 }

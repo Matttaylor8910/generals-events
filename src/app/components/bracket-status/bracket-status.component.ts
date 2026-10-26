@@ -3,7 +3,8 @@ import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {DoublesPairingStrategy, EventStatus, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus, PartnerStatus} from 'types';
+import {getConfirmedBigTeams} from '../../../../teams';
+import {DoublesPairingStrategy, EventStatus, EventType, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus, PartnerStatus} from 'types';
 
 @Component({
   selector: 'app-bracket-status',
@@ -59,7 +60,7 @@ export class BracketStatusComponent implements OnDestroy {
 
     // highlight once your partner is set
     if (this.bringYourPartner) {
-      return this.me?.partnerStatus === PartnerStatus.CONFIRMED;
+      return this.teamConfirmed;
     }
 
     // otherwise highlight once you are checked in
@@ -96,6 +97,28 @@ export class BracketStatusComponent implements OnDestroy {
   get bringYourPartner(): boolean {
     return this.event?.doublesPairingStrategy ===
         DoublesPairingStrategy.BRING_YOUR_PARTNER;
+  }
+
+  get isBigTeam(): boolean {
+    return this.event?.type === EventType.BIG_TEAM;
+  }
+
+  get teamConfirmed(): boolean {
+    if (this.isBigTeam) {
+      // only a fully consistent, checked in roster counts as confirmed
+      return getConfirmedBigTeams(this.event, this.players || [])
+          .some(team => team.players?.includes(this.generals.name));
+    }
+
+    return this.me?.partnerStatus === PartnerStatus.CONFIRMED;
+  }
+
+  get teamDescriptor(): string {
+    if (this.isBigTeam) {
+      return (this.me?.teamMembers || []).join(', ');
+    }
+
+    return this.me?.partner;
   }
 
   get message(): string {
@@ -136,14 +159,18 @@ export class BracketStatusComponent implements OnDestroy {
       // doubles event statuses for bring your partner
       if (this.bringYourPartner) {
         // confirmed team, great!
-        if (this.me?.partnerStatus === PartnerStatus.CONFIRMED) {
-          return `You and ${this.me.partner} are set to compete in the bracket.
+        if (this.teamConfirmed) {
+          return `You and ${this.teamDescriptor} are set to compete in the bracket.
                   The event organizers will generate the bracket shortly, hang tight.`;
+        } else if (this.isBigTeam && (this.me?.teamMembers?.length || 0) > 1) {
+          return `Your current team is ${this.teamDescriptor}. Add more teammates below to finish building your roster.`;
         } else if (this.me?.partner) {
           return `You have asked ${
               this.me.partner} to play with you, they have not responded yet.`;
         } else {
-          return 'Choose a partner to play with below.'
+          return this.isBigTeam ?
+              'Choose teammates to play with below.' :
+              'Choose a partner to play with below.'
         }
       }
 

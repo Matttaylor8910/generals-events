@@ -1,9 +1,11 @@
 import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {TeamArenaService} from 'src/app/services/team-arena.service';
 import {UtilService} from 'src/app/services/util.service';
 
 import {ADMINS} from '../../../../constants';
+import {isTeamArena} from '../../../../team-arena';
 import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
 @Component({
@@ -33,6 +35,7 @@ export class ArenaLeaderboardComponent {
   constructor(
       public readonly generals: GeneralsService,
       private readonly eventService: EventService,
+      private readonly teamArenaService: TeamArenaService,
       private readonly utilService: UtilService,
   ) {
     this.toggleTracking();
@@ -51,7 +54,9 @@ export class ArenaLeaderboardComponent {
   }
 
   get showStreaks(): boolean {
-    return this.event && this.event.type !== EventType.FFA;
+    // team arenas never multiply points by streaks, so don't show the icon
+    return this.event && this.event.type !== EventType.FFA &&
+        !this.isTeamArena;
   }
 
   get showTracker(): boolean {
@@ -73,9 +78,21 @@ export class ArenaLeaderboardComponent {
     ].includes(this.status);
   }
 
+  get isTeamArena(): boolean {
+    return isTeamArena(this.event);
+  }
+
+  // team arenas cannot finalize while a dispatched game is still in flight
   get showFinalizeButton(): boolean {
     return ADMINS.includes(this.generals.name) &&
-        this.status === EventStatus.FINISHED && !this.event?.winners?.length;
+        this.status === EventStatus.FINISHED && !this.event?.winners?.length &&
+        !(this.isTeamArena && (this.event?.ongoingGameCount || 0) > 0);
+  }
+
+  get tournamentPending(): boolean {
+    return this.isTeamArena && this.status === EventStatus.FINISHED &&
+        !this.event?.winners?.length &&
+        (this.event?.ongoingGameCount || 0) > 0;
   }
 
   get pageControlText(): string {
@@ -177,11 +194,24 @@ export class ArenaLeaderboardComponent {
   }
 
   determineInEvent() {
-    this.inEvent =
-        this.players && !!this.players.find(p => p.name === this.generals.name);
+    // a withdrawn team-arena registration keeps its history but no longer
+    // counts as participating; it can rejoin through addPlayer
+    this.inEvent = this.players && !!this.players.find(
+        p => p.name === this.generals.name && !p.withdrawn);
   }
 
   async finalizeTournament() {
+    // team arenas rank their dispatched results through the service, which
+    // refuses while any game is still in flight
+    if (this.isTeamArena) {
+      try {
+        await this.teamArenaService.finalize(this.event.id);
+      } catch (e) {
+        this.utilService.showToast(e?.message || 'Could not finalize');
+      }
+      return;
+    }
+
     // remove all players from the event that played 0 games
     const absentPlayersPromises =
         this.players.filter(player => !player.stats?.totalGames).map(player => {

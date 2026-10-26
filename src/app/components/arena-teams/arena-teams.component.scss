@@ -1,0 +1,45 @@
+.arena-teams {
+  .random-partners {
+    padding: 8px;
+  }
+
+  .error {
+    color: var(--ion-color-danger, #eb445a);
+    padding: 4px 8px;
+  }
+
+  .my-team {
+    padding: 4px 8px;
+
+    label {
+      display: block;
+      padding: 2px 0;
+    }
+  }
+
+  table {
+    width: 100%;
+  }
+
+  .members span {
+    margin-right: 8px;
+
+    &.ready {
+      font-weight: bold;
+    }
+
+    &.missing {
+      font-style: italic;
+      opacity: 0.6;
+    }
+  }
+
+  .no-shows {
+    font-size: 0.85em;
+    opacity: 0.7;
+  }
+
+  .requested {
+    font-style: italic;
+  }
+}

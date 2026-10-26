@@ -18,7 +18,7 @@ import {CreateEventPage} from './create-event/create-event.page';
 export class HomePage {
   private destroyed$ = new Subject<void>();
 
-  tabs = ['All', EventType.FFA, EventType.ONE_VS_ONE, EventType.TWO_VS_TWO, 'Custom'];
+  tabs = ['All', EventType.FFA, EventType.ONE_VS_ONE, EventType.TWO_VS_TWO, EventType.BIG_TEAM, 'Custom'];
   selectedTab = this.tabs[0];
 
   allEvents: IEvent[];
@@ -50,7 +50,7 @@ export class HomePage {
   }
 
   setEvents(tab: string) {
-    this.selectedTab = tab;   
+    this.selectedTab = tab;
 
     const unfinished = [];
     const finished = [];
@@ -60,7 +60,7 @@ export class HomePage {
       const showAll = this.selectedTab === 'All';
       const showThis = this.selectedTab === event.type;
       const showThisCustom = event.type === EventType.MULTI_STAGE_EVENT && this.selectedTab === 'Custom';
-      
+
       // only work with the filtered events
       if (showAll || showThis || showThisCustom) {
         if (event.endTime < now) {

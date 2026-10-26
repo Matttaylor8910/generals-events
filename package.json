@@ -7,6 +7,9 @@
     "ng": "ng",
     "start": "ng serve",
     "test": "ng test",
+    "test:tournaments": "node test/tournaments.test.js",
+    "test:modifiers": "node test/modifier-options.test.js",
+    "test:team-arena": "node test/team-arena.test.js",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "update": "git pull && npm i && cd functions && npm i && cd ..",
@@ -14,7 +17,8 @@
     "deploy-functions": "nvm use && npm run update && nvm use 18 && firebase deploy --only functions",
     "deploy-hosting": "nvm use && npm run update && npm run build && nvm use 18 && firebase deploy --only hosting",
     "deploy": "nvm use && npm run update && npm run build && nvm use 18 && firebase deploy",
-    "indexes": "firebase firestore:indexes > firestore.indexes.json"
+    "indexes": "firebase firestore:indexes > firestore.indexes.json",
+    "start:local": "ng serve --configuration local --host 127.0.0.1 --port 4200"
   },
   "private": true,
   "dependencies": {

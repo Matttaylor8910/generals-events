@@ -1,8 +1,60 @@
 import {cloneDeep, map, shuffle} from 'lodash';
-import {IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchTeamStatus} from 'types';
+import {isValidTeamSize} from 'teams';
+import {EventType, IBracketMatch, IDoubleElimEvent, IDoubleEliminationBracket, IMatchTeam, MatchTeamStatus} from 'types';
+
+/**
+ * Return false when the event's winningSets or the given teams can't make a
+ * valid bracket: at least two teams, every member a distinct nonempty name
+ * (no player on two teams), proper roster sizes for Big Team events, and
+ * positive integer winning sets
+ */
+function validBracketInputs(
+    event: IDoubleElimEvent,
+    teams: IMatchTeam[],
+    ): boolean {
+  if (!event || !Array.isArray(teams) || teams.length < 2) {
+    return false;
+  }
+
+  const {winners, losers, semifinals, finals} = event.winningSets || {} as any;
+  if (![winners, losers, semifinals, finals].every(sets => {
+    return Number.isInteger(sets) && sets > 0;
+  })) {
+    return false;
+  }
+
+  const members = new Set<string>();
+  for (const team of teams) {
+    if (!team?.players?.length) {
+      return false;
+    }
+
+    // Big Team events require proper roster sizes, and the configured
+    // team size itself must be valid (2..8 so a match fits a 16-seat lobby)
+    if (event.type === EventType.BIG_TEAM &&
+        (!isValidTeamSize(event.teamSize) ||
+         team.players.length !== event.teamSize)) {
+      return false;
+    }
+
+    for (const player of team.players) {
+      if (typeof player !== 'string' || !player || members.has(player)) {
+        return false;
+      }
+      members.add(player);
+    }
+  }
+
+  return true;
+}
 
 export function getShuffledBracket(
-    event: IDoubleElimEvent, teams: IMatchTeam[]): IDoubleEliminationBracket {
+    event: IDoubleElimEvent,
+    teams: IMatchTeam[]): IDoubleEliminationBracket|null {
+  if (!validBracketInputs(event, teams)) {
+    return null;
+  }
+
   let matchTeams: IMatchTeam[] = teams.map(team => {
     const tsp = team.players.map(player => (event.tsp ?? {})[player] ?? 0)
                     .reduce((a, b) => a + b, 0);
@@ -108,8 +160,9 @@ function generateEmptyBracket(
     winningSets: finals,
   });
 
-  // generate losers bracket
-  let loserTracker = round1Matches / 2;
+  // generate losers bracket; a two team event has no losers rounds, the
+  // semifinal loser goes straight to the finals match
+  let loserTracker = round1Matches === 1 ? 0 : round1Matches / 2;
   let loserRound = 1;
   while (loserTracker > 0) {
     const round = {

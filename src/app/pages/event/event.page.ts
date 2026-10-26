@@ -6,12 +6,14 @@ import {Observable, Subject} from 'rxjs';
 import {takeUntil, tap} from 'rxjs/operators';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
+import {TeamArenaService} from 'src/app/services/team-arena.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
 import * as moment from 'moment-timezone';
 import * as firebase from 'firebase';
 
 import {ADMINS} from '../../../../constants';
+import {isTeamArena} from '../../../../team-arena';
 import {CreateEventPage} from '../home/create-event/create-event.page';
 
 @Component({
@@ -44,6 +46,7 @@ export class EventPage implements OnDestroy {
       private readonly route: ActivatedRoute,
       private readonly router: Router,
       private readonly eventService: EventService,
+      private readonly teamArenaService: TeamArenaService,
       private readonly utilService: UtilService,
       private readonly modalController: ModalController,
   ) {
@@ -131,7 +134,9 @@ export class EventPage implements OnDestroy {
   }
 
   get inEvent(): boolean {
-    return this.players?.some(p => p.name === this.generals.name);
+    // a withdrawn registration is history, not participation
+    return this.players?.some(
+        p => p.name === this.generals.name && !p.withdrawn);
   }
 
   get isOver(): boolean {
@@ -181,10 +186,18 @@ export class EventPage implements OnDestroy {
         }
 
         // only add to queue if the event is ongoing
-        // and this event type is arena
+        // and this event type is arena; team arenas confirm readiness
+        // through the dedicated service instead of the legacy queue
         if (this.status === EventStatus.ONGOING && this.isArena) {
-          console.log('joining queue', this.event.id);
-          this.eventService.joinQueue(this.event.id, name);
+          if (isTeamArena(this.event)) {
+            this.teamArenaService.setReady(this.event.id, true)
+                .catch(error => {
+                  console.log('could not ready up', error);
+                });
+          } else {
+            console.log('joining queue', this.event.id);
+            this.eventService.joinQueue(this.event.id, name);
+          }
         }
       }
     }
@@ -318,6 +331,19 @@ export class EventPage implements OnDestroy {
         cloned = cloned as IArenaEvent;
         cloned.ongoingGameCount = 0;
         cloned.completedGameCount = 0;
+
+        // a cloned team arena starts fresh: no rosters, readiness, in-flight
+        // games, participants, replays, or results carry over
+        if (isTeamArena(cloned)) {
+          const arena = cloned as IArenaEvent;
+          delete arena.queue;
+          delete arena.arenaTeams;
+          delete arena.arenaReady;
+          delete arena.arenaPlaying;
+          delete arena.arenaParticipants;
+          delete arena.arenaMatchNumber;
+        }
+        delete cloned.winners;
       }
 
       // add all of the players to this event
@@ -357,47 +383,32 @@ export class EventPage implements OnDestroy {
 
   copyStandings() {
     let standings = '';
-    const daysSupporterMap = new Map<number, string[]>();
 
     this.players.forEach(player => {
       if (player.stats?.totalGames > 0) {
         const wins = player.stats?.totalWins ?? 0;
         const days = wins + 7;
         standings += `${player.name} (1 week + ${wins} ${wins === 1 ? 'win' : 'wins'}) = ${days} days of supporter\n`;
-        
-        // group the players by 
-        const entry = daysSupporterMap.get(days) ?? [];
-        entry.push(player.name);
-        daysSupporterMap.set(days, entry);
       }
     });
 
-    // lastly add in the command to the standings
-    console.log(daysSupporterMap);
-    let command = 'node scripts/reward_player.js';
-    daysSupporterMap.forEach((players, days) => {
-      const playerString = players.map(p => `"${p}"`).join(' ');
-      command += ` -d ${days} ${playerString}`;
-    });
-    standings += `\n\n${command}`;
-
-    this.utilService.copyToClipboard(standings, 'Copied standings to clipboard');
+    // Player names and stats are remote data. Never generate executable shell
+    // commands from them: double quotes still allow substitutions and injected
+    // quotes/newlines. Reward automation needs a separately validated workflow.
+    this.utilService.copyToClipboard(standings, 'Copied standings as text (not a shell command)');
   }
 
   promoteEvent() {
-    // do everything within the context of New York because the timer URL expects it
+    // Publish timing data only; the game renders its own countdown.
     const timeToUse = this.getTimerTimeToUse();
     const timeInNewYork = moment(timeToUse).tz('America/New_York');
-    const timerDateTime = timeInNewYork.format('YYYY-MM-DDThh:mm:ss');
-    const eventType = this.event.type === EventType.MULTI_STAGE_EVENT ? 'Custom' : this.event.type;
-    const timerIframeUrl = `https://free.timeanddate.com/countdown/i6aq85za/n43/cf12/cm0/cu4/ct0/cs0/caceee/cr0/ss0/caceee/cpceee/pct/tcfff/fs130/tat${eventType}%20Event/taceee/tpt${eventType}%20Event/tpceee/matbegins/maceee/mptbegan/mpceee/iso${timerDateTime}`;
 
     const eventInfo = {
       eventId: this.event.id,
+      startTime: timeToUse,
       date: timeInNewYork.format('MM/DD/YYYY'),
       time: timeInNewYork.format('hh:mm a'),
       timezone: timeInNewYork.format('z'),
-      timerIframeUrl,
     };
 
     this.eventService.promoteEvent(eventInfo);

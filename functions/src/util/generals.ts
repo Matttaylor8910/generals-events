@@ -5,6 +5,20 @@ import {EventType, IGeneralsRankings, IGeneralsReplay} from '../../../types';
 
 import {timeoutAfter} from './util';
 
+// Node-only guarded local URLs (null unless the emulator suite is live)
+const LocalDevelopment = require('./LocalDevelopment');
+
+function apiOrigin(server: GeneralsServer): string {
+  if (server === 'loc') {
+    const local = LocalDevelopment.localGioBaseUrl();
+    if (local) {
+      return local;
+    }
+    throw new Error('loc server requires the local emulator suite');
+  }
+  return SITE_URLS[server];
+}
+
 export function getLastReplayForUsername(
     name: string,
     server = GeneralsServer.NA,
@@ -18,7 +32,7 @@ export function getReplaysForUsername(
     count = 200,
     server = GeneralsServer.NA,
     ): Promise<IGeneralsReplay[]> {
-  const url = `${SITE_URLS[server]}/api/replaysForUsername?u=${
+  const url = `${apiOrigin(server)}/api/replaysForUsername?u=${
       encodeURIComponent(name)}&offset=${offset}&count=${count}`;
   return http.get(url).then((response: {data: IGeneralsReplay[]}) => {
     console.log(`loaded ${response.data.length} replays for ${name}`);
@@ -31,7 +45,8 @@ const typesMap = {
   [EventType.ONE_VS_ONE]: 'duel',
 
   [EventType.TWO_VS_TWO]: '2v2',
-  
+  [EventType.BIG_TEAM]: 'bigteam',
+
   // Use 1v1 rankings when the 2v2 stars return null
   // [EventType.TWO_VS_TWO]: 'duel',
 
@@ -46,7 +61,7 @@ export function getCurrentStars(
     server = GeneralsServer.NA,
     ): Promise<number> {
   const url =
-      `${SITE_URLS[server]}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
+      `${apiOrigin(server)}/api/starsAndRanks?u=${encodeURIComponent(name)}`;
   const generalsStars = http.get(url).then((response) => {
     const stars = Number(response.data.stars[typesMap[type]]);
     return stars > 0 ? stars : 0;

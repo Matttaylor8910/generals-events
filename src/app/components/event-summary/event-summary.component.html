@@ -15,6 +15,9 @@
       <ion-icon slot="start" name="people"></ion-icon>
       <ion-label>
         <h2>{{ event.type }} {{ event.format }}</h2>
+        <p *ngIf="showTeamDetails">
+          {{ teamDetailsText }}
+        </p>
         <p *ngIf="event.playersPerGame as players">
           {{ players }} {{ players === 1 ? 'player' : 'players' }} per game
         </p>

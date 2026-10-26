@@ -68,6 +68,32 @@
             },
             "ci": {
               "progress": false
+            },
+            "local": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ]
+            },
+            "local-isolated": {
+              "sourceMap": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local-isolated.ts"
+                }
+              ]
+            },
+            "local-shared-gio": {
+              "sourceMap": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local-shared-gio.ts"
+                }
+              ]
             }
           }
         },
@@ -82,6 +108,15 @@
             },
             "ci": {
               "progress": false
+            },
+            "local": {
+              "browserTarget": "app:build:local"
+            },
+            "local-isolated": {
+              "browserTarget": "app:build:local-isolated"
+            },
+            "local-shared-gio": {
+              "browserTarget": "app:build:local-shared-gio"
             }
           }
         },

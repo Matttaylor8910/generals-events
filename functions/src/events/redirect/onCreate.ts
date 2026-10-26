@@ -17,7 +17,13 @@ export const onCreateRedirect =
     functions.firestore.document('events/{eventId}/redirect/{redirectId}')
         .onCreate(async (doc, context) => {
           const eventId = context.params.eventId;
-          const {players, started} = doc.data();
+          const {players, started, gameId} = doc.data();
+
+          // team arena redirects carry gameId: the matcher already created
+          // the game document deterministically in the same transaction
+          if (gameId) {
+            return 'Already dispatched';
+          }
 
           return db.collection('events').doc(eventId).collection('games').add(
               {players, started, status: GameStatus.STARTED});

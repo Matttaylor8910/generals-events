@@ -16,14 +16,14 @@
 
     <!-- event type, dictates event formats -->
     <label>Type</label>
-    <select [(ngModel)]="type" (change)="typeChanged($event)" name="type">
+    <select [(ngModel)]="type" (change)="typeChanged($event)" name="type" [disabled]="teamConfigLocked">
       <option [value]="option" *ngFor="let option of types">{{option}}</option>
     </select>
 
     <!-- show event formats for all types other than multi stage events -->
     <ng-container *ngIf="format !== EventFormat.MULTI_STAGE_EVENT">
       <label>Format</label>
-      <select [(ngModel)]="format" name="format">
+      <select [(ngModel)]="format" (ngModelChange)="formatChanged()" name="format" [disabled]="teamConfigLocked">
         <option [value]="option" *ngFor="let option of formats">{{option}}</option>
       </select>
     </ng-container>
@@ -33,6 +33,64 @@
       <select [(ngModel)]="pairingStrategy" name="pairingStrategy">
         <option [value]="option" *ngFor="let option of pairingStrategies">{{option}}</option>
       </select>
+    </ng-container>
+
+    <!-- team arena pairing modes (bring your partner / random partners) -->
+    <ng-container *ngIf="showArenaPairing">
+      <label>Team Pairing</label>
+      <select [(ngModel)]="pairingStrategy" name="arenaPairingStrategy" [disabled]="teamConfigLocked">
+        <option [value]="option" *ngFor="let option of arenaPairingStrategies">{{option}}</option>
+      </select>
+      <p *ngIf="teamConfigLocked">
+        Teams, games, or the queue already exist, so the team configuration is locked.
+      </p>
+    </ng-container>
+
+    <!-- fixed 2v2 arena summary -->
+    <p *ngIf="fixedTwoVsTwo">
+      Arena 2v2 games are always two teams of two players per match.
+    </p>
+
+    <ng-container *ngIf="showTeamSettings">
+      <label>Team Size</label>
+      <select
+        [(ngModel)]="teamSize"
+        (ngModelChange)="teamSizeChanged()"
+        name="teamSize"
+        [disabled]="teamConfigLocked"
+      >
+        <option [value]="option" *ngFor="let option of teamSizeOptions">{{option}}</option>
+      </select>
+
+      <!-- team arenas pick from the legal whole multiples of team size -->
+      <ng-container *ngIf="showGameSizeSelect">
+        <label>Players Per Game</label>
+        <select [(ngModel)]="playersPerGame" name="playersPerGame" [disabled]="teamConfigLocked">
+          <option [value]="option" *ngFor="let option of gameSizeOptions">{{option}}</option>
+        </select>
+        <p>
+          This will create {{ teamCount }} teams of {{ teamSize }} players per match.
+        </p>
+      </ng-container>
+
+      <ng-container *ngIf="showPlayersPerGame && !showGameSizeSelect; else doubleElimPlayersPerGame">
+        <label>Players Per Game</label>
+        <input
+          [(ngModel)]="playersPerGame"
+          min="4"
+          step="1"
+          type="number"
+        >
+        <p>
+          This will create {{ teamCount }} teams of {{ teamSize }} players per match.
+        </p>
+      </ng-container>
+
+      <ng-template #doubleElimPlayersPerGame>
+        <p *ngIf="format === EventFormat.DOUBLE_ELIM">
+          Double elimination Big Team events always use two teams per match, so players per game will be {{ resolvedPlayersPerGame }}.
+        </p>
+      </ng-template>
     </ng-container>
 
     <!-- event visibility on the home page -->
@@ -225,22 +283,57 @@
           </ion-range>
         </ion-item>
 
-        <!-- modifiers of the map -->
-        <label>Modifiers:</label>
+        <!-- tunnel density of the map -->
+        <label>Tunnel Ratio: {{ tunnels | number:'1.1-2' }}</label>
         <ion-item>
-          <ion-select label="Modifiers" label-placement="fixed" placeholder="None" [multiple]="true" [(ngModel)]="modifiers">
-            <ion-select-option value="0">Leapfrog</ion-select-option>
-            <ion-select-option value="1">City State</ion-select-option>
-            <ion-select-option value="2">Misty Veil</ion-select-option>
-            <ion-select-option value="3">Crystal Clear</ion-select-option>
-            <ion-select-option value="4">Silent War</ion-select-option>
-            <ion-select-option value="5">Defenseless</ion-select-option>
-            <ion-select-option value="6">Watchtower</ion-select-option>
-            <ion-select-option value="7">Torus</ion-select-option>
-            <ion-select-option value="8">Creeping Fog</ion-select-option>
-          </ion-select>
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="tunnels">
+            <ion-label slot="start">low</ion-label>
+            <ion-label slot="end">high</ion-label>
+          </ion-range>
+        </ion-item>
+        <label>Tunnel Army Limits</label>
+        <ion-item>
+          <ion-label>min</ion-label>
+          <input type="number" min="5" max="400" step="1" [(ngModel)]="tunnel_min">
+          <ion-label>max</ion-label>
+          <input type="number" min="5" max="500" step="1" [(ngModel)]="tunnel_max">
+        </ion-item>
+
+        <!-- strongholds are placed through custom maps only; generated
+             stronghold placement is not implemented -->
+        <ion-item>
+          <ion-label class="ion-text-wrap">Strongholds require a custom map (generated placement unsupported).</ion-label>
         </ion-item>
       </ng-container>
+
+      <!-- modifiers apply to generated and custom maps alike -->
+      <label>Modifiers:</label>
+      <ion-item>
+        <ion-select label="Modifiers" label-placement="fixed" placeholder="None" [multiple]="true" [(ngModel)]="modifiers">
+          <ion-select-option *ngFor="let mod of eventModifiers" [value]="mod.id">{{ mod.name }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- chess clock options, only relevant when the modifier is on -->
+      <ng-container *ngIf="chessClockSelected">
+        <label>Chess Clock Starting Time (seconds)</label>
+        <ion-item>
+          <input type="number" min="1" step="1" [(ngModel)]="chess_clock_starting">
+        </ion-item>
+        <label>Chess Clock Increment (seconds)</label>
+        <ion-item>
+          <input type="number" min="0" step="0.1" [(ngModel)]="chess_clock_increment">
+        </ion-item>
+        <ion-item>
+          <ion-label>Don't Limit Move Speed</ion-label>
+          <ion-checkbox [(ngModel)]="chess_clock_dont_limit"></ion-checkbox>
+        </ion-item>
+      </ng-container>
+
+      <!-- surface invalid option configurations instead of only disabling save -->
+      <ion-item *ngIf="!gameOptionsValid" lines="none">
+        <ion-label color="danger" class="ion-text-wrap">Invalid event options: check the modifier selection and option values.</ion-label>
+      </ion-item>
     </ng-container>
   </div>
 </ion-content>

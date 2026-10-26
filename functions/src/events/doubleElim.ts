@@ -21,7 +21,8 @@ export async function handleDoubleElimEventUpdate(snapshot: DocumentSnapshot):
       // find the winner of the finals match
       const finals = event.bracket.winners[event.bracket.winners.length - 1];
       const lastMatch = finals.matches[finals.matches.length - 1];
-      const winner = lastMatch.teams.find(t => t.score === finals.winningSets);
+      const winner = lastMatch.teams.find(
+          t => (t.score ?? 0) >= finals.winningSets);
 
       // set the winner and endTime
       updates.winners = winner?.players ?? [];
@@ -199,8 +200,9 @@ async function advancePlayers(
 
   // end the event or do a finals rematch
   if (match.final) {
-    // the player(s) in the kings seat lost
-    const winnersBracketWinnerLost = losingTeam.name === match.teams[0].name;
+    // the team in the kings seat (slot 0) lost; compare the slot reference
+    // rather than the name since two teams can share a team name
+    const winnersBracketWinnerLost = losingTeam === match.teams[0];
 
     // #71 there should only ever be two finals matches
     const finalsRound = bracket.winners[bracket.winners.length - 1];
@@ -222,12 +224,14 @@ async function advancePlayers(
       // strip the old finals match of its gold border
       match.final = false;
     } else {
-      winningTeam.players?.forEach(async player => {
-        await setRank(snapshot, player, 1);
-      });
-      losingTeam.players?.forEach(async player => {
-        await setRank(snapshot, player, 2);
-      });
+      await Promise.all([
+        ...(winningTeam.players ?? []).map(player => {
+          return setRank(snapshot, player, 1);
+        }),
+        ...(losingTeam.players ?? []).map(player => {
+          return setRank(snapshot, player, 2);
+        }),
+      ]);
       return true;
     }
   }
@@ -299,9 +303,9 @@ async function advanceLosingTeam(
 
     // this was the loser of the loser's bracket semifinal, they placed 3rd
     if (bracket[bracketName].length === roundIdx + 1) {
-      team.players?.forEach(async player => {
-        await setRank(snapshot, player, 3);
-      });
+      await Promise.all((team.players ?? []).map(player => {
+        return setRank(snapshot, player, 3);
+      }));
     }
   }
 
@@ -312,6 +316,14 @@ async function advanceLosingTeam(
     const thisTeam: IMatchTeam = cloneDeep(team);
     thisTeam.status = MatchTeamStatus.UNDECIDED;
     thisTeam.score = 0;
+
+    // a two team event has no losers rounds: the semifinal loser goes
+    // straight into the finals second slot
+    if (!bracket.losers.length) {
+      bracket.winners[bracket.winners.length - 1].matches[0].teams[1] =
+          thisTeam;
+      return;
+    }
 
     const loserMatch = getLoserMatchToGoTo(bracket, roundIdx, matchIdx);
 

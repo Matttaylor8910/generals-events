@@ -10,6 +10,7 @@ import {ActionsPopoverPageComponent} from './actions-popover/actions-popover-pag
 import {ActionsPopoverComponent} from './actions-popover/actions-popover.component';
 import {ArenaLeaderboardComponent} from './arena-leaderboard/arena-leaderboard.component';
 import {ArenaQueueComponent} from './arena-queue/arena-queue.component';
+import {ArenaTeamsComponent} from './arena-teams/arena-teams.component';
 import {BracketEventComponent} from './bracket-event/bracket-event.component';
 import {BracketStatusComponent} from './bracket-status/bracket-status.component';
 import {BracketComponent} from './bracket/bracket.component';
@@ -44,6 +45,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    ArenaTeamsComponent,
     ChoosePartnersComponent,
     BracketComponent,
     BracketEventComponent,
@@ -88,6 +90,7 @@ import {TwitchComponent} from './twitch/twitch.component';
     ActionsPopoverPageComponent,
     ArenaLeaderboardComponent,
     ArenaQueueComponent,
+    ArenaTeamsComponent,
     BracketComponent,
     BracketEventComponent,
     ChoosePartnersComponent,

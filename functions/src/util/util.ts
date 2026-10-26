@@ -21,11 +21,22 @@ const TURNS_MS = {
   [GameSpeed.SPEED_4X]: 250,
 }
 
+// Returns the game's finish time. With exact elapsed metadata (Chess Clock
+// replays) the finish is start + elapsed; an explicit null means the elapsed
+// time is unknown (legacy clock replays) so the finish is unknown too. When
+// elapsedMs is omitted the classic fixed-speed estimate applies.
 export function getFinishedTime(
     startTime: number,
     turns: number,
     speed = GameSpeed.SPEED_1X,
-    ): number {
+    elapsedMs?: number|null,
+    ): number|null {
+  if (elapsedMs === null) {
+    return null;
+  }
+  if (elapsedMs !== undefined) {
+    return startTime + elapsedMs;
+  }
   return startTime + (turns * TURNS_MS[speed]);
 }
 

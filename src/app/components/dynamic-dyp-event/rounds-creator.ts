@@ -1,5 +1,5 @@
 import {shuffle} from 'lodash';
-import {IDynamicDYPRound, IDynamicDYPTeam, MatchStatus} from 'types';
+import {IDynamicDYPMatch, IDynamicDYPRound, IDynamicDYPTeam, MatchStatus} from 'types';
 
 const DEBUG = false;
 const maxAttempts = 10;
@@ -16,6 +16,51 @@ let attempt: number;
  * Additionally, you can pass the max # of rounds to display.
  */
 export function getRounds(
+    players: string[],
+    oddManOut?: string,
+    maxRounds?: number,
+    teamSize = 2,
+    playersPerGame = 4,
+    ): IDynamicDYPRound[] {
+  if (teamSize === 2 && playersPerGame === 4) {
+    return getClassicRounds(players, oddManOut, maxRounds);
+  }
+
+  return getGenericRounds(players, oddManOut, maxRounds, teamSize, playersPerGame);
+}
+
+/**
+ * Return true when the generic round inputs are valid: distinct nonempty
+ * player names, an integer teamSize from 2 to 8, an integer playersPerGame
+ * holding a whole number of teams between 2 and the 16 player lobby cap,
+ * and an integer maxRounds between 1 and 100
+ */
+function validGenericInputs(
+    players: string[],
+    maxRounds: number,
+    teamSize: number,
+    playersPerGame: number,
+    ): boolean {
+  if (!Array.isArray(players) || !players.length ||
+      players.some(player => typeof player !== 'string' || !player) ||
+      new Set(players).size !== players.length) {
+    return false;
+  }
+
+  if (!Number.isInteger(teamSize) || teamSize < 2 || teamSize > 8) {
+    return false;
+  }
+
+  if (!Number.isInteger(playersPerGame) ||
+      playersPerGame < teamSize * 2 || playersPerGame > 16 ||
+      playersPerGame % teamSize !== 0) {
+    return false;
+  }
+
+  return Number.isInteger(maxRounds) && maxRounds >= 1 && maxRounds <= 100;
+}
+
+function getClassicRounds(
     players: string[],
     oddManOut?: string,
     maxRounds?: number,
@@ -68,7 +113,7 @@ export function getRounds(
     if (attempt <= maxAttempts) {
       attempt++;
       console.log(`attempt ${attempt}`);
-      return getRounds(players, oddManOut, maxRounds);
+      return getClassicRounds(players, oddManOut, maxRounds);
     } else {
       console.log('Max retries reached');
     }
@@ -80,6 +125,79 @@ export function getRounds(
     const [name, numGames] = entry;
     console.log(`${name} gets to play ${numGames} matches`);
   }
+  return rounds;
+}
+
+function getGenericRounds(
+    players: string[],
+    oddManOut?: string,
+    maxRounds = 10,
+    teamSize = 2,
+    playersPerGame = 4,
+    ): IDynamicDYPRound[] {
+  if (!validGenericInputs(players, maxRounds, teamSize, playersPerGame)) {
+    return [];
+  }
+
+  const teamsPerMatch = Math.floor(playersPerGame / teamSize);
+  const shuffled = shufflePlayers(players, oddManOut);
+  const rounds = [];
+  const matchesCount = new Map<string, number>();
+  const teammateCounts = new Map<string, number>();
+  const opponentCounts = new Map<string, number>();
+  let matchNumber = 1;
+
+  for (let roundIndex = 0; roundIndex < maxRounds; roundIndex++) {
+    const orderedPlayers = rotatePlayers(shuffled, roundIndex);
+
+    // select the active players for this round before building any teams:
+    // the players with the fewest matches so far play, ties broken by the
+    // rotated order. Picking whole teams to skip after team construction
+    // could sit a whole team's worth of players out repeatedly and skew
+    // everyone's match counts; this keeps the spread within one match
+    const activeCount =
+        Math.floor(shuffled.length / playersPerGame) * playersPerGame;
+    const activePlayers = orderedPlayers
+        .map((name, index) => ({name, index}))
+        .sort((a, b) => {
+          return (matchesCount.get(a.name) || 0) -
+              (matchesCount.get(b.name) || 0) || a.index - b.index;
+        })
+        .slice(0, activeCount)
+        .map(entry => entry.name);
+
+    const teams = buildTeams(
+        activePlayers, teamSize, matchesCount, teammateCounts);
+
+    if (teams.length < teamsPerMatch) {
+      break;
+    }
+
+    const matches = buildMatches(
+        teams,
+        teamsPerMatch,
+        matchNumber,
+        matchesCount,
+        opponentCounts,
+    );
+
+    if (matches.length === 0) {
+      break;
+    }
+
+    rounds.push({
+      name: `Round ${roundIndex + 1}`,
+      complete: false,
+      matches,
+    });
+
+    matchNumber += matches.length;
+
+    for (const match of matches) {
+      incrementMatchCounts(match, matchesCount, teammateCounts, opponentCounts);
+    }
+  }
+
   return rounds;
 }
 
@@ -165,6 +283,210 @@ function getTeamsPerRound(players: string[]): IDynamicDYPTeam[][] {
   }
 
   return rounds;
+}
+
+function buildTeams(
+    players: string[],
+    teamSize: number,
+    matchesCount: Map<string, number>,
+    teammateCounts: Map<string, number>,
+    ): IDynamicDYPTeam[] {
+  const remaining = players.slice();
+  const teams = [];
+
+  while (remaining.length >= teamSize) {
+    remaining.sort((a, b) => comparePlayers(a, b, matchesCount));
+    const captain = remaining.shift();
+    if (!captain) {
+      break;
+    }
+
+    const team = [captain];
+    while (team.length < teamSize) {
+      const candidate = remaining
+          .map((name, index) => {
+            return {
+              index,
+              name,
+              score: getTeammateScore(name, team, matchesCount, teammateCounts),
+            };
+          })
+          .sort((a, b) => a.score - b.score || a.name.localeCompare(b.name))[0];
+
+      if (!candidate) {
+        break;
+      }
+
+      team.push(candidate.name);
+      remaining.splice(candidate.index, 1);
+    }
+
+    if (team.length === teamSize) {
+      teams.push({
+        players: team.sort((a, b) => a.localeCompare(b)),
+        score: 0,
+      });
+    }
+  }
+
+  return teams;
+}
+
+function buildMatches(
+    teams: IDynamicDYPTeam[],
+    teamsPerMatch: number,
+    startNumber: number,
+    matchesCount: Map<string, number>,
+    opponentCounts: Map<string, number>,
+    ): IDynamicDYPMatch[] {
+  const remaining = teams.slice();
+  const matches = [];
+  let matchNumber = startNumber;
+
+  while (remaining.length >= teamsPerMatch) {
+    remaining.sort((a, b) => {
+      return getTeamMatchCount(a, matchesCount) - getTeamMatchCount(b, matchesCount) ||
+          a.players.join('|').localeCompare(b.players.join('|'));
+    });
+
+    const matchTeams = [remaining.shift()!];
+    while (matchTeams.length < teamsPerMatch) {
+      const candidate = remaining
+          .map((team, index) => {
+            return {
+              index,
+              team,
+              score: getOpponentScore(team, matchTeams, matchesCount, opponentCounts),
+            };
+          })
+          .sort((a, b) => {
+            return a.score - b.score ||
+                a.team.players.join('|').localeCompare(b.team.players.join('|'));
+          })[0];
+
+      if (!candidate) {
+        break;
+      }
+
+      matchTeams.push(candidate.team);
+      remaining.splice(candidate.index, 1);
+    }
+
+    if (matchTeams.length === teamsPerMatch) {
+      matches.push({
+        teams: matchTeams,
+        ready: [],
+        number: matchNumber++,
+        status: MatchStatus.NOT_STARTED,
+      });
+    }
+  }
+
+  return matches;
+}
+
+function comparePlayers(
+    a: string,
+    b: string,
+    matchesCount: Map<string, number>,
+    ): number {
+  return (matchesCount.get(a) || 0) - (matchesCount.get(b) || 0) ||
+      a.localeCompare(b);
+}
+
+function rotatePlayers(players: string[], offset: number): string[] {
+  if (!players.length) {
+    return [];
+  }
+
+  const start = offset % players.length;
+  return players.slice(start).concat(players.slice(0, start));
+}
+
+function getTeammateScore(
+    candidate: string,
+    team: string[],
+    matchesCount: Map<string, number>,
+    teammateCounts: Map<string, number>,
+    ): number {
+  const repeats = team.reduce((total, player) => {
+    return total + (teammateCounts.get(getPairKey(player, candidate)) || 0);
+  }, 0);
+
+  return repeats * 100 + (matchesCount.get(candidate) || 0);
+}
+
+function getOpponentScore(
+    team: IDynamicDYPTeam,
+    currentTeams: IDynamicDYPTeam[],
+    matchesCount: Map<string, number>,
+    opponentCounts: Map<string, number>,
+    ): number {
+  const repeats = currentTeams.reduce((total, currentTeam) => {
+    return total + currentTeam.players.reduce((teamTotal, currentPlayer) => {
+      return teamTotal + team.players.reduce((playerTotal, player) => {
+        return playerTotal + (opponentCounts.get(getPairKey(currentPlayer, player)) || 0);
+      }, 0);
+    }, 0);
+  }, 0);
+
+  return repeats * 100 + getTeamMatchCount(team, matchesCount);
+}
+
+function getTeamMatchCount(
+    team: IDynamicDYPTeam,
+    matchesCount: Map<string, number>,
+    ): number {
+  return team.players.reduce((total, player) => {
+    return total + (matchesCount.get(player) || 0);
+  }, 0);
+}
+
+function incrementMatchCounts(
+    match: IDynamicDYPMatch,
+    matchesCount: Map<string, number>,
+    teammateCounts: Map<string, number>,
+    opponentCounts: Map<string, number>,
+    ) {
+  for (const team of match.teams) {
+    for (const player of team.players) {
+      matchesCount.set(player, (matchesCount.get(player) || 0) + 1);
+    }
+
+    incrementPairCounts(team.players, teammateCounts);
+  }
+
+  for (let i = 0; i < match.teams.length; i++) {
+    for (let j = i + 1; j < match.teams.length; j++) {
+      incrementCrossCounts(match.teams[i].players, match.teams[j].players, opponentCounts);
+    }
+  }
+}
+
+function incrementPairCounts(players: string[], counts: Map<string, number>) {
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      const key = getPairKey(players[i], players[j]);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+}
+
+function incrementCrossCounts(
+    first: string[],
+    second: string[],
+    counts: Map<string, number>,
+    ) {
+  for (const left of first) {
+    for (const right of second) {
+      const key = getPairKey(left, right);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+}
+
+function getPairKey(a: string, b: string): string {
+  return [a, b].sort((left, right) => left.localeCompare(right)).join('|');
 }
 
 /**

@@ -347,4 +347,118 @@ describe('firestore.rules', function () {
       await assertSucceeds(batch.commit());
     });
   });
+
+  describe('team arena restrictions', function () {
+    const TEAM_EVENT = 'Team-Event';
+    const TEAM_ARENA = {
+      ...ARENA,
+      type: 'Big Team',
+      teamSize: 2,
+      playersPerGame: 4,
+      doublesPairingStrategy: 'BYP',
+      arenaTeams: [],
+      arenaReady: {},
+      arenaPlaying: [],
+    };
+    const teamDoc = ctx => doc(db(ctx), 'events', TEAM_EVENT);
+    const teamPlayer = (ctx, name) =>
+        doc(db(ctx), 'events', TEAM_EVENT, 'players', name);
+
+    beforeEach(async function () {
+      await env.withSecurityRulesDisabled(async ctx => {
+        const db2 = ctx.firestore();
+        await setDoc(doc(db2, 'events', TEAM_EVENT), TEAM_ARENA);
+        await setDoc(doc(db2, 'events', TEAM_EVENT, 'players', 'alice'),
+            newPlayer('alice'));
+        await setDoc(doc(db2, 'events', TEAM_EVENT, 'players', 'bob'),
+            newPlayer('bob'));
+      });
+    });
+
+    it('clients cannot self-register on a team arena', async function () {
+      // carol writing her own doc is still denied — registration goes
+      // through the backend so roster invariants hold
+      const carol = env.authenticatedContext('carol',
+          {username: 'carol'});
+      await assertFails(
+          setDoc(teamPlayer(carol, 'carol'), newPlayer('carol')));
+      // a withdrawn-shaped doc does not bypass the restriction either
+      await assertFails(setDoc(teamPlayer(carol, 'carol'),
+          {...newPlayer('carol'), withdrawn: true}));
+      // and of course writing somebody else's doc is denied too
+      await assertFails(
+          setDoc(teamPlayer(alice, 'carol'), newPlayer('carol')));
+      // admins can still write registrations
+      await assertSucceeds(
+          setDoc(teamPlayer(admin, 'carol'), newPlayer('carol')));
+    });
+
+    it('players cannot delete their own doc on a team arena', async function () {
+      // deleting a scored registration would orphan roster/in-flight state
+      await assertFails(deleteDoc(teamPlayer(alice, 'alice')));
+      await assertSucceeds(deleteDoc(teamPlayer(admin, 'alice')));
+    });
+
+    it('partner writes do not apply to team arenas', async function () {
+      await assertFails(updateDoc(teamPlayer(alice, 'alice'),
+          {partner: 'bob', partnerStatus: 'PENDING', teamName: 'x'}));
+    });
+
+    it('the legacy queue write is forbidden but check-in still works',
+        async function () {
+          await assertFails(updateDoc(teamDoc(alice),
+              {queue: arrayUnion('alice'),
+                  checkedInPlayers: arrayUnion('alice')}));
+          await assertSucceeds(updateDoc(teamDoc(alice),
+              {checkedInPlayers: arrayUnion('alice')}));
+          // arena internals are never client-writable
+          await assertFails(updateDoc(teamDoc(alice),
+              {arenaTeams: [{id: 't1'}]}));
+          await assertFails(updateDoc(teamDoc(alice),
+              {arenaReady: {alice: 1}}));
+        });
+
+    it('big team roster fields are never client-writable', async function () {
+      // non-arena Big Team rosters mutate through the backend only
+      const BIG_EVENT = 'Big-Event';
+      const bigPlayer = (ctx, name) =>
+          doc(db(ctx), 'events', BIG_EVENT, 'players', name);
+      await env.withSecurityRulesDisabled(async ctx => {
+        const db2 = ctx.firestore();
+        await setDoc(doc(db2, 'events', BIG_EVENT),
+            {...ARENA, type: 'Big Team', format: 'Double Elim',
+                teamSize: 4});
+        await setDoc(doc(db2, 'events', BIG_EVENT, 'players', 'alice'),
+            newPlayer('alice'));
+        await setDoc(doc(db2, 'events', BIG_EVENT, 'players', 'bob'),
+            newPlayer('bob'));
+      });
+      await assertFails(updateDoc(bigPlayer(alice, 'alice'),
+          {teamMembers: ['alice', 'bob']}));
+      await assertFails(updateDoc(bigPlayer(alice, 'alice'),
+          {teamCaptain: 'alice'}));
+      await assertFails(updateDoc(bigPlayer(bob, 'bob'),
+          {bigTeamInvites: ['alice']}));
+      // deleting your own registration would orphan a roster — backend only
+      await assertFails(deleteDoc(bigPlayer(alice, 'alice')));
+      await assertSucceeds(deleteDoc(bigPlayer(admin, 'alice')));
+    });
+
+    it('ordinary events keep the old behavior', async function () {
+      // the same writes still work on the normal arena fixture
+      await assertSucceeds(updateDoc(eventDoc(alice),
+          {queue: arrayUnion('alice'),
+              checkedInPlayers: arrayUnion('alice')}));
+      // only OWN-doc self registration is legal on ordinary events
+      const carol = env.authenticatedContext('carol',
+          {username: 'carol'});
+      await assertSucceeds(
+          setDoc(playerDoc(carol, 'carol'), newPlayer('carol')));
+      await assertFails(
+          setDoc(playerDoc(alice, 'dave'), newPlayer('dave')));
+      await assertFails(
+          setDoc(playerDoc(anon, 'eve'), newPlayer('eve')));
+      await assertSucceeds(deleteDoc(playerDoc(alice, 'alice')));
+    });
+  });
 });

@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/co
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 
-import {EventStatus, IDoubleElimEvent, ILeaderboardPlayer, PartnerStatus} from '../../../../types';
+import {EventStatus, EventType, IDoubleElimEvent, ILeaderboardPlayer, PartnerStatus} from '../../../../types';
 
 @Component({
   selector: 'app-registration',
@@ -131,8 +131,20 @@ export class RegistrationComponent {
         this.players && !!this.players.find(p => p.name === this.generals.name);
   }
 
-  showPartner(player: ILeaderboardPlayer): boolean {
+  showTeam(player: ILeaderboardPlayer): boolean {
+    if (this.event?.type === EventType.BIG_TEAM) {
+      return (player.teamMembers?.length || 0) > 1;
+    }
+
     return player.partnerStatus === PartnerStatus.CONFIRMED && !!player.partner;
+  }
+
+  getTeamText(player: ILeaderboardPlayer): string {
+    if (this.event?.type === EventType.BIG_TEAM) {
+      return (player.teamMembers || []).filter(name => name !== player.name).join(', ');
+    }
+
+    return player.partner || '';
   }
 
   trackByFn(player: ILeaderboardPlayer) {

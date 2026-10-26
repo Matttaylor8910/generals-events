@@ -10,10 +10,10 @@
   <ion-button
     *ngIf="showQueueButton"
     class="generals-button"
-    [disabled]="disqualified"
+    [disabled]="queueDisabled"
     (click)="toggleQueue()"
   >
-    {{ inQueue ? 'Leave' : 'Join' }} Queue
+    {{ queueLabel }}
   </ion-button>
 
   <div

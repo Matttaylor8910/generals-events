@@ -3,6 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
+  localEmulators: false,
   production: false,
   firebase: {
     apiKey: 'AIzaSyB5tAOWFyzZQ0_v-NdaKj5-auwhPMF-zhw',

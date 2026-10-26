@@ -81,13 +81,26 @@ service cloud.firestore {
       allow update: if isAdmin() || playerSelfServiceUpdate(eventId);
 
       // players may add/remove themselves from the arena queue and check
-      // themselves in, nothing else on the event document
+      // themselves in, nothing else on the event document. Team arenas
+      // queue whole ready teams through the teamArenaAction callable, so
+      // the legacy queue write is forbidden there; checked-in stays.
       function playerSelfServiceUpdate(eventId) {
         return signedIn()
-            && changesOnly(['queue', 'checkedInPlayers'])
-            && onlyAddedMe('checkedInPlayers')
-            && (onlyAddedMe('queue') || onlyRemovedMe('queue'))
-            && isActivePlayer(eventId);
+            && isActivePlayer(eventId)
+            && (isTeamArenaEvent(eventId) ?
+                (changesOnly(['checkedInPlayers'])
+                    && onlyAddedMe('checkedInPlayers')) :
+                (changesOnly(['queue', 'checkedInPlayers'])
+                    && onlyAddedMe('checkedInPlayers')
+                    && (onlyAddedMe('queue') || onlyRemovedMe('queue'))));
+      }
+
+      // team arenas are event documents with Arena format and a team type;
+      // all roster state moves through the backend, never client writes
+      function isTeamArenaEvent(eventId) {
+        return eventData(eventId).get('format', '') == 'Arena'
+            && (eventData(eventId).get('type', '') == 'Big Team'
+                || eventData(eventId).get('type', '') == '2v2');
       }
 
       // -------------------------------------------------------- leaderboard
@@ -95,7 +108,12 @@ service cloud.firestore {
       match /players/{name} {
         allow read: if true;
         allow create: if isAdmin() || selfRegistration(eventId, name);
-        allow delete: if isAdmin() || isMe(name);
+        // deleting your own registration is forbidden wherever a roster
+        // could depend on it: team arenas AND non-arena Big Team events
+        // both go through backend operations that keep rosters consistent
+        allow delete: if isAdmin() ||
+            (isMe(name) && !isTeamArenaEvent(eventId) &&
+                eventData(eventId).get('type', '') != 'Big Team');
         allow update: if isAdmin() || partnerUpdate(eventId, name);
 
         // a player may register themselves with a blank record
@@ -109,7 +127,8 @@ service cloud.firestore {
               && d.currentStreak == 0
               && d.dq == false
               && d.record.size() == 0
-              && eventData(eventId).get('disableJoin', false) != true;
+              && eventData(eventId).get('disableJoin', false) != true
+              && !isTeamArenaEvent(eventId);
         }
 
         // 2v2 partner selection touches your own doc, and the doc of the
@@ -123,6 +142,7 @@ service cloud.firestore {
               && after.get('teamName', '') is string
               && after.get('teamName', '').size() <= 50
               && isActivePlayer(eventId)
+              && !isTeamArenaEvent(eventId)
               && (isMe(name) || pairedWithMe(name));
         }
 

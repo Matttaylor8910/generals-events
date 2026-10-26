@@ -13,6 +13,8 @@ try {
 }
 const db = admin.firestore();
 
+const yield1ms = () => new Promise(resolve => setTimeout(resolve, 1));
+
 export const getReplaysForUser =
     functions.runWith({memory: '1GB', timeoutSeconds: 360})
         .https.onCall(async (name: unknown, context) => {
@@ -103,6 +105,7 @@ async function getAllReplays(
   return flatten(replays);
 }
 
+
 /**
  * Find the total number of games for a player using binary search
  */
@@ -117,6 +120,9 @@ async function countGames(name: string): Promise<number> {
     } else {
       low = mid;
     }
+
+    await yield1ms();
   }
+
   return low - 1;
 }

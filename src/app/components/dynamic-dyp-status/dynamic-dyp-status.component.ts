@@ -2,7 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
-import {EventStatus, IBracketMatch, IBracketRound, IDynamicDYPEvent, IDynamicDYPMatch, IGeneralsGameOptions, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
+import {EventStatus, IDynamicDYPEvent, IDynamicDYPMatch, IGeneralsGameOptions, ILeaderboardPlayer, MatchStatus} from 'types';
 
 @Component({
   selector: 'app-dynamic-dyp-status',
@@ -23,8 +23,9 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   checkedIn = false;
 
   readyStatus: {
-    partner: null|string; opponents: null | string,
-                          match: null|IDynamicDYPMatch,
+    teammates: null|string[];
+    opponents: null|string[][];
+    match: null|IDynamicDYPMatch,
   };
   noMoreMatches = false;
 
@@ -97,9 +98,14 @@ export class DynamicDYPStatusComponent implements OnDestroy {
         return 'You have no matches right now, spectate the other matches while you wait!';
       }
       if (this.readyStatus.match) {
-        const {partner, opponents} = this.readyStatus;
-        return `You are paired up with ${partner} playing against ${
-            opponents}!`;
+        const teammates = this.readyStatus.teammates || [];
+        const team = [this.generals.name, ...teammates].filter(Boolean).join(', ');
+        const opponents = (this.readyStatus.opponents || []).map(players => {
+          return players.join(', ');
+        }).join(' / ');
+        return teammates.length > 0 ?
+            `Your team is ${team} playing against ${opponents}!` :
+            `You are playing against ${opponents}!`;
       }
 
       return 'Waiting for next match, feel free to spectate other matches while you wait!';
@@ -149,7 +155,17 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   }
 
   joinFinals() {
-    this.generals.joinLobby('match_finals', this.event, true);
+    const options: IGeneralsGameOptions = {};
+    const finalsMatch = this.event?.finals?.bracket?.[0]?.matches?.[0];
+    const teamIndex = finalsMatch?.teams?.findIndex(team => {
+      return team.players?.includes(this.generals.name);
+    }) ?? -1;
+
+    if (teamIndex >= 0) {
+      options.team = teamIndex + 1;
+    }
+
+    this.generals.joinLobby('match_finals', this.event, true, options);
   }
 
   findNextMatch() {
@@ -173,22 +189,26 @@ export class DynamicDYPStatusComponent implements OnDestroy {
   setMatchReadyStatus(match: IDynamicDYPMatch) {
     this.readyStatus.match = match;
 
-    let us = match.teams[0].players;
-    let them = match.teams[1].players;
+    const myTeam = match.teams.find(team => {
+      return team.players.includes(this.generals.name);
+    });
 
-    if (!us.includes(this.generals.name)) {
-      let temp = us;
-      us = them;
-      them = temp;
+    if (!myTeam) {
+      this.resetReadyStatus();
+      return;
     }
 
-    this.readyStatus.opponents = them.join(' and ');
-    this.readyStatus.partner = us.find(p => p !== this.generals.name);
+    this.readyStatus.teammates = myTeam.players.filter(player => {
+      return player !== this.generals.name;
+    });
+    this.readyStatus.opponents = match.teams
+        .filter(team => team !== myTeam)
+        .map(team => team.players);
   }
 
   resetReadyStatus() {
     this.readyStatus = {
-      partner: null,
+      teammates: null,
       opponents: null,
       match: null,
     };

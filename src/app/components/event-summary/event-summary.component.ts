@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, GameSpeed, IArenaEvent, IDoubleElimEvent} from 'types';
+import {EventFormat, EventStatus, EventType, GameSpeed, IArenaEvent, IDoubleElimEvent} from 'types';
 
 @Component({
   selector: 'app-event-summary',
@@ -67,7 +67,19 @@ export class EventSummaryComponent {
   get mapName(): string {
     return decodeURI(this.event?.options?.map);
   }
-  
+
+  get showTeamDetails(): boolean {
+    return this.event?.type === EventType.BIG_TEAM ||
+        this.event?.type === EventType.TWO_VS_TWO;
+  }
+
+  get teamDetailsText(): string {
+    const teamSize = this.event?.teamSize || (this.event?.type === EventType.ONE_VS_ONE ? 1 : 2);
+    const playersPerGame = this.event?.playersPerGame || teamSize * 2;
+    const teamCount = Math.max(1, Math.floor(playersPerGame / Math.max(teamSize, 1)));
+    return `${teamCount} ${teamCount === 1 ? 'team' : 'teams'} of ${teamSize}`;
+  }
+
   get speedText(): string {
     return `Playing at ${this.event?.options?.speed || GameSpeed.SPEED_1X} speed`;
   }

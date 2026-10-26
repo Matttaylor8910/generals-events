@@ -2,8 +2,12 @@ import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
-import {GameSpeed, IEvent, IGeneralsGameOptions, IGeneralsReplay} from 'types';
+import {isValidTeamSize} from 'teams';
+import {normalizeEventGameOptions} from 'game-options';
+import {isTeamArena, normalizeEventTeam} from 'team-arena';
+import {EventFormat, EventType, GameSpeed, IEvent, IGeneralsGameOptions, IGeneralsReplay} from 'types';
 import {GeneralsServer, SITE_URLS} from '../../../constants';
+import {environment} from 'src/environments/environment';
 import {UtilService} from './util.service';
 
 const DEFAULT_GAME_OPTIONS: IGeneralsGameOptions = {
@@ -56,13 +60,24 @@ export class GeneralsService {
     });
   }
 
+  // the generals.io origin used for login/lobby/profile/replay links: the
+  // local dev server when running against the emulator suite, otherwise the
+  // per-server production URL
+  private gioOrigin(server: GeneralsServer): string {
+    // local-firebase.ts already validated SITE_URLS[LOCAL] as a
+    // credential-free loopback origin before the app booted
+    return (environment as any).localEmulators ?
+        SITE_URLS[GeneralsServer.LOCAL] : SITE_URLS[server];
+  }
+
   goToProfile(name: string, server = GeneralsServer.NA) {
     window.open(
-        `${SITE_URLS[server]}/profiles/${encodeURIComponent(name)}`, '_blank');
+        `${this.gioOrigin(server)}/profiles/${encodeURIComponent(name)}`,
+        '_blank');
   }
 
   goToReplay(replayId: string, server = GeneralsServer.NA) {
-    window.open(`${SITE_URLS[server]}/replays/${replayId}`, '_blank');
+    window.open(`${this.gioOrigin(server)}/replays/${replayId}`, '_blank');
   }
 
   joinLobby(
@@ -76,16 +91,97 @@ export class GeneralsService {
       options: lobbyOptions,
     } = event;
 
-    // override any default game options with those provided
-    const queryParams = this.utilService.getParamString({
+    let lobbyName = name;
+    if (name.startsWith('match_')) {
+      // match lobbies must be namespaced to this event (the event's own id,
+      // not a parent's) or simultaneous events would share the same lobby
+      if (!event?.id) {
+        throw new Error('Cannot join a match lobby without an event id');
+      }
+      lobbyName = `match_${event.id}_${name.slice('match_'.length)}`;
+    }
+
+    // tell the lobby how many players a Big Team game holds so max_players
+    // matches the event configuration; a persisted malformed setting is
+    // rejected rather than trusted or silently replaced
+    const eventOptions: IGeneralsGameOptions = {};
+    if (isTeamArena(event)) {
+      // team arenas carry the nominal playersPerGame plus the normalized
+      // roster contract; teams are dispatched whole, never via an
+      // individual team= parameter. Field-level validation (not
+      // validateTeamArenaConfig) keeps older docs that predate the pairing
+      // strategy field joinable.
+      const teamSize = event.teamSize;
+      const players = event.playersPerGame;
+      if (!isValidTeamSize(teamSize) || !Number.isInteger(players) ||
+          players % teamSize !== 0 || players < 2 * teamSize ||
+          players > 16) {
+        throw new Error('Cannot join a team arena lobby with an invalid ' +
+            'team configuration');
+      }
+      eventOptions.players = players;
+      if (options.event_team !== undefined) {
+        eventOptions.event_team = normalizeEventTeam(options.event_team);
+      }
+    } else if (event?.type === EventType.BIG_TEAM) {
+      const teamSize = event.teamSize;
+      if (!isValidTeamSize(teamSize)) {
+        throw new Error('Cannot join a Big Team lobby with an invalid ' +
+            'team size');
+      }
+      let players = event.playersPerGame;
+      if (players === undefined || players === null) {
+        // when unset, the lobby defaults to the two-team minimum
+        players = 2 * teamSize;
+      }
+      if (!Number.isInteger(players) || players % teamSize !== 0 ||
+          players < 2 * teamSize || players > 16 ||
+          // a double elimination match must resolve to exactly two teams
+          (event.format === EventFormat.DOUBLE_ELIM &&
+           players !== 2 * teamSize)) {
+        throw new Error('Cannot join a Big Team lobby with an invalid ' +
+            'players per game');
+      }
+      eventOptions.players = players;
+    }
+
+    // normalize stored and override options the same way the form does; a
+    // malformed modifier config throws rather than generating a silently
+    // wrong lobby URL
+    const urlOptions: IGeneralsGameOptions = {
       ...DEFAULT_GAME_OPTIONS,
-      ...lobbyOptions,
-      ...options,
+      ...normalizeEventGameOptions(lobbyOptions),
+      ...normalizeEventGameOptions(options),
+      ...eventOptions,
       eventId: event.id,
-    });
+    };
+
+    // serialize modifiers back to the comma-delimited query grammar the main
+    // client parses, and modifier_options as JSON so it never degrades to
+    // "[object Object]"
+    const serializedOptions: {[key: string]: any} = {...urlOptions};
+    const devPort = this.getDevPort();
+    if (devPort) {
+      serializedOptions.eventDevPort = devPort;
+    }
+    if (urlOptions.modifiers !== undefined) {
+      serializedOptions.modifiers =
+          (urlOptions.modifiers as number[]).join(',');
+    }
+    if (urlOptions.modifier_options !== undefined) {
+      serializedOptions.modifier_options =
+          JSON.stringify(urlOptions.modifier_options);
+    }
+    if (urlOptions.event_team !== undefined) {
+      serializedOptions.event_team = JSON.stringify(urlOptions.event_team);
+    }
+
+    // override any default game options with those provided
+    const queryParams = this.utilService.getParamString(serializedOptions);
 
     // append the query params to the game lobby url
-    const url = `${SITE_URLS[server]}/games/${name}${queryParams}`;
+    const url = `${this.gioOrigin(server)}/games/${
+        encodeURIComponent(lobbyName)}${queryParams}`;
 
     if (newTab) {
       window.open(url, '_blank');
@@ -118,7 +214,7 @@ export class GeneralsService {
       params.set('eventDevPort', String(devPort));
     }
 
-    location.href = `${SITE_URLS[server]}/?${params.toString()}`;
+    location.href = `${this.gioOrigin(server)}/?${params.toString()}`;
   }
 
   /**
@@ -203,7 +299,8 @@ export class GeneralsService {
 
   private getDevPort(): number|null {
     const port = Number(location.port);
-    if (location.hostname === 'localhost' && DEV_PORTS.includes(port)) {
+    if (['localhost', '127.0.0.1'].includes(location.hostname) &&
+        DEV_PORTS.includes(port)) {
       return port;
     }
     return null;

@@ -1,0 +1,96 @@
+<div class="arena-teams" *ngIf="show">
+
+  <!-- random partners: no standing teams, explain the flow instead -->
+  <div class="random-partners" *ngIf="!bringYourPartner">
+    <p>
+      This event creates random teams of {{ event.teamSize }} for every game.
+      Hit the Ready button below when you want to play; once
+      {{ event.playersPerGame }} players are ready a full game starts.
+      Ready again after each game to keep playing.
+    </p>
+  </div>
+
+  <ng-container *ngIf="bringYourPartner">
+    <div class="error" *ngIf="error">{{ error }}</div>
+
+    <!-- the caller's own team controls -->
+    <div class="my-team" *ngIf="myTeam as team">
+      <strong>{{ team.name }}</strong>
+      <ion-button size="small" fill="clear" color="dark" (click)="leaveTeam()" [disabled]="controlsDisabled">
+        <ion-icon name="exit"></ion-icon>
+        Leave Team
+      </ion-button>
+      <ion-button size="small" fill="clear" color="dark" (click)="renameTeam(team)" [disabled]="controlsDisabled" *ngIf="isCaptain">
+        <ion-icon name="create"></ion-icon>
+        Rename
+      </ion-button>
+      <label *ngIf="isCaptain && missingSlots(team) > 0">
+        <input type="checkbox" [checked]="team.acceptFill" [disabled]="controlsDisabled" (click)="toggleAcceptFill(team)">
+        Accept a random fill player
+      </label>
+      <label *ngIf="isCaptain && missingSlots(team) > 0">
+        <input type="checkbox" [checked]="team.allowShortHanded" [disabled]="controlsDisabled" (click)="toggleShortHanded(team)">
+        Play short-handed ({{ team.members.length }} of {{ event.teamSize }})
+      </label>
+    </div>
+
+    <!-- teamless players can create, request a spot, or volunteer as fill -->
+    <div class="team-actions" *ngIf="inEvent && !myTeam && !disqualified">
+      <ion-button size="small" fill="clear" color="dark" (click)="createTeam()" [disabled]="controlsDisabled">
+        <ion-icon name="people"></ion-icon>
+        Create Team
+      </ion-button>
+      <ion-button size="small" fill="clear" color="dark" (click)="joinRandomTeam()" [disabled]="controlsDisabled || !fillTeams.length" *ngIf="fillTeams.length">
+        <ion-icon name="shuffle"></ion-icon>
+        Fill a Team Randomly
+      </ion-button>
+    </div>
+
+    <!-- team list: roster, captain, readiness, requests -->
+    <table *ngIf="rankedTeams.length">
+      <tr class="table-header">
+        <th colspan="4">Teams</th>
+      </tr>
+      <tr *ngFor="let team of rankedTeams; trackBy: trackByFn">
+        <td class="name" (click)="playersClicked.emit(team.members)">
+          <div>{{ team.name }}</div>
+          <div class="members">
+            <span *ngFor="let member of team.members"
+                [class.ready]="isReady(member)">
+              {{ memberName(team, member) }}
+            </span>
+            <span class="missing" *ngFor="let slot of openSlots(team)">
+              open slot
+            </span>
+          </div>
+          <div class="no-shows" *ngIf="team.noShows?.length">
+            No-shows: {{ team.noShows.join(', ') }}
+          </div>
+        </td>
+        <td class="record" *ngIf="team.games">{{ team.wins }}-{{ team.games - team.wins }}</td>
+        <td class="points" *ngIf="team.games">{{ team.points }}</td>
+        <td class="controls">
+          <ng-container *ngIf="isCaptain && myTeam?.id === team.id">
+            <span *ngFor="let request of team.requests">
+              {{ request }}
+              <ion-button size="small" fill="clear" color="dark" (click)="acceptPlayer(team, request)" [disabled]="controlsDisabled">
+                Accept
+              </ion-button>
+            </span>
+            <span *ngFor="let member of team.members">
+              <ion-button size="small" fill="clear" color="dark" (click)="markNoShow(team, member)" [disabled]="controlsDisabled" *ngIf="member !== generals.name">
+                No-show {{ member }}
+              </ion-button>
+            </span>
+          </ng-container>
+          <ion-button size="small" fill="clear" color="dark" (click)="requestTeam(team)" [disabled]="controlsDisabled" *ngIf="canJoin(team)">
+            Request to Join
+          </ion-button>
+          <span class="requested" *ngIf="!myTeam && team.requests?.includes(generals.name)">
+            Requested
+          </span>
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+</div>

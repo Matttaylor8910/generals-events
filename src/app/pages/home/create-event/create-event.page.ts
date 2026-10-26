@@ -5,7 +5,9 @@ import {extend} from 'lodash';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
-import {DoublesPairingStrategy, EventFormat, EventType, GameSpeed, IDoubleElimEvent, IArenaEvent, IEvent, Visibility} from 'types';
+import {MODIFIER_INDEXES, MODIFIERS, normalizeEventGameOptions, normalizeModifierIds, validateEventGameOptions} from 'game-options';
+import {isTeamArena} from 'team-arena';
+import {DoublesPairingStrategy, EventFormat, EventType, GameSpeed, IDoubleElimEvent, IArenaEvent, IEvent, IModifierOptions, Visibility} from 'types';
 
 const arenaEventTypes = {
   [EventType.FFA]: {
@@ -16,10 +18,27 @@ const arenaEventTypes = {
   },
 };
 
+// the only valid pairing modes for a team arena event
+const arenaPairingStrategies = [
+  DoublesPairingStrategy.BRING_YOUR_PARTNER,
+  DoublesPairingStrategy.RANDOM_PARTNERS,
+];
+
+// bracketed doubles events only support bringing your own partner; the
+// arena-only random mode must never leak into the bracket selector
+const bracketPairingStrategies = [
+  DoublesPairingStrategy.BRING_YOUR_PARTNER,
+];
+
+const teamSizeOptions = [2, 3, 4, 5, 6, 7, 8];
+
 const typeFormats = {
   [EventType.FFA]: [EventFormat.ARENA],
   [EventType.ONE_VS_ONE]: [EventFormat.ARENA, EventFormat.DOUBLE_ELIM],
-  [EventType.TWO_VS_TWO]: [EventFormat.DOUBLE_ELIM, EventFormat.DYNAMIC_DYP],
+  [EventType.TWO_VS_TWO]: [EventFormat.DOUBLE_ELIM, EventFormat.DYNAMIC_DYP,
+      EventFormat.ARENA],
+  [EventType.BIG_TEAM]: [EventFormat.DOUBLE_ELIM, EventFormat.DYNAMIC_DYP,
+      EventFormat.ARENA],
   [EventType.MULTI_STAGE_EVENT]: [EventFormat.MULTI_STAGE_EVENT],
 }
 
@@ -79,7 +98,7 @@ export class CreateEventPage implements OnInit {
   formats: EventFormat[];
   format: EventFormat;
 
-  pairingStrategies = Object.values(DoublesPairingStrategy);
+  pairingStrategies = bracketPairingStrategies;
   pairingStrategy: DoublesPairingStrategy;
 
   date: string;
@@ -98,11 +117,24 @@ export class CreateEventPage implements OnInit {
   deserts = 0.0;
   observatories = 0.0;
   lookouts = 0.0;
-  modifiers = null;
+  tunnels = 0;
+  tunnel_min = 20;
+  tunnel_max = 60;
+  strongholds = 0;
+  stronghold_min = 10;
+  stronghold_max = 25;
+  // numeric modifier ids matching the generals.io registry (0-11)
+  modifiers: number[]|string[]|null = null;
+  eventModifiers = MODIFIERS;
+  chess_clock_starting = 10;
+  chess_clock_increment = 5;
+  chess_clock_dont_limit = false;
 
   name: string;
   duration: number;
   parentId: string;
+  teamSize = 2;
+  playersPerGame = 4;
 
   checkInOptions = Object.values(CheckInTimes);
   checkIn: CheckInTimes;
@@ -144,6 +176,7 @@ export class CreateEventPage implements OnInit {
       this.time = '12:00:00';
       this.speed = GameSpeed.SPEED_1X;
       this.checkIn = this.checkInOptions[0];
+      this.applyTeamDefaults();
     }
   }
 
@@ -177,7 +210,7 @@ export class CreateEventPage implements OnInit {
       if (eventWithCheckIn.checkInTime && this.event.startTime) {
         const checkInDiffMs = this.event.startTime - eventWithCheckIn.checkInTime;
         const checkInDiffMinutes = Math.round(checkInDiffMs / (60 * 1000));
-        
+
         // Find the closest matching check-in option
         if (checkInDiffMinutes <= 15) {
           this.checkIn = CheckInTimes.CHECKIN_15;
@@ -193,6 +226,21 @@ export class CreateEventPage implements OnInit {
       }
     }
 
+    if (this.type === EventType.BIG_TEAM) {
+      this.teamSize = this.event.teamSize || 2;
+      this.playersPerGame = this.event.playersPerGame || this.teamSize * 2;
+    } else if (this.type === EventType.TWO_VS_TWO) {
+      this.teamSize = 2;
+      this.playersPerGame = 4;
+    }
+
+    // team arenas always carry a pairing strategy; bracket events load
+    // theirs through the double elim branch below
+    if (isTeamArena(this.event)) {
+      this.pairingStrategy = this.event.doublesPairingStrategy ||
+          DoublesPairingStrategy.BRING_YOUR_PARTNER;
+    }
+
     // Double elim winning sets
     if (this.format === EventFormat.DOUBLE_ELIM) {
       const doubleElimEvent = this.event as IDoubleElimEvent;
@@ -202,17 +250,17 @@ export class CreateEventPage implements OnInit {
         if (reverseWinningSets) {
           this.winningSets.winners = reverseWinningSets[0] as WinningSets;
         }
-        
+
         const reverseLosers = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.losers);
         if (reverseLosers) {
           this.winningSets.losers = reverseLosers[0] as WinningSets;
         }
-        
+
         const reverseSemis = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.semifinals);
         if (reverseSemis) {
           this.winningSets.semifinals = reverseSemis[0] as WinningSets;
         }
-        
+
         const reverseFinals = Object.entries(winningSets).find(([_, value]) => value === doubleElimEvent.winningSets.finals);
         if (reverseFinals) {
           this.winningSets.finals = reverseFinals[0] as WinningSets;
@@ -221,6 +269,10 @@ export class CreateEventPage implements OnInit {
 
       // Pairing strategy
       if (this.type === EventType.TWO_VS_TWO && doubleElimEvent.doublesPairingStrategy) {
+        this.pairingStrategy = doubleElimEvent.doublesPairingStrategy;
+      }
+
+      if (this.type === EventType.BIG_TEAM && doubleElimEvent.doublesPairingStrategy) {
         this.pairingStrategy = doubleElimEvent.doublesPairingStrategy;
       }
     }
@@ -240,11 +292,30 @@ export class CreateEventPage implements OnInit {
       this.deserts = options.deserts ?? 0.0;
       this.observatories = options.observatories ?? 0.0;
       this.lookouts = options.lookouts ?? 0.0;
-      this.modifiers = options.modifiers || null;
+      this.tunnels = options.tunnels ?? 0;
+      this.tunnel_min = options.tunnel_min ?? 20;
+      this.tunnel_max = options.tunnel_max ?? 60;
+      this.strongholds = options.strongholds ?? 0;
+      this.stronghold_min = options.stronghold_min ?? 10;
+      this.stronghold_max = options.stronghold_max ?? 25;
+      // stored modifiers may be in the legacy comma-string form; normalize to
+      // numeric ids so the select can match them; a malformed stored value is
+      // kept raw so the form shows it as invalid instead of crashing
+      try {
+        this.modifiers = options.modifiers != null ?
+            normalizeModifierIds(options.modifiers) : null;
+      } catch (e) {
+        this.modifiers = options.modifiers as number[];
+      }
+      const clock = options.modifier_options?.ChessClock;
+      this.chess_clock_starting = clock?.StartingClock ?? 10;
+      this.chess_clock_increment = clock?.ClockIncrement ?? 5;
+      this.chess_clock_dont_limit = clock?.DontLimitMoveSpeed ?? false;
     }
 
     // Set formats based on type
     this.formats = typeFormats[this.type];
+    this.applyTeamDefaults();
   }
 
   get namePlaceholder(): string {
@@ -259,9 +330,14 @@ export class CreateEventPage implements OnInit {
     return date.getTime() !== date.getTime();
   }
 
-  // arena is valid if it has a duration set or it's not the format
+  // arena is valid if it has a finite positive duration or it's not the
+  // format
   get arenaValid(): boolean {
-    return this.format !== EventFormat.ARENA || !!this.duration;
+    if (this.format !== EventFormat.ARENA) {
+      return true;
+    }
+    const duration = Number(this.duration);
+    return Number.isFinite(duration) && duration > 0;
   }
 
   get parentValid(): boolean {
@@ -270,7 +346,217 @@ export class CreateEventPage implements OnInit {
 
   get invalid(): boolean {
     return this.invalidDate || !this.arenaValid || !this.parentValid ||
+        !this.teamConfigValid || !this.gameOptionsValid ||
         this.saving;
+  }
+
+  get chessClockSelected(): boolean {
+    try {
+      return normalizeModifierIds(this.modifiers)
+          .includes(MODIFIER_INDEXES.ChessClock);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // map generation bounds mirror the lobby's GameQueue validation: integer
+  // limits in range, min <= max, densities between 0 and 1
+  get mapGenerationValid(): boolean {
+    const tunnelMin = Number(this.tunnel_min);
+    const tunnelMax = Number(this.tunnel_max);
+    const strongholdMin = Number(this.stronghold_min);
+    const strongholdMax = Number(this.stronghold_max);
+    if (!Number.isInteger(tunnelMin) || !Number.isInteger(tunnelMax) ||
+        !Number.isInteger(strongholdMin) || !Number.isInteger(strongholdMax)) {
+      return false;
+    }
+    if (tunnelMin < 5 || tunnelMin > 400 ||
+        tunnelMax < 5 || tunnelMax > 500 || tunnelMin > tunnelMax) {
+      return false;
+    }
+    if (strongholdMin < 5 || strongholdMin > 100 ||
+        strongholdMax < 5 || strongholdMax > 100 ||
+        strongholdMin > strongholdMax) {
+      return false;
+    }
+    return [this.tunnels, this.strongholds].every(density =>
+        Number.isFinite(Number(density)) && Number(density) >= 0 &&
+        Number(density) <= 1);
+  }
+
+  // the modifier selection and its options must normalize cleanly; an
+  // invalid combination disables saving and makes create() refuse
+  get gameOptionsValid(): boolean {
+    if (!this.mapGenerationValid) {
+      return false;
+    }
+    return validateEventGameOptions(this.buildGameOptions()).valid;
+  }
+
+  // the game options to persist; existing unrelated configuration survives
+  // an edit because the stored options are merged in first
+  private buildGameOptions() {
+    const options = {
+      ...(this.event?.options || {}),
+      width: this.width,
+      height: this.height,
+      cities: this.cities,
+      mountains: this.mountains,
+      city_fairness: this.city_fairness,
+      spawn_fairness: this.spawn_fairness,
+      swamps: this.swamps,
+      deserts: this.deserts,
+      observatories: this.observatories,
+      lookouts: this.lookouts,
+      tunnels: Number(this.tunnels),
+      tunnel_min: Number(this.tunnel_min),
+      tunnel_max: Number(this.tunnel_max),
+      strongholds: Number(this.strongholds),
+      stronghold_min: Number(this.stronghold_min),
+      stronghold_max: Number(this.stronghold_max),
+      modifiers: this.modifiers,
+      speed: this.speed,
+      map: this.mapURL?.split('/maps/')[1] ?? '',
+    };
+
+    const modifierOptions: IModifierOptions =
+        {...(this.event?.options?.modifier_options || {})};
+    if (this.chessClockSelected) {
+      modifierOptions.ChessClock = {
+        StartingClock: Number(this.chess_clock_starting),
+        ClockIncrement: Number(this.chess_clock_increment),
+        // pass the actual property so a malformed value fails validation
+        // instead of being silently coerced to false
+        DontLimitMoveSpeed: this.chess_clock_dont_limit,
+      };
+    } else {
+      delete modifierOptions.ChessClock;
+    }
+    if (Object.keys(modifierOptions).length) {
+      options.modifier_options = modifierOptions;
+    } else {
+      delete options.modifier_options;
+    }
+
+    return options;
+  }
+
+  get isTeamEvent(): boolean {
+    return this.type === EventType.TWO_VS_TWO || this.type === EventType.BIG_TEAM;
+  }
+
+  // a team arena: 2v2 or Big Team played in the arena format; the roster
+  // and dispatch rules live in functions/src/util/TeamArena.js
+  get isTeamArena(): boolean {
+    return this.format === EventFormat.ARENA && this.isTeamEvent;
+  }
+
+  // 2v2 team arenas always play two teams of two; the form shows a summary
+  // instead of editable controls
+  get fixedTwoVsTwo(): boolean {
+    return this.isTeamArena && this.type === EventType.TWO_VS_TWO;
+  }
+
+  get showTeamSettings(): boolean {
+    return this.type === EventType.BIG_TEAM &&
+        this.format !== EventFormat.MULTI_STAGE_EVENT;
+  }
+
+  get showPlayersPerGame(): boolean {
+    return this.showTeamSettings && this.format === EventFormat.DYNAMIC_DYP;
+  }
+
+  // team arena Big Team events pick a game size from the legal whole
+  // multiples of the team size, so an invalid count is unrepresentable
+  get showGameSizeSelect(): boolean {
+    return this.isTeamArena && this.type === EventType.BIG_TEAM;
+  }
+
+  get teamSizeOptions(): number[] {
+    return teamSizeOptions;
+  }
+
+  get gameSizeOptions(): number[] {
+    const teamSize = Number(this.teamSize);
+    // an invalid team size has no legal game sizes; the loop bound would
+    // otherwise never be reached
+    if (!Number.isInteger(teamSize) || teamSize < 2 || teamSize > 8) {
+      return [];
+    }
+    const options: number[] = [];
+    for (let size = teamSize * 2; size <= 16; size += teamSize) {
+      options.push(size);
+    }
+    return options;
+  }
+
+  // once any team, readiness entry, or game exists, the team configuration
+  // is locked: changing it would invalidate live roster and lobby contracts
+  get teamConfigLocked(): boolean {
+    if (!this.isEditMode || !isTeamArena(this.event)) {
+      return false;
+    }
+    const event = this.event as IArenaEvent;
+    return !!(event.arenaTeams?.length ||
+        Object.keys(event.arenaReady || {}).length ||
+        event.arenaPlaying?.length ||
+        event.completedGameCount || event.ongoingGameCount ||
+        event.arenaMatchNumber);
+  }
+
+  get teamConfigValid(): boolean {
+    // team arenas validate on every boundary, including 2v2 which has no
+    // editable team controls
+    if (this.isTeamArena) {
+      const teamSize = this.type === EventType.TWO_VS_TWO ?
+          2 : Number(this.teamSize);
+      const playersPerGame = this.type === EventType.TWO_VS_TWO ?
+          4 : Number(this.playersPerGame);
+      return arenaPairingStrategies.includes(this.pairingStrategy) &&
+          Number.isInteger(teamSize) && teamSize >= 2 && teamSize <= 8 &&
+          Number.isInteger(playersPerGame) &&
+          playersPerGame >= 2 * teamSize && playersPerGame <= 16 &&
+          playersPerGame % teamSize === 0;
+    }
+
+    if (!this.showTeamSettings) {
+      return true;
+    }
+
+    // team size must be a finite integer between 2 and 8 (a lobby fits 16
+    // players, i.e. two teams of 8)
+    const teamSize = Number(this.teamSize);
+    if (!Number.isFinite(teamSize) || !Number.isInteger(teamSize) ||
+        teamSize < 2 || teamSize > 8) {
+      return false;
+    }
+
+    // double elimination always resolves to exactly two teams per game
+    if (this.format === EventFormat.DOUBLE_ELIM) {
+      return true;
+    }
+
+    // players per game must be a whole number of teams, at least two, and
+    // within the 16 player lobby cap
+    const playersPerGame = Number(this.playersPerGame);
+    return Number.isFinite(playersPerGame) &&
+        Number.isInteger(playersPerGame) && playersPerGame <= 16 &&
+        playersPerGame >= teamSize * 2 &&
+        playersPerGame % teamSize === 0;
+  }
+
+  get teamCount(): number {
+    const teamSize = Number(this.teamSize) || 1;
+    const playersPerGame = this.resolvedPlayersPerGame;
+    return Math.floor(playersPerGame / teamSize);
+  }
+
+  get resolvedPlayersPerGame(): number {
+    const teamSize = Number(this.teamSize) || 2;
+    if (this.format === EventFormat.DOUBLE_ELIM) {
+      return teamSize * 2;
+    }
+    return Number(this.playersPerGame) || teamSize * 2;
   }
 
   /**
@@ -279,7 +565,19 @@ export class CreateEventPage implements OnInit {
    */
   get showPairingStrategies(): boolean {
     return this.format === EventFormat.DOUBLE_ELIM &&
-        this.type === EventType.TWO_VS_TWO;
+        this.isTeamEvent;
+  }
+
+  /**
+   * Team arenas offer the arena-specific pairing modes separately from the
+   * bracket strategies
+   */
+  get showArenaPairing(): boolean {
+    return this.isTeamArena;
+  }
+
+  get arenaPairingStrategies(): DoublesPairingStrategy[] {
+    return arenaPairingStrategies;
   }
 
   getDate(): Date {
@@ -289,18 +587,67 @@ export class CreateEventPage implements OnInit {
   typeChanged($event: {target: {value: string}}) {
     const type = $event.target.value as EventType;
     this.formats = typeFormats[type];
+    this.type = type;
 
     // if the current selected format is not compatible with the newly selected
     // type, switch to the first supported format for this event type
     if (!this.formats.includes(this.format)) {
       this.format = this.formats[0];
     }
+
+    // an arena-only pairing mode left over on a non-arena event normalizes
+    // back to the bracket's bring-your-partner default
+    if (!this.isTeamArena &&
+        !bracketPairingStrategies.includes(this.pairingStrategy)) {
+      this.pairingStrategy = DoublesPairingStrategy.BRING_YOUR_PARTNER;
+    }
+
+    this.applyTeamDefaults();
+  }
+
+  formatChanged() {
+    // switching into a team arena needs an arena pairing strategy; bracket
+    // strategies like DYP are invalid there. Switching back out of an arena
+    // normalizes the arena-only random mode to the bracket's only option.
+    if (this.isTeamArena &&
+        !arenaPairingStrategies.includes(this.pairingStrategy)) {
+      this.pairingStrategy = DoublesPairingStrategy.BRING_YOUR_PARTNER;
+    } else if (!this.isTeamArena &&
+        !bracketPairingStrategies.includes(this.pairingStrategy)) {
+      this.pairingStrategy = DoublesPairingStrategy.BRING_YOUR_PARTNER;
+    }
+    this.applyTeamDefaults();
+  }
+
+  teamSizeChanged() {
+    if (this.type === EventType.TWO_VS_TWO) {
+      this.teamSize = 2;
+      this.playersPerGame = 4;
+      return;
+    }
+
+    const teamSize = Number(this.teamSize);
+    const playersPerGame = Number(this.playersPerGame);
+    const minimumPlayers = (teamSize || 2) * 2;
+    if (this.format === EventFormat.DOUBLE_ELIM || !playersPerGame ||
+        playersPerGame < minimumPlayers ||
+        !this.gameSizeOptions.includes(playersPerGame)) {
+      this.playersPerGame = minimumPlayers;
+    } else if (teamSize && playersPerGame % teamSize !== 0) {
+      this.playersPerGame =
+          Math.ceil(playersPerGame / teamSize) * teamSize;
+    }
   }
 
   async create() {
+    // refuse to persist an invalid config even when called directly, not
+    // just through the disabled save button
+    if (this.invalid) {
+      return;
+    }
+
     this.saving = true;
 
-    const [base, map = ''] = this.mapURL?.split('/maps/');
     const defeat_spectate = this.type === EventType.ONE_VS_ONE;
 
     const eventData: Partial<IEvent> = {
@@ -310,24 +657,19 @@ export class CreateEventPage implements OnInit {
       visibility: this.visibility,
       startTime: this.getDate().getTime(),
 
-      // custom options for the lobby
+      // custom options for the lobby; the whole options object (modifiers
+      // and nested modifier_options) is normalized before persistence
       options: {
-        width: this.width,
-        height: this.height,
-        cities: this.cities,
-        mountains: this.mountains,
-        city_fairness: this.city_fairness,
-        spawn_fairness: this.spawn_fairness,
-        swamps: this.swamps,
-        deserts: this.deserts,
-        observatories: this.observatories,
-        lookouts: this.lookouts,
-        modifiers: this.modifiers,
-        speed: this.speed,
+        ...normalizeEventGameOptions(this.buildGameOptions()),
         defeat_spectate,
-        map,
       }
     };
+
+    if (this.isTeamEvent) {
+      // persist numbers, not ion-input strings
+      eventData.teamSize = Number(this.teamSize);
+      eventData.playersPerGame = Number(this.resolvedPlayersPerGame);
+    }
 
     // attach parentId for events that provide it
     if (this.visibility === Visibility.MULTI_STAGE_EVENT) {
@@ -342,7 +684,7 @@ export class CreateEventPage implements OnInit {
     } else if (this.format === EventFormat.DOUBLE_ELIM) {
       extend(eventData, this.getDoubleElimEventFields(eventData.startTime));
     } else if (this.format === EventFormat.DYNAMIC_DYP) {
-      extend(eventData, {checkInTime: this.getCheckInTime(eventData.startTime)});
+      extend(eventData, this.getDynamicDYPEventFields(eventData.startTime));
     }
 
     if (this.isEditMode && this.eventId) {
@@ -354,7 +696,7 @@ export class CreateEventPage implements OnInit {
       }
       await this.eventService.createEvent(eventData);
     }
-    
+
     this.modalController.dismiss();
   }
 
@@ -369,8 +711,40 @@ export class CreateEventPage implements OnInit {
 
     const fields: any = {
       endTime: endDate.getTime(),
-      playersPerGame: arenaEventTypes[this.type].playersPerGame,
     };
+
+    if (this.isTeamArena) {
+      // the team configuration is locked once the event has live state;
+      // an edit can never invalidate existing rosters or dispatched games
+      if (this.teamConfigLocked) {
+        fields.teamSize = this.event.teamSize;
+        fields.playersPerGame = this.event.playersPerGame;
+        fields.doublesPairingStrategy = this.event.doublesPairingStrategy;
+      } else {
+        fields.teamSize = this.type === EventType.TWO_VS_TWO ?
+            2 : Number(this.teamSize);
+        fields.playersPerGame = this.type === EventType.TWO_VS_TWO ?
+            4 : Number(this.playersPerGame);
+        fields.doublesPairingStrategy = this.pairingStrategy;
+      }
+
+      // initialize runtime state on creation only; editing must preserve
+      // existing teams, readiness, and match counters
+      if (!this.isEditMode) {
+        fields.arenaTeams = [];
+        fields.arenaReady = {};
+        fields.arenaPlaying = [];
+        fields.arenaParticipants = [];
+        fields.arenaMatchNumber = 0;
+        fields.ongoingGameCount = 0;
+        fields.completedGameCount = 0;
+      }
+      return fields;
+    }
+
+    // legacy arena types look up a fixed game size; an unlisted type must
+    // not silently produce undefined
+    fields.playersPerGame = arenaEventTypes[this.type]?.playersPerGame;
 
     // Only set queue for new events
     if (!this.isEditMode) {
@@ -391,12 +765,52 @@ export class CreateEventPage implements OnInit {
       },
     };
 
+    if (this.isTeamEvent) {
+      eventFields.playersPerGame = Number(this.resolvedPlayersPerGame);
+      eventFields.teamSize = Number(this.teamSize);
+    }
+
     // if this is a 2v2 double elim event, show the pairing strategies
     if (this.showPairingStrategies) {
       eventFields.doublesPairingStrategy = this.pairingStrategy;
     }
 
     return eventFields;
+  }
+
+  private getDynamicDYPEventFields(startTime: number) {
+    return {
+      checkInTime: this.getCheckInTime(startTime),
+      playersPerGame: Number(this.resolvedPlayersPerGame),
+      teamSize: Number(this.teamSize),
+    };
+  }
+
+  private applyTeamDefaults() {
+    if (this.type === EventType.TWO_VS_TWO) {
+      this.teamSize = 2;
+      this.playersPerGame = 4;
+      return;
+    }
+
+    if (this.type !== EventType.BIG_TEAM) {
+      return;
+    }
+
+    this.teamSize = Number(this.teamSize) || 2;
+    if (this.teamSize < 2) {
+      this.teamSize = 2;
+    }
+
+    const minimumPlayers = this.teamSize * 2;
+    if (this.format === EventFormat.DOUBLE_ELIM) {
+      this.playersPerGame = minimumPlayers;
+    } else if (!this.playersPerGame || this.playersPerGame < minimumPlayers) {
+      this.playersPerGame = minimumPlayers;
+    } else if (this.playersPerGame % this.teamSize !== 0) {
+      this.playersPerGame =
+          Math.ceil(this.playersPerGame / this.teamSize) * this.teamSize;
+    }
   }
 
   /**

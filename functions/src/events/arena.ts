@@ -2,6 +2,8 @@ import * as admin from 'firebase-admin';
 import {DocumentSnapshot} from 'firebase-functions/lib/providers/firestore';
 
 import {EventType, IArenaEvent, ILeaderboardPlayer} from '../../../types';
+import * as TeamArena from '../util/TeamArena';
+import {handleTeamArenaEventUpdate} from './teamArena';
 
 try {
   admin.initializeApp();
@@ -12,6 +14,12 @@ const db = admin.firestore();
 
 export function handleArenaEventUpdate(snapshot: DocumentSnapshot):
     Promise<void> {
+  // team arenas run their own transactional readiness matchmaking and never
+  // use the legacy queue array
+  const event = snapshot.data() as IArenaEvent;
+  if (TeamArena.isTeamArena(event)) {
+    return handleTeamArenaEventUpdate(snapshot);
+  }
   return checkQueue(snapshot, snapshot.ref.id);
 }
 

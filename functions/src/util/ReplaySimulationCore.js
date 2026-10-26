@@ -1,6 +1,7 @@
 const Constants = require('./Constants');
 const Map = require('./Map');
 const MoveResolver = require('./MoveResolver');
+const DefectionCredits = require('./DefectionCredits');
 
 const DEAD_GENERAL = -1;
 const GAME_TYPES = {
@@ -23,6 +24,10 @@ function createReplayOptions(gameReplay) {
     chat_present: version >= 9,
     general_trade_events_present: version >= 16,
     modifiers: gameReplay.modifiers || [],
+    modifier_options: gameReplay.modifier_options || null,
+    stronghold_density: gameReplay.stronghold_density,
+    stronghold_strength_min: gameReplay.stronghold_strength_min,
+    stronghold_strength_max: gameReplay.stronghold_strength_max,
     old_priority_v2: version >= 5 && version < 15,
   };
 }
@@ -60,6 +65,9 @@ class ReplaySimulationCore {
     this.deaths = [];
     this.attackIndices = [];
     this.annihilatedArmyAgainstPlayers = [];
+    // Per-turn Defection counterpart accumulator (version >= 21 replays
+    // only); null outside update() and for legacy replays.
+    this._turnDefectionCredits = null;
     this.updatesSinceLastMove = 0;
     this.winners = undefined;
     this.cities = [];
@@ -389,7 +397,17 @@ class ReplaySimulationCore {
     let anyMove = false;
     const moves = this.getNextValidSetOfMovesPrioritized();
     const defection = this.map.modFlags && this.map.modFlags[Constants.MODIFIER_INDEXES.Defection];
-    const defectionCredit = defection ? this.sockets.map(() => 0) : null;
+    // Version >= 21 replays recorded every turn-selected intent and award
+    // Defection counterpart credit from actual contact in handleAttack.
+    // Older replays keep the legacy speculative forward/backward estimate so
+    // their historical outcomes decode identically.
+    const modernDefection = defection
+      && this.gameReplay.version >= DefectionCredits.MODERN_REPLAY_VERSION;
+    this._turnDefectionCredits = modernDefection
+      ? new DefectionCredits(moves, this.sockets.length) : null;
+    const defectionCredit = this._turnDefectionCredits
+      ? this._turnDefectionCredits.credits
+      : (defection ? this.sockets.map(() => 0) : null);
     const consumedMoveIndices = new Set();
     // Track tunnel-targeted moves so we can refund overflow when multiple
     // attacks combine to push a tunnel above its limit. Mirrors live Game.update.
@@ -421,7 +439,7 @@ class ReplaySimulationCore {
         continue;
       }
 
-      if (defection) {
+      if (defection && !modernDefection) {
         for (let j = i + 1; j < moves.length; j++) {
           const moveJ = moves[j];
           if (move.start === moveJ.end && move.end === moveJ.start
@@ -471,13 +489,19 @@ class ReplaySimulationCore {
 
     if (defection) {
       for (let i = 0; i < defectionCredit.length; i++) {
-        if (defectionCredit[i] > 0 && this.generals[i] >= 0) {
+        // Modern replays only award a still-living recipient (to its CURRENT
+        // general, which a Leapfrog relocation may have moved this turn);
+        // legacy replays keep the original generals>=0-only gate.
+        const eligible = this.generals[i] >= 0
+          && (!modernDefection || !this.isDead(this.sockets[i]));
+        if (defectionCredit[i] > 0 && eligible) {
           const newArmy = this.map.armyAt(this.generals[i]) + defectionCredit[i];
           this.map.setArmy(this.generals[i], newArmy);
           this.notifyDefectionArmy(this.turn, i, defectionCredit[i]);
         }
       }
     }
+    this._turnDefectionCredits = null;
 
     this.map.refundTunnelOverflow(tunnelMoveExecutions);
 
@@ -657,6 +681,14 @@ class ReplaySimulationCore {
       && this.map.teams
       && this.map.teams[index] !== this.map.teams[oldEndPlayer]) {
       if (oldEndPlayer >= 0) {
+        // Modern (version >= 21) replays: the defender collects the same
+        // actual annihilated amount as counterpart credit when its recorded
+        // turn-selected intent collided at this tile or crossed it. Legacy
+        // replays have no helper and keep the speculative update() credit.
+        if (this._turnDefectionCredits) {
+          this._turnDefectionCredits.addCounterpart(
+              index, start, end, oldEndPlayer, annihilated);
+        }
         const newArmy = this.map.armyAt(this.generals[index]) + annihilated;
         this.notifyDefectionArmy(this.turn, index, annihilated);
         this.map.setArmy(this.generals[index], newArmy);
