@@ -65,7 +65,7 @@ class ReplaySimulationCore {
     this.deaths = [];
     this.attackIndices = [];
     this.annihilatedArmyAgainstPlayers = [];
-    // Per-turn Defection counterpart accumulator (version >= 21 replays
+    // Per-turn Defection counterpart accumulator (version >= 20 replays
     // only); null outside update() and for legacy replays.
     this._turnDefectionCredits = null;
     this.updatesSinceLastMove = 0;
@@ -397,8 +397,8 @@ class ReplaySimulationCore {
     let anyMove = false;
     const moves = this.getNextValidSetOfMovesPrioritized();
     const defection = this.map.modFlags && this.map.modFlags[Constants.MODIFIER_INDEXES.Defection];
-    // Version >= 21 replays recorded every turn-selected intent and award
-    // Defection counterpart credit from actual contact in handleAttack.
+    // Version >= 20 Defection replays record every turn-selected intent and
+    // award counterpart credit from actual contact in handleAttack.
     // Older replays keep the legacy speculative forward/backward estimate so
     // their historical outcomes decode identically.
     const modernDefection = defection
@@ -681,7 +681,7 @@ class ReplaySimulationCore {
       && this.map.teams
       && this.map.teams[index] !== this.map.teams[oldEndPlayer]) {
       if (oldEndPlayer >= 0) {
-        // Modern (version >= 21) replays: the defender collects the same
+        // Modern (version >= 20) replays: the defender collects the same
         // actual annihilated amount as counterpart credit when its recorded
         // turn-selected intent collided at this tile or crossed it. Legacy
         // replays have no helper and keep the speculative update() credit.

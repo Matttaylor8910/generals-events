@@ -1,8 +1,8 @@
 'use strict';
 
-// Defection collision counterpart credits (replay version >= 21 semantics).
+// Defection collision counterpart credits (replay version >= 20 semantics).
 //
-// The pre-21 implementation speculatively scanned forward/backward through the
+// The pre-20 implementation speculatively scanned forward/backward through the
 // resolver-ordered move list and granted Math.max credits guessed from army
 // sizes before any move executed. That both missed credit for intents that
 // later got invalidated (a source captured mid-turn by an earlier move) and
@@ -52,6 +52,6 @@ class DefectionCredits {
 // writer and must replay with these corrected credit semantics; older
 // replays keep the legacy speculative forward/backward calculation so their
 // historical outcomes are preserved bit-for-bit.
-DefectionCredits.MODERN_REPLAY_VERSION = 21;
+DefectionCredits.MODERN_REPLAY_VERSION = 20;
 
 module.exports = DefectionCredits;
