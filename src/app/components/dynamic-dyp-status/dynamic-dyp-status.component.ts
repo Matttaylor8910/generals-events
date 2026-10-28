@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
@@ -9,7 +9,7 @@ import {EventStatus, IDynamicDYPEvent, IDynamicDYPMatch, IGeneralsGameOptions, I
   templateUrl: './dynamic-dyp-status.component.html',
   styleUrls: ['./dynamic-dyp-status.component.scss'],
 })
-export class DynamicDYPStatusComponent implements OnDestroy {
+export class DynamicDYPStatusComponent implements OnChanges, OnDestroy {
   @Input() event: IDynamicDYPEvent;
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
@@ -82,7 +82,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
           return 'All finals matches will be in the same lobby! Good luck!';
         }
         if (teams.length === 4) {
-          return 'Teams are set, the event organizer will generate a bracket.'
+          return 'Teams are set, the event organizer will generate a bracket.';
         }
         if (currentlyChoosing === this.generals.name) {
           return 'It\'s your turn to pick your partner!';
@@ -183,7 +183,7 @@ export class DynamicDYPStatusComponent implements OnDestroy {
     }
 
     // reset statuses when we don't find matches to talk about
-    if (!foundReady) this.resetReadyStatus();
+    if (!foundReady) { this.resetReadyStatus(); }
   }
 
   setMatchReadyStatus(match: IDynamicDYPMatch) {

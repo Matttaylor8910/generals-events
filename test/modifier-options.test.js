@@ -34,9 +34,9 @@ const axios = require('axios');
 // functions code resolves axios through functions/node_modules — stub that
 // instance too or replay/simulator requests escape to the real network
 const functionsAxios = require(require.resolve('axios', {
-    paths: [path.resolve(__dirname, '../functions')]}));
+  paths: [path.resolve(__dirname, '../functions')] }));
 
-const {FakeFirestore} = require('./fakes');
+const { FakeFirestore } = require('./fakes');
 const functionsStub = require('firebase-functions');
 const EventGameOptions = require('../functions/src/util/EventGameOptions');
 const {
@@ -46,10 +46,10 @@ const {
 const {
   EventType, EventFormat, GameSpeed, MatchStatus, Visibility,
 } = require('../types');
-const {CreateEventPage} = require(
-    '../src/app/pages/home/create-event/create-event.page');
-const {GeneralsService} = require('../src/app/services/generals.service');
-const {UtilService} = require('../src/app/services/util.service');
+const { CreateEventPage } = require(
+  '../src/app/pages/home/create-event/create-event.page');
+const { GeneralsService } = require('../src/app/services/generals.service');
+const { UtilService } = require('../src/app/services/util.service');
 
 // the handlers register their triggers on require; the stub captures them
 // under __handlers keyed by document path
@@ -57,8 +57,8 @@ global.__testFirestore = new FakeFirestore();
 require('../functions/src/events/games/onWrite.ts');
 require('../functions/src/events/matches/onWrite.ts');
 require('../functions/src/events/dyp-matches/onWrite.ts');
-const {recordSanityCheck} = require(
-    '../functions/src/events/players/onUpdate');
+const { recordSanityCheck } = require(
+  '../functions/src/events/players/onUpdate');
 const HANDLERS = functionsStub.__handlers;
 
 // ----------------------------------------------------- replay fixtures ---
@@ -68,7 +68,7 @@ const HANDLERS = functionsStub.__handlers;
 // [playerIndex, turn] pairs and moves as [index, start, end, is50, turn]
 function makeReplayFields(overrides = {}) {
   const fields = [
-    20,                 //  0 version (REPLAY_VERSION_21 numeric)
+    19,                 //  0 version (REPLAY_VERSION_20, zero-based wire 19)
     'fixture',          //  1 id
     3,                  //  2 mapWidth
     3,                  //  3 mapHeight
@@ -109,7 +109,7 @@ function makeReplayFields(overrides = {}) {
     null,               // 38 chessClockElapsed
   ];
   const data = fields.slice();
-  data[0] = overrides.version !== undefined ? overrides.version : 20;
+  data[0] = overrides.version !== undefined ? overrides.version : 19;
   data[1] = overrides.id !== undefined ? overrides.id : 'fixture';
   data[2] = overrides.mapWidth !== undefined ? overrides.mapWidth : 3;
   data[3] = overrides.mapHeight !== undefined ? overrides.mapHeight : 3;
@@ -120,24 +120,30 @@ function makeReplayFields(overrides = {}) {
   data[12] = overrides.teams !== undefined ? overrides.teams : null;
   data[21] = overrides.modifiers !== undefined ? overrides.modifiers : null;
   data[28] = overrides.tunnels !== undefined ? overrides.tunnels : null;
-  data[29] = overrides.tunnelLimits !== undefined ?
-      overrides.tunnelLimits : null;
-  data[34] = overrides.strongholds !== undefined ?
-      overrides.strongholds : null;
-  data[35] = overrides.strongholdStrengths !== undefined ?
-      overrides.strongholdStrengths : null;
-  data[36] = overrides.execTimestamps !== undefined ?
-      overrides.execTimestamps : null;
-  data[37] = overrides.modifier_options !== undefined ?
-      overrides.modifier_options : null;
-  data[38] = overrides.chessClockElapsed !== undefined ?
-      overrides.chessClockElapsed : null;
-  return data;
+  data[29] = overrides.tunnelLimits !== undefined
+      ? overrides.tunnelLimits
+      : null;
+  data[34] = overrides.strongholds !== undefined
+      ? overrides.strongholds
+      : null;
+  data[35] = overrides.strongholdStrengths !== undefined
+      ? overrides.strongholdStrengths
+      : null;
+  data[36] = overrides.execTimestamps !== undefined
+      ? overrides.execTimestamps
+      : null;
+  data[37] = overrides.modifier_options !== undefined
+      ? overrides.modifier_options
+      : null;
+  data[38] = overrides.chessClockElapsed !== undefined
+      ? overrides.chessClockElapsed
+      : null;
+  return data[0] === 18 ? data.slice(0, 36) : data;
 }
 
 function compressReplay(fields) {
   return Buffer.from(
-      LZString.compressToUint8Array(JSON.stringify(fields)));
+    LZString.compressToUint8Array(JSON.stringify(fields)));
 }
 
 // handler-only synthetic fixtures reused across handler tests; they are
@@ -146,6 +152,9 @@ function compressReplay(fields) {
 // surrenders so P0 deterministically wins with a surrender kill credit.
 const CLOCK_OPTIONS = {
   StartingClock: 20, ClockIncrement: 0, DontLimitMoveSpeed: true,
+};
+const LEGACY_CLOCK_OPTIONS = {
+  StartingClock: 10, ClockIncrement: 5, DontLimitMoveSpeed: false,
 };
 
 const PLAIN_REPLAY = compressReplay(makeReplayFields({
@@ -165,24 +174,23 @@ const CLOCK_ELAPSED = {
 const EXACT_CLOCK_REPLAY = compressReplay(makeReplayFields({
   id: 'replay-clock',
   modifiers: [11],
-  modifier_options: {ChessClock: CLOCK_OPTIONS},
+  modifier_options: { ChessClock: CLOCK_OPTIONS },
   execTimestamps: [0, 0.4, 0.8, 1.2, 1.6, 2.0],
   chessClockElapsed: CLOCK_ELAPSED,
 }));
 
 const LEGACY_CLOCK_REPLAY = compressReplay(makeReplayFields({
   id: 'replay-legacy-clock',
-  version: 19,
+  version: 18,
   modifiers: [11],
-  modifier_options: {ChessClock: CLOCK_OPTIONS},
 }));
 
-// a v20+ clock replay whose elapsed metadata is still in-progress shaped:
+// a v20 (wire 19) clock replay whose elapsed metadata is still in-progress shaped:
 // duration null and a surviving player — scoring must refuse it
 const INCOMPLETE_CLOCK_REPLAY = compressReplay(makeReplayFields({
   id: 'replay-incomplete-clock',
   modifiers: [11],
-  modifier_options: {ChessClock: CLOCK_OPTIONS},
+  modifier_options: { ChessClock: CLOCK_OPTIONS },
   execTimestamps: [0, 0.4, 0.8, 1.2, 1.6, 2.0],
   chessClockElapsed: {
     turns: [0, 400, 800, 1200, 1600, 2000],
@@ -218,20 +226,19 @@ const MATCH_EXACT_CLOCK_REPLAY = compressReplay(makeReplayFields({
   afks: MATCH_AFKS,
   teams: MATCH_TEAMS,
   modifiers: [11],
-  modifier_options: {ChessClock: CLOCK_OPTIONS},
+  modifier_options: { ChessClock: CLOCK_OPTIONS },
   execTimestamps: [0, 0.4, 0.8, 1.2, 1.6, 2.0],
   chessClockElapsed: MATCH_CLOCK_ELAPSED,
 }));
 
 const MATCH_LEGACY_CLOCK_REPLAY = compressReplay(makeReplayFields({
   id: 'replay-match-legacy-clock',
-  version: 19,
+  version: 18,
   usernames: MATCH_USERNAMES,
   generals: [0, 3, 5, 8],
   afks: MATCH_AFKS,
   teams: MATCH_TEAMS,
   modifiers: [11],
-  modifier_options: {ChessClock: CLOCK_OPTIONS},
 }));
 
 const ADV_USERNAMES = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -323,12 +330,12 @@ function stubAxios() {
       if (!buffers[id]) {
         return Promise.reject(new Error(`unstubbed replay ${id}`));
       }
-      return Promise.resolve({data: buffers[id]});
+      return Promise.resolve({ data: buffers[id] });
     }
     if (url.includes('replaysForUsername')) {
-      return Promise.resolve({data: replayListResponse});
+      return Promise.resolve({ data: replayListResponse });
     }
-    return Promise.resolve({data: []});
+    return Promise.resolve({ data: [] });
   };
   axios.get = fakeGet;
   axios.default.get = fakeGet;
@@ -343,10 +350,10 @@ function testOptionContracts() {
   // is itself an exclusion combo), and compatible sets survive together
   for (let id = 0; id <= 11; id++) {
     assert.deepStrictEqual(normalizeModifierIds([id]), [id],
-        `modifier id ${id} accepted`);
+      `modifier id ${id} accepted`);
   }
   assert.deepStrictEqual(normalizeModifierIds([0, 1, 4, 5, 7, 9, 10, 11]),
-      [0, 1, 4, 5, 7, 9, 10, 11], 'compatible subset accepted');
+    [0, 1, 4, 5, 7, 9, 10, 11], 'compatible subset accepted');
   assert.deepStrictEqual(normalizeModifierIds('9,10,11'), [9, 10, 11]);
   assert.deepStrictEqual(normalizeModifierIds(['9', '10']), [9, 10]);
   assert.deepStrictEqual(normalizeModifierIds(null), []);
@@ -355,48 +362,48 @@ function testOptionContracts() {
   // unknown/fractional/non-integer ids reject instead of stripping
   for (const bad of [[12], [-1], [1.5], ['x'], [999], 'not-an-id']) {
     assert.throws(() => normalizeModifierIds(bad), /modifier/i,
-        `bad modifiers ${JSON.stringify(bad)} rejected`);
+      `bad modifiers ${JSON.stringify(bad)} rejected`);
   }
 
   // exclusion combos reject
   for (const combo of [[2, 3], [3, 6], [3, 8]]) {
     assert.throws(() => normalizeModifierIds(combo), /excludes/i,
-        `excluded combo ${combo} rejected`);
+      `excluded combo ${combo} rejected`);
   }
 
   // validateEventGameOptions reports errors without throwing
-  assert.strictEqual(validateEventGameOptions({modifiers: [0, 1]}).valid, true);
-  assert.strictEqual(validateEventGameOptions({modifiers: [3, 8]}).valid,
-      false);
+  assert.strictEqual(validateEventGameOptions({ modifiers: [0, 1] }).valid, true);
+  assert.strictEqual(validateEventGameOptions({ modifiers: [3, 8] }).valid,
+    false);
   assert.strictEqual(validateEventGameOptions({
     modifiers: [11],
-    modifier_options: {ChessClock: {StartingClock: 0}},
+    modifier_options: { ChessClock: { StartingClock: 0 } },
   }).valid, false, 'StartingClock below minimum invalid');
 
   // ChessClock option normalization: strings coerce, zero/false preserved
   const clock = EventGameOptions.normalizeChessClockOptions(
-      {StartingClock: '25', ClockIncrement: '0', DontLimitMoveSpeed: false});
+    { StartingClock: '25', ClockIncrement: '0', DontLimitMoveSpeed: false });
   assert.deepStrictEqual(clock,
-      {StartingClock: 25, ClockIncrement: 0, DontLimitMoveSpeed: false});
+    { StartingClock: 25, ClockIncrement: 0, DontLimitMoveSpeed: false });
   assert.throws(() => EventGameOptions.normalizeChessClockOptions(
-      {StartingClock: Infinity}), /StartingClock/i);
+    { StartingClock: Infinity }), /StartingClock/i);
   assert.throws(() => EventGameOptions.normalizeChessClockOptions(
-      {DontLimitMoveSpeed: 'yes'}), /DontLimitMoveSpeed/i);
+    { DontLimitMoveSpeed: 'yes' }), /DontLimitMoveSpeed/i);
 
   // strict numeric parsing: partial strings, arrays, objects, booleans and
   // blank strings reject; decimal strings and zero survive
-  for (const bad of ['5junk', ['5'], {v: 5}, true, '   ']) {
+  for (const bad of ['5junk', ['5'], { v: 5 }, true, '   ']) {
     assert.throws(() => EventGameOptions.normalizeChessClockOptions(
-        {StartingClock: bad}), /StartingClock/i,
-        `StartingClock must reject ${JSON.stringify(bad)}`);
+      { StartingClock: bad }), /StartingClock/i,
+    `StartingClock must reject ${JSON.stringify(bad)}`);
     assert.throws(() => EventGameOptions.normalizeChessClockOptions(
-        {ClockIncrement: bad}), /ClockIncrement/i,
-        `ClockIncrement must reject ${JSON.stringify(bad)}`);
+      { ClockIncrement: bad }), /ClockIncrement/i,
+    `ClockIncrement must reject ${JSON.stringify(bad)}`);
   }
   const decimal = EventGameOptions.normalizeChessClockOptions(
-      {StartingClock: '2.5', ClockIncrement: 0, DontLimitMoveSpeed: false});
+    { StartingClock: '2.5', ClockIncrement: 0, DontLimitMoveSpeed: false });
   assert.strictEqual(decimal.StartingClock, 2.5,
-      'decimal string form must survive');
+    'decimal string form must survive');
   assert.strictEqual(decimal.ClockIncrement, 0, 'zero increment preserved');
 
   // unrelated options survive normalization; unknown modifier option keys
@@ -404,49 +411,49 @@ function testOptionContracts() {
   const normalized = normalizeEventGameOptions({
     city_fairness: 0.5,
     modifiers: '9,11',
-    modifier_options: {ChessClock: {StartingClock: 30}},
+    modifier_options: { ChessClock: { StartingClock: 30 } },
   });
   assert.strictEqual(normalized.city_fairness, 0.5);
   assert.deepStrictEqual(normalized.modifiers, [9, 11]);
   assert.deepStrictEqual(normalized.modifier_options,
-      {ChessClock: {StartingClock: 30, ClockIncrement: 5,
-        DontLimitMoveSpeed: false}});
+    { ChessClock: { StartingClock: 30, ClockIncrement: 5,
+      DontLimitMoveSpeed: false } });
   assert.throws(() => normalizeEventGameOptions({
-    modifier_options: {UnknownMod: {x: 1}},
+    modifier_options: { UnknownMod: { x: 1 } },
   }), /modifier option/i, 'unknown modifier option key rejected');
   console.log('  option contracts passed');
 }
 
 function testReplayMatchContracts() {
-  const replay = {modifiers: [9, 10], modifier_options: null};
+  const replay = { modifiers: [9, 10], modifier_options: null };
   // exact set match passes
   EventGameOptions.assertReplayMatchesExpectedOptions(
-      replay, {modifiers: [10, 9]});
+    replay, { modifiers: [10, 9] });
   // wrong set rejects
   assert.throws(() => EventGameOptions.assertReplayMatchesExpectedOptions(
-      replay, {modifiers: [9]}), /do not match/);
+    replay, { modifiers: [9] }), /do not match/);
   assert.throws(() => EventGameOptions.assertReplayMatchesExpectedOptions(
-      replay, {modifiers: null}), /do not match/);
+    replay, { modifiers: null }), /do not match/);
   // absent modifiers field keeps legacy unspecified behavior
   EventGameOptions.assertReplayMatchesExpectedOptions(replay, {});
   // unknown ids in the replay fail closed even without expected options
   assert.throws(() => EventGameOptions.assertReplayMatchesExpectedOptions(
-      {modifiers: [99]}, null), /modifier/i);
+    { modifiers: [99] }, null), /modifier/i);
 
   // clock config comparison uses effective defaults
   const clockReplay = {
     modifiers: [11],
-    modifier_options: {ChessClock: {StartingClock: 20, ClockIncrement: 0}},
+    modifier_options: { ChessClock: { StartingClock: 20, ClockIncrement: 0 } },
   };
   EventGameOptions.assertReplayMatchesExpectedOptions(
-      clockReplay, {modifiers: [11], modifier_options: {ChessClock: {
-        StartingClock: 20, ClockIncrement: 0, DontLimitMoveSpeed: false}}});
+    clockReplay, { modifiers: [11], modifier_options: { ChessClock: {
+      StartingClock: 20, ClockIncrement: 0, DontLimitMoveSpeed: false } } });
   assert.throws(() => EventGameOptions.assertReplayMatchesExpectedOptions(
-      clockReplay, {modifiers: [11], modifier_options: {ChessClock: {
-        StartingClock: 21}}}), /ChessClock/);
+    clockReplay, { modifiers: [11], modifier_options: { ChessClock: {
+      StartingClock: 21 } } }), /ChessClock/);
   assert.throws(() => EventGameOptions.assertReplayMatchesExpectedOptions(
-      clockReplay, {modifiers: [11], modifier_options: {ChessClock: {
-        ClockIncrement: 1}}}), /ChessClock/);
+    clockReplay, { modifiers: [11], modifier_options: { ChessClock: {
+      ClockIncrement: 1 } } }), /ChessClock/);
   console.log('  replay match contracts passed');
 }
 
@@ -460,12 +467,12 @@ function makeCreatePage() {
       return 'new-id';
     },
     updateEvent: async (id, data) => {
-      updated.push({id, data});
+      updated.push({ id, data });
     },
-    getEvent: () => ({pipe: () => ({subscribe: () => {}})}),
+    getEvent: () => ({ pipe: () => ({ subscribe: () => {} }) }),
   };
-  const modal = {dismiss: () => dismissed.push(true)};
-  const nav = {get: () => null};
+  const modal = { dismiss: () => dismissed.push(true) };
+  const nav = { get: () => null };
   const page = new CreateEventPage(eventService, modal, nav);
   page.date = '2030-01-01';
   page.time = '12:00:00';
@@ -474,31 +481,31 @@ function makeCreatePage() {
   page.format = EventFormat.ARENA;
   page.duration = 60;
   page.speed = GameSpeed.SPEED_1X;
-  return {page, created, updated, dismissed};
+  return { page, created, updated, dismissed };
 }
 
 async function testCreateEventModifiers() {
   // create with all newer modifiers + clock options + tunnel/stronghold
   {
-    const {page, created} = makeCreatePage();
+    const { page, created } = makeCreatePage();
     page.modifiers = [9, 10, 11];
-    page.chess_clock_starting = 30;
-    page.chess_clock_increment = 2.5;
-    page.chess_clock_dont_limit = true;
+    page.chessClockStarting = 30;
+    page.chessClockIncrement = 2.5;
+    page.chessClockDontLimit = true;
     page.tunnels = 0.5;
-    page.tunnel_min = 15;
-    page.tunnel_max = 40;
+    page.tunnelMin = 15;
+    page.tunnelMax = 40;
     page.strongholds = 0.25;
-    page.stronghold_min = 8;
-    page.stronghold_max = 20;
+    page.strongholdMin = 8;
+    page.strongholdMax = 20;
     await page.create();
     assert.strictEqual(created.length, 1, 'event created');
     const options = created[0].options;
     assert.deepStrictEqual(options.modifiers, [9, 10, 11],
-        'numeric modifier ids persisted');
-    assert.deepStrictEqual(options.modifier_options, {ChessClock: {
-      StartingClock: 30, ClockIncrement: 2.5, DontLimitMoveSpeed: true}},
-        'clock options persisted');
+      'numeric modifier ids persisted');
+    assert.deepStrictEqual(options.modifier_options, { ChessClock: {
+      StartingClock: 30, ClockIncrement: 2.5, DontLimitMoveSpeed: true } },
+    'clock options persisted');
     assert.strictEqual(options.tunnels, 0.5);
     assert.strictEqual(options.tunnel_min, 15);
     assert.strictEqual(options.tunnel_max, 40);
@@ -509,23 +516,23 @@ async function testCreateEventModifiers() {
 
   // zero increment / false flag / zero tunnels must not be dropped
   {
-    const {page, created} = makeCreatePage();
+    const { page, created } = makeCreatePage();
     page.modifiers = [11];
-    page.chess_clock_starting = 1;
-    page.chess_clock_increment = 0;
-    page.chess_clock_dont_limit = false;
+    page.chessClockStarting = 1;
+    page.chessClockIncrement = 0;
+    page.chessClockDontLimit = false;
     await page.create();
     assert.strictEqual(created.length, 1);
     const options = created[0].options;
-    assert.deepStrictEqual(options.modifier_options, {ChessClock: {
-      StartingClock: 1, ClockIncrement: 0, DontLimitMoveSpeed: false}},
-        'zero increment and false flag preserved');
+    assert.deepStrictEqual(options.modifier_options, { ChessClock: {
+      StartingClock: 1, ClockIncrement: 0, DontLimitMoveSpeed: false } },
+    'zero increment and false flag preserved');
     assert.strictEqual(options.tunnels, 0);
   }
 
   // invalid modifier combo refuses to persist
   {
-    const {page, created, dismissed} = makeCreatePage();
+    const { page, created, dismissed } = makeCreatePage();
     page.modifiers = [3, 8];
     await page.create();
     assert.strictEqual(created.length, 0, 'excluded combo not persisted');
@@ -535,33 +542,33 @@ async function testCreateEventModifiers() {
   // a malformed DontLimitMoveSpeed value invalidates the form instead of
   // being silently coerced to false
   {
-    const {page, created} = makeCreatePage();
+    const { page, created } = makeCreatePage();
     page.modifiers = [11];
-    page.chess_clock_starting = 30;
-    page.chess_clock_dont_limit = 'yes';
+    page.chessClockStarting = 30;
+    page.chessClockDontLimit = 'yes';
     assert.strictEqual(page.gameOptionsValid, false,
-        'non-boolean DontLimitMoveSpeed must invalidate the form');
+      'non-boolean DontLimitMoveSpeed must invalidate the form');
     assert.strictEqual(page.invalid, true);
     await page.create();
     assert.strictEqual(created.length, 0,
-        'malformed DontLimitMoveSpeed must not persist');
+      'malformed DontLimitMoveSpeed must not persist');
   }
 
   // malformed clock numbers (partial strings) refuse to persist
   {
-    const {page, created} = makeCreatePage();
+    const { page, created } = makeCreatePage();
     page.modifiers = [11];
-    page.chess_clock_starting = '5junk';
+    page.chessClockStarting = '5junk';
     assert.strictEqual(page.gameOptionsValid, false);
     await page.create();
     assert.strictEqual(created.length, 0,
-        'partial-string clock value must not persist');
+      'partial-string clock value must not persist');
   }
   console.log('  create-event modifiers passed');
 }
 
 async function testEditEventModifiers() {
-  const {page, updated} = makeCreatePage();
+  const { page, updated } = makeCreatePage();
   page.isEditMode = true;
   page.eventId = 'evt9';
   page.event = {
@@ -573,7 +580,7 @@ async function testEditEventModifiers() {
     endTime: new Date('2030-06-01T13:00:00').getTime(),
     options: {
       modifiers: '9,11',   // legacy comma-string storage
-      modifier_options: {ChessClock: {StartingClock: 45}},
+      modifier_options: { ChessClock: { StartingClock: 45 } },
       speed: GameSpeed.SPEED_1X,
       unrelated_future_option: 'keep-me',
     },
@@ -582,9 +589,9 @@ async function testEditEventModifiers() {
 
   // legacy string modifiers normalize to numeric ids for the form
   assert.deepStrictEqual(page.modifiers, [9, 11]);
-  assert.strictEqual(page.chess_clock_starting, 45);
-  assert.strictEqual(page.chess_clock_increment, 5,
-      'missing increment falls back to the default for editing');
+  assert.strictEqual(page.chessClockStarting, 45);
+  assert.strictEqual(page.chessClockIncrement, 5,
+    'missing increment falls back to the default for editing');
   assert.strictEqual(page.chessClockSelected, true);
 
   await page.create();
@@ -592,13 +599,13 @@ async function testEditEventModifiers() {
   const options = updated[0].data.options;
   assert.deepStrictEqual(options.modifiers, [9, 11]);
   assert.strictEqual(options.unrelated_future_option, 'keep-me',
-      'unrelated stored option survives the edit merge');
+    'unrelated stored option survives the edit merge');
   assert.deepStrictEqual(options.modifier_options.ChessClock,
-      {StartingClock: 45, ClockIncrement: 5, DontLimitMoveSpeed: false});
+    { StartingClock: 45, ClockIncrement: 5, DontLimitMoveSpeed: false });
 
   // removing ChessClock from the selection drops its stored options
   {
-    const {page: p2, updated: u2} = makeCreatePage();
+    const { page: p2, updated: u2 } = makeCreatePage();
     p2.isEditMode = true;
     p2.eventId = 'evt10';
     p2.event = {
@@ -609,7 +616,7 @@ async function testEditEventModifiers() {
       endTime: new Date('2030-06-01T13:00:00').getTime(),
       options: {
         modifiers: [11],
-        modifier_options: {ChessClock: {StartingClock: 45}},
+        modifier_options: { ChessClock: { StartingClock: 45 } },
       },
     };
     p2.loadEventData();
@@ -618,7 +625,7 @@ async function testEditEventModifiers() {
     assert.strictEqual(u2.length, 1);
     assert.deepStrictEqual(u2[0].data.options.modifiers, [9]);
     assert.strictEqual(u2[0].data.options.modifier_options, undefined,
-        'ChessClock options dropped when the modifier is unselected');
+      'ChessClock options dropped when the modifier is unselected');
   }
   console.log('  edit-event modifiers passed');
 }
@@ -628,20 +635,20 @@ function testLobbyUrlModifiers() {
   const priorWindow = global.window;
   const priorLocation = global.location;
   const setLocation = (href, hostname, port) => {
-    const location = {href, hostname, port};
+    const location = { href, hostname, port };
     global.location = location;
     global.window = {
-      open: url => opened.push(url), addEventListener() {}, location};
+      open: url => opened.push(url), addEventListener() {}, location };
   };
   setLocation('https://events.generals.io/', 'events.generals.io', '');
 
   try {
     const util = new UtilService();
     const generals = new GeneralsService(
-        {httpsCallable: () => ({toPromise: async () => []})},
-        {authState: {subscribe: () => {}}},
-        {navigate: () => {}},
-        util);
+      { httpsCallable: () => ({ toPromise: async () => [] }) },
+      { authState: { subscribe: () => {} } },
+      { navigate: () => {} },
+      util);
 
     const event = {
       id: 'evt1',
@@ -649,8 +656,8 @@ function testLobbyUrlModifiers() {
       server: 'na',
       options: {
         modifiers: [9, 11],
-        modifier_options: {ChessClock: {
-          StartingClock: 30, ClockIncrement: 0, DontLimitMoveSpeed: true}},
+        modifier_options: { ChessClock: {
+          StartingClock: 30, ClockIncrement: 0, DontLimitMoveSpeed: true } },
       },
     };
 
@@ -658,14 +665,14 @@ function testLobbyUrlModifiers() {
     const url = opened[0];
     const params = new URLSearchParams(url.split('?')[1]);
     assert.strictEqual(params.get('modifiers'), '9,11',
-        `modifiers serialize comma-delimited: ${url}`);
+      `modifiers serialize comma-delimited: ${url}`);
     const parsedOptions = JSON.parse(params.get('modifier_options'));
-    assert.deepStrictEqual(parsedOptions, {ChessClock: {
-      StartingClock: 30, ClockIncrement: 0, DontLimitMoveSpeed: true}},
-        'modifier_options serialize as JSON preserving 0/false');
+    assert.deepStrictEqual(parsedOptions, { ChessClock: {
+      StartingClock: 30, ClockIncrement: 0, DontLimitMoveSpeed: true } },
+    'modifier_options serialize as JSON preserving 0/false');
     assert.strictEqual(params.get('eventId'), 'evt1');
     assert.strictEqual(params.get('eventDevPort'), null,
-        `production joins omit eventDevPort: ${url}`);
+      `production joins omit eventDevPort: ${url}`);
 
     for (const devPort of ['8100', '4200']) {
       setLocation(`http://localhost:${devPort}/`, 'localhost', devPort);
@@ -673,26 +680,26 @@ function testLobbyUrlModifiers() {
       const devUrl = opened[opened.length - 1];
       const devParams = new URLSearchParams(devUrl.split('?')[1]);
       assert.strictEqual(devParams.get('eventDevPort'), devPort,
-          `accepted dev port is forwarded: ${devUrl}`);
+        `accepted dev port is forwarded: ${devUrl}`);
     }
     setLocation('http://127.0.0.1:8100/', '127.0.0.1', '8100');
     generals.joinLobby('event_arena', event, true);
     const loopbackUrl = opened[opened.length - 1];
     assert.strictEqual(
-        new URLSearchParams(loopbackUrl.split('?')[1]).get('eventDevPort'),
-        '8100', `loopback dev port is forwarded: ${loopbackUrl}`);
+      new URLSearchParams(loopbackUrl.split('?')[1]).get('eventDevPort'),
+      '8100', `loopback dev port is forwarded: ${loopbackUrl}`);
     setLocation('http://localhost:3000/', 'localhost', '3000');
     generals.joinLobby('event_arena', event, true);
     const otherPortUrl = opened[opened.length - 1];
     assert.strictEqual(
-        new URLSearchParams(otherPortUrl.split('?')[1]).get('eventDevPort'),
-        null, `unlisted dev port is omitted: ${otherPortUrl}`);
+      new URLSearchParams(otherPortUrl.split('?')[1]).get('eventDevPort'),
+      null, `unlisted dev port is omitted: ${otherPortUrl}`);
 
     // malformed stored modifier config throws rather than silently emitting a
     // wrong lobby URL
-    const badEvent = {...event, options: {modifiers: 'bogus'}};
+    const badEvent = { ...event, options: { modifiers: 'bogus' } };
     assert.throws(() => generals.joinLobby('event_arena', badEvent, true),
-        /modifier/i);
+      /modifier/i);
   } finally {
     if (priorWindow === undefined) {
       delete global.window;
@@ -727,9 +734,9 @@ function seedArena(db, options) {
     timesChecked: 0,
   });
   db.doc('events/arena1/players/P0').set(
-      {name: 'P0', points: 0, currentStreak: 0});
+    { name: 'P0', points: 0, currentStreak: 0 });
   db.doc('events/arena1/players/P1').set(
-      {name: 'P1', points: 0, currentStreak: 0});
+    { name: 'P1', points: 0, currentStreak: 0 });
 }
 
 // seeds a REAL 2v2 roster: two-player teams A and B with a player document
@@ -750,12 +757,12 @@ function seedMatchEvent(db, prefix, matchCollection, options) {
     started: 1000,
     number: '5',
     teams: [
-      {name: 'A', players: ['A0', 'A1']},
-      {name: 'B', players: ['B0', 'B1']},
+      { name: 'A', players: ['A0', 'A1'] },
+      { name: 'B', players: ['B0', 'B1'] },
     ],
   });
   for (const name of MATCH_USERNAMES) {
-    db.doc(`events/${prefix}/players/${name}`).set({name, points: 0});
+    db.doc(`events/${prefix}/players/${name}`).set({ name, points: 0 });
   }
 }
 
@@ -767,15 +774,15 @@ function resetWriteJournal(db) {
 }
 
 async function invokeHandler(path, afterRef, beforeExists = true) {
-  const before = beforeExists ? await afterRef.get() : {exists: false};
+  const before = beforeExists ? await afterRef.get() : { exists: false };
   const after = await afterRef.get();
-  return HANDLERS[path].onWrite({before, after}, {params: {}});
+  return HANDLERS[path].onWrite({ before, after }, { params: {} });
 }
 
 async function testArenaWriter() {
   const handler = 'events/{eventId}/games/{gameId}';
   assert.ok(HANDLERS[handler] && HANDLERS[handler].onWrite,
-      'games onWrite handler registered');
+    'games onWrite handler registered');
 
   // valid exact-clock replay: full write path persists elapsed/finished
   {
@@ -785,26 +792,26 @@ async function testArenaWriter() {
     stubAxios();
     seedArena(db, {
       modifiers: [11],
-      modifier_options: {ChessClock: CLOCK_OPTIONS},
+      modifier_options: { ChessClock: CLOCK_OPTIONS },
     });
     const gameRef = db.doc('events/arena1/games/g1');
     await invokeHandler(handler, gameRef);
 
     const event = db.dataAt('events/arena1');
     assert.deepStrictEqual(event.replays, ['replay-clock'],
-        'replay tracked on the event');
+      'replay tracked on the event');
     assert.strictEqual(event.completedGameCount, 1);
     assert.strictEqual(event.ongoingGameCount, 0);
 
     const game = db.dataAt('events/arena1/games/g1');
     assert.strictEqual(game.elapsedMs, 2000, 'exact duration persisted');
     assert.strictEqual(game.finished, 1000000 + 2000,
-        'finished is started + exact elapsed, not turn-derived');
+      'finished is started + exact elapsed, not turn-derived');
     assert.strictEqual(game.replay.scores[0].name, 'P0');
     assert.strictEqual(game.replay.scores[0].elapsedMs, 2000,
-        'winner cleanup death offset is the final game time');
+      'winner cleanup death offset is the final game time');
     assert.strictEqual(game.replay.scores[1].elapsedMs, 1800,
-        'loser records the death offset');
+      'loser records the death offset');
 
     const winner = db.dataAt('events/arena1/players/P0');
     assert.ok(winner.record.length === 1, 'winner record appended');
@@ -812,11 +819,11 @@ async function testArenaWriter() {
     assert.ok(winner.points > 0);
     const loser = db.dataAt('events/arena1/players/P1');
     assert.strictEqual(loser.record[0].finished, 1000000 + 1800,
-        'loser finished at the death offset');
+      'loser finished at the death offset');
     assert.ok(db.dataAt('events/arena1/records/replay-clock_P0'),
-        'record document written');
+      'record document written');
     assert.strictEqual(getCalls.filter(u => u.endsWith('.gior')).length, 1,
-        'only the local replay read hit the network');
+      'only the local replay read hit the network');
   }
 
   // legacy clock replay without elapsed metadata: finished stays unknown
@@ -827,7 +834,7 @@ async function testArenaWriter() {
     stubAxios();
     seedArena(db, {
       modifiers: [11],
-      modifier_options: {ChessClock: CLOCK_OPTIONS},
+      modifier_options: { ChessClock: LEGACY_CLOCK_OPTIONS },
     });
     db.doc('events/arena1/games/g1').set({
       replayId: 'replay-legacy-clock',
@@ -838,12 +845,12 @@ async function testArenaWriter() {
     await invokeHandler(handler, gameRef);
     const game = db.dataAt('events/arena1/games/g1');
     assert.strictEqual(game.finished, null,
-        'legacy clock replay leaves finished unknown');
+      'legacy clock replay leaves finished unknown');
     assert.strictEqual(game.elapsedMs, null,
-        'legacy clock replay reports explicitly unknown elapsed');
+      'legacy clock replay reports explicitly unknown elapsed');
     const loser = db.dataAt('events/arena1/players/P1');
     assert.strictEqual(loser.record[0].finished, null,
-        'per-player finish also unknown for legacy clocks');
+      'per-player finish also unknown for legacy clocks');
   }
 
   // non-clock replay: fixed-speed finished time, no elapsed fields
@@ -852,7 +859,7 @@ async function testArenaWriter() {
     global.__testFirestore = db;
     getCalls = [];
     stubAxios();
-    seedArena(db, {modifiers: [9, 10]});
+    seedArena(db, { modifiers: [9, 10] });
     db.doc('events/arena1/games/g1').set({
       replayId: 'replay-plain',
       started: 1000000,
@@ -862,9 +869,9 @@ async function testArenaWriter() {
     await invokeHandler(handler, gameRef);
     const game = db.dataAt('events/arena1/games/g1');
     assert.ok(Number.isFinite(game.finished) && game.finished > 1000000,
-        'non-clock replay uses the fixed-speed finish estimate');
+      'non-clock replay uses the fixed-speed finish estimate');
     assert.strictEqual(game.elapsedMs, undefined,
-        'no elapsed field emitted for non-clock replays');
+      'no elapsed field emitted for non-clock replays');
   }
   console.log('  arena writer passed');
 }
@@ -874,62 +881,62 @@ const MATCH_FIXTURES = [
   {
     label: 'plain modifiers',
     replayId: 'replay-match-plain',
-    eventOptions: {modifiers: [9, 10]},
+    eventOptions: { modifiers: [9, 10] },
     assertMatchReplay(matchReplay) {
       assert.ok(Number.isFinite(matchReplay.finished),
-          'plain replay finished via fixed-speed estimate');
+        'plain replay finished via fixed-speed estimate');
       assert.strictEqual(matchReplay.elapsedMs, undefined,
-          'no elapsed field for non-clock replays');
+        'no elapsed field for non-clock replays');
     },
     assertPlayerFinished(record) {
       assert.ok(Number.isFinite(record.finished),
-          'plain replay player finish is finite');
+        'plain replay player finish is finite');
     },
   },
   {
     label: 'exact clock',
     replayId: 'replay-match-clock',
-    eventOptions: {modifiers: [11], modifier_options: {
-      ChessClock: CLOCK_OPTIONS}},
+    eventOptions: { modifiers: [11], modifier_options: {
+      ChessClock: CLOCK_OPTIONS } },
     assertMatchReplay(matchReplay) {
       assert.strictEqual(matchReplay.elapsedMs, 2000,
-          'exact duration persisted');
+        'exact duration persisted');
       assert.strictEqual(matchReplay.finished, 5000 + 2000,
-          'finished is started + exact elapsed');
+        'finished is started + exact elapsed');
       assert.strictEqual(matchReplay.replay.scores[0].elapsedMs, 2000);
     },
     assertPlayerFinished(record, name) {
-      const offset = {A0: 2000, A1: 2000, B0: 1800, B1: 1600}[name];
+      const offset = { A0: 2000, A1: 2000, B0: 1800, B1: 1600 }[name];
       assert.strictEqual(record.finished, 5000 + offset,
-          `${name} finished at started + its death offset`);
+        `${name} finished at started + its death offset`);
     },
   },
   {
     label: 'legacy clock',
     replayId: 'replay-match-legacy-clock',
-    eventOptions: {modifiers: [11], modifier_options: {
-      ChessClock: CLOCK_OPTIONS}},
+    eventOptions: { modifiers: [11], modifier_options: {
+      ChessClock: LEGACY_CLOCK_OPTIONS } },
     assertMatchReplay(matchReplay) {
       assert.strictEqual(matchReplay.finished, null,
-          'legacy clock replay leaves finished unknown');
+        'legacy clock replay leaves finished unknown');
       assert.strictEqual(matchReplay.elapsedMs, null,
-          'legacy clock replay reports explicitly unknown elapsed');
+        'legacy clock replay reports explicitly unknown elapsed');
     },
     assertPlayerFinished(record) {
       assert.strictEqual(record.finished, null,
-          'legacy clock player finish also unknown');
+        'legacy clock player finish also unknown');
     },
   },
 ];
 
 async function runMatchWriterFixtures(prefix, collection, handlerPath,
-    resultsKey) {
+  resultsKey) {
   for (const fixture of MATCH_FIXTURES) {
     const db = new FakeFirestore();
     global.__testFirestore = db;
     getCalls = [];
     replayListResponse = [
-      {id: fixture.replayId, started: 5000, ranking: [0, 1, 2, 3]},
+      { id: fixture.replayId, started: 5000, ranking: [0, 1, 2, 3] },
     ];
     stubAxios();
     seedMatchEvent(db, prefix, collection, fixture.eventOptions);
@@ -939,47 +946,48 @@ async function runMatchWriterFixtures(prefix, collection, handlerPath,
 
     const event = db.dataAt(`events/${prefix}`);
     assert.deepStrictEqual(event.replays, [fixture.replayId],
-        `${fixture.label}: replay tracked`);
+      `${fixture.label}: replay tracked`);
     assert.strictEqual(event.completedGameCount, 1);
-    const results = resultsKey === 'bracket' ?
-        event.bracket.results : event.results;
+    const results = resultsKey === 'bracket'
+        ? event.bracket.results
+        : event.results;
     assert.strictEqual(results['5'].team1Score, 1,
-        `${fixture.label}: winning team counter incremented`);
+      `${fixture.label}: winning team counter incremented`);
 
     const match = db.dataAt(`events/${prefix}/${collection}/m1`);
     assert.strictEqual(match.replays.length, 1);
     const matchReplay = match.replays[0];
     assert.strictEqual(matchReplay.replayId, fixture.replayId);
     assert.strictEqual(matchReplay.replay.scores[0].name, 'A0',
-        `${fixture.label}: team-A member tops the scores`);
+      `${fixture.label}: team-A member tops the scores`);
     fixture.assertMatchReplay(matchReplay);
 
     for (const name of ['A0', 'A1']) {
       const player = db.dataAt(`events/${prefix}/players/${name}`);
       assert.strictEqual(player.record.length, 1);
       assert.strictEqual(player.record[0].rank, 1,
-          `${fixture.label}: winning team member ${name} ranked first`);
+        `${fixture.label}: winning team member ${name} ranked first`);
       fixture.assertPlayerFinished(player.record[0], name);
     }
     for (const name of ['B0', 'B1']) {
       const player = db.dataAt(`events/${prefix}/players/${name}`);
       assert.strictEqual(player.record[0].rank, 2,
-          `${fixture.label}: losing team member ${name} ranked second`);
+        `${fixture.label}: losing team member ${name} ranked second`);
       fixture.assertPlayerFinished(player.record[0], name);
     }
 
     assert.strictEqual(
-        getCalls.filter(u => u.includes('replaysForUsername')).length, 4,
-        `${fixture.label}: one replay list read per roster player`);
+      getCalls.filter(u => u.includes('replaysForUsername')).length, 4,
+      `${fixture.label}: one replay list read per roster player`);
     assert.strictEqual(getCalls.filter(u => u.endsWith('.gior')).length, 1,
-        `${fixture.label}: single replay payload read`);
+      `${fixture.label}: single replay payload read`);
   }
 }
 
 async function testBracketWriter() {
   const handler = 'events/{eventId}/matches/{matchId}';
   assert.ok(HANDLERS[handler] && HANDLERS[handler].onWrite,
-      'matches onWrite handler registered');
+    'matches onWrite handler registered');
   await runMatchWriterFixtures('br1', 'matches', handler, 'bracket');
   console.log('  bracket writer passed');
 }
@@ -987,7 +995,7 @@ async function testBracketWriter() {
 async function testDypWriter() {
   const handler = 'events/{eventId}/dyp-matches/{matchId}';
   assert.ok(HANDLERS[handler] && HANDLERS[handler].onWrite,
-      'dyp-matches onWrite handler registered');
+    'dyp-matches onWrite handler registered');
   await runMatchWriterFixtures('dyp1', 'dyp-matches', handler, 'results');
   console.log('  dyp writer passed');
 }
@@ -1011,7 +1019,7 @@ function seedDypMatch(db, eventId, matchId, teams, options) {
   const players = teams.flat();
   db.doc(`events/${eventId}/dyp-matches/${matchId}`).set({
     number: '7',
-    teams: teams.map(team => ({players: team.slice(), score: 0})),
+    teams: teams.map(team => ({ players: team.slice(), score: 0 })),
     status: MatchStatus.READY,
     players: players.slice(),
     started: 1000,
@@ -1020,7 +1028,7 @@ function seedDypMatch(db, eventId, matchId, teams, options) {
   });
   for (const name of players) {
     db.doc(`events/${eventId}/players/${name}`).set(
-        {name, points: 0, record: []});
+      { name, points: 0, record: [] });
   }
 }
 
@@ -1030,32 +1038,32 @@ async function testDypTeamOutcomes() {
   global.__testFirestore = db;
   getCalls = [];
   replayListResponse = [
-    {id: 'replay-adv', started: 5000, ranking: [0, 1, 2, 3, 4, 5]},
+    { id: 'replay-adv', started: 5000, ranking: [0, 1, 2, 3, 4, 5] },
   ];
   stubAxios();
   seedDypMatch(db, 'dyp3', 'm7',
-      [['A1', 'A2'], ['B1', 'B2'], ['C1', 'C2']], {modifiers: [9, 10]});
+    [['A1', 'A2'], ['B1', 'B2'], ['C1', 'C2']], { modifiers: [9, 10] });
   await invokeHandler(handler, db.doc('events/dyp3/dyp-matches/m7'));
 
   const event = db.dataAt('events/dyp3');
   assert.strictEqual(event.results['7'].team3Score, 1,
-      'winning team C increments its game win count');
+    'winning team C increments its game win count');
   assert.strictEqual(event.results['7'].team1Score, undefined);
   assert.strictEqual(event.results['7'].team2Score, undefined);
 
   const match = db.dataAt('events/dyp3/dyp-matches/m7');
   const detail = match.replays[0].replay;
   assert.ok(detail.teams && detail.teamOutcomes,
-      'scored team outcomes persisted in replay detail');
+    'scored team outcomes persisted in replay detail');
   assert.strictEqual(detail.scores[0].name, 'C1');
   assert.strictEqual(detail.teams.find(t => t.id === '2').rank, 1);
   assert.strictEqual(detail.teams.find(t => t.id === '1').rank, 2,
-      'team B outlived team A despite the individual order');
+    'team B outlived team A despite the individual order');
   assert.strictEqual(detail.teams.find(t => t.id === '0').rank, 3);
 
   for (const [name, rank, points] of [
-      ['A1', 3, 1], ['A2', 3, 1], ['B1', 2, 1], ['B2', 2, 1],
-      ['C1', 1, 10], ['C2', 1, 10]]) {
+    ['A1', 3, 1], ['A2', 3, 1], ['B1', 2, 1], ['B2', 2, 1],
+    ['C1', 1, 10], ['C2', 1, 10]]) {
     const record = db.dataAt(`events/dyp3/players/${name}`).record[0];
     assert.strictEqual(record.rank, rank, `${name} shared team rank`);
     assert.strictEqual(record.points, points, `${name} shared team base`);
@@ -1070,17 +1078,17 @@ async function testDypTeamPartitionRejects() {
   global.__testFirestore = db;
   getCalls = [];
   replayListResponse = [
-    {id: 'replay-adv', started: 5000, ranking: [0, 1, 2, 3, 4, 5]},
+    { id: 'replay-adv', started: 5000, ranking: [0, 1, 2, 3, 4, 5] },
   ];
   stubAxios();
   seedDypMatch(db, 'dyp3', 'm7',
-      [['A1', 'B1'], ['A2', 'B2'], ['C1', 'C2']], {modifiers: [9, 10]});
+    [['A1', 'B1'], ['A2', 'B2'], ['C1', 'C2']], { modifiers: [9, 10] });
   resetWriteJournal(db);
   await invokeHandler(handler, db.doc('events/dyp3/dyp-matches/m7'));
   assert.strictEqual(db.invocations.length, 0,
-      'a mismatched team partition writes nothing');
+    'a mismatched team partition writes nothing');
   assert.strictEqual(getCalls.filter(u => u.endsWith('.gior')).length, 1,
-      'only the replay read happened');
+    'only the replay read happened');
   console.log('  dyp team partition rejects passed');
 }
 
@@ -1090,30 +1098,30 @@ async function testBracketTeamOutcomes() {
   global.__testFirestore = db;
   getCalls = [];
   replayListResponse = [
-    {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
+    { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
   ];
   stubAxios();
-  seedMatchEvent(db, 'br2', 'matches', {modifiers: [9, 10]});
+  seedMatchEvent(db, 'br2', 'matches', { modifiers: [9, 10] });
   await invokeHandler(handler, db.doc('events/br2/matches/m1'));
 
   const event = db.dataAt('events/br2');
   assert.strictEqual(event.bracket.results['5'].team1Score, 1,
-      'the real winning team increments the series score');
+    'the real winning team increments the series score');
   assert.strictEqual(event.bracket.results['5'].team2Score, undefined);
 
   const match = db.dataAt('events/br2/matches/m1');
   const detail = match.replays[0].replay;
   assert.strictEqual(detail.scores[0].name, 'B0',
-      'a dead killer on the losing team tops the individual list');
+    'a dead killer on the losing team tops the individual list');
   assert.ok(detail.teams && detail.teamOutcomes,
-      'scored team outcomes persisted in replay detail');
+    'scored team outcomes persisted in replay detail');
 
   const a0 = db.dataAt('events/br2/players/A0').record[0];
   assert.strictEqual(a0.rank, 1);
   assert.strictEqual(a0.points, 2);
   assert.strictEqual(a0.teamCount, 2);
   assert.strictEqual(a0.finished, 5000 + 5 * 1000,
-      'the early-dead teammate keeps its real death finish');
+    'the early-dead teammate keeps its real death finish');
   const a1 = db.dataAt('events/br2/players/A1').record[0];
   assert.strictEqual(a1.rank, 1);
   assert.strictEqual(a1.points, 2);
@@ -1127,36 +1135,37 @@ async function testBracketTeamOutcomes() {
 
 async function testSinglesMatchPaths() {
   for (const [prefix, collection, handlerPath, resultsKey] of [
-      ['s1', 'matches', 'events/{eventId}/matches/{matchId}', 'bracket'],
-      ['s2', 'dyp-matches',
-          'events/{eventId}/dyp-matches/{matchId}', 'results']]) {
+    ['s1', 'matches', 'events/{eventId}/matches/{matchId}', 'bracket'],
+    ['s2', 'dyp-matches',
+      'events/{eventId}/dyp-matches/{matchId}', 'results']]) {
     const db = new FakeFirestore();
     global.__testFirestore = db;
     getCalls = [];
     replayListResponse = [
-      {id: 'replay-plain', started: 5000, ranking: [0, 1]},
+      { id: 'replay-plain', started: 5000, ranking: [0, 1] },
     ];
     stubAxios();
-    seedMatchEvent(db, prefix, collection, {modifiers: [9, 10]});
+    seedMatchEvent(db, prefix, collection, { modifiers: [9, 10] });
     db.doc(`events/${prefix}/${collection}/m1`).update({
-      teams: [{players: ['P0']}, {players: ['P1']}],
+      teams: [{ players: ['P0'] }, { players: ['P1'] }],
       players: ['P0', 'P1'],
     });
     db.doc(`events/${prefix}/players/P0`).set(
-        {name: 'P0', points: 0, record: []});
+      { name: 'P0', points: 0, record: [] });
     db.doc(`events/${prefix}/players/P1`).set(
-        {name: 'P1', points: 0, record: []});
+      { name: 'P1', points: 0, record: [] });
     await invokeHandler(handlerPath,
-        db.doc(`events/${prefix}/${collection}/m1`));
+      db.doc(`events/${prefix}/${collection}/m1`));
     const event = db.dataAt(`events/${prefix}`);
-    const results = resultsKey === 'bracket' ?
-        event.bracket.results : event.results;
+    const results = resultsKey === 'bracket'
+        ? event.bracket.results
+        : event.results;
     assert.strictEqual(results['5'].team1Score, 1,
-        `${collection} singles still increments the winner`);
+      `${collection} singles still increments the winner`);
     const match = db.dataAt(`events/${prefix}/${collection}/m1`);
     assert.strictEqual(match.replays[0].replay.scores[0].name, 'P0');
     assert.strictEqual(match.replays[0].replay.teams, undefined,
-        `${collection} singles persist no team detail`);
+      `${collection} singles persist no team detail`);
   }
   console.log('  singles match paths passed');
 }
@@ -1167,11 +1176,11 @@ async function testDypTeamStreaks() {
   global.__testFirestore = db;
   getCalls = [];
   replayListResponse = [
-    {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
+    { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
   ];
   stubAxios();
   seedDypMatch(db, 'dyp2', 'm7',
-      [['A0', 'A1'], ['B0', 'B1']], {modifiers: [9, 10]});
+    [['A0', 'A1'], ['B0', 'B1']], { modifiers: [9, 10] });
   db.doc('events/dyp2/players/A0').set({
     name: 'A0', points: 4, currentStreak: 2,
     record: [
@@ -1210,7 +1219,7 @@ async function testDypTeamStreaks() {
   const detail = db.dataAt('events/dyp2/dyp-matches/m7').replays[0].replay;
   const byName = new Map(detail.scores.map(s => [s.name, s]));
   assert.strictEqual(byName.get('A0').points, 4,
-      'replay detail carries the personal award');
+    'replay detail carries the personal award');
   assert.strictEqual(byName.get('A0').streak, true);
   assert.strictEqual(byName.get('A1').points, 2);
   assert.strictEqual(byName.get('A0').teamCount, 2);
@@ -1223,10 +1232,10 @@ async function testBracketTeamStreaks() {
   global.__testFirestore = db;
   getCalls = [];
   replayListResponse = [
-    {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
+    { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
   ];
   stubAxios();
-  seedMatchEvent(db, 'br3', 'matches', {modifiers: [9, 10]});
+  seedMatchEvent(db, 'br3', 'matches', { modifiers: [9, 10] });
   db.doc('events/br3/players/A0').set({
     name: 'A0', points: 4, currentStreak: 2,
     record: [
@@ -1264,7 +1273,7 @@ async function testBracketTeamStreaks() {
   const detail = db.dataAt('events/br3/matches/m1').replays[0].replay;
   const byName = new Map(detail.scores.map(s => [s.name, s]));
   assert.strictEqual(byName.get('A0').points, 4,
-      'replay detail carries the personal award');
+    'replay detail carries the personal award');
   assert.strictEqual(byName.get('A0').streak, true);
   assert.strictEqual(byName.get('A1').points, 2);
   assert.strictEqual(byName.get('A0').teamCount, 2);
@@ -1273,22 +1282,22 @@ async function testBracketTeamStreaks() {
 
 async function testTeamMatchIdempotency() {
   for (const [prefix, collection, matchId, number, handlerPath, resultsKey] of [
-      ['dupd', 'dyp-matches', 'm7', '7',
-          'events/{eventId}/dyp-matches/{matchId}', 'results'],
-      ['dupb', 'matches', 'm1', '5',
-          'events/{eventId}/matches/{matchId}', 'bracket']]) {
+    ['dupd', 'dyp-matches', 'm7', '7',
+      'events/{eventId}/dyp-matches/{matchId}', 'results'],
+    ['dupb', 'matches', 'm1', '5',
+      'events/{eventId}/matches/{matchId}', 'bracket']]) {
     const db = new FakeFirestore();
     global.__testFirestore = db;
     getCalls = [];
     replayListResponse = [
-      {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
+      { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
     ];
     stubAxios();
     if (collection === 'dyp-matches') {
       seedDypMatch(db, prefix, matchId,
-          [['A0', 'A1'], ['B0', 'B1']], {modifiers: [9, 10]});
+        [['A0', 'A1'], ['B0', 'B1']], { modifiers: [9, 10] });
     } else {
-      seedMatchEvent(db, prefix, collection, {modifiers: [9, 10]});
+      seedMatchEvent(db, prefix, collection, { modifiers: [9, 10] });
     }
     db.doc(`events/${prefix}/players/A0`).set({
       name: 'A0', points: 4, currentStreak: 2,
@@ -1303,44 +1312,45 @@ async function testTeamMatchIdempotency() {
       invokeHandler(handlerPath, matchRef),
     ]);
     const event = db.dataAt(`events/${prefix}`);
-    const results = resultsKey === 'bracket' ?
-        event.bracket.results : event.results;
+    const results = resultsKey === 'bracket'
+        ? event.bracket.results
+        : event.results;
     assert.strictEqual(results[number].team1Score, 1,
-        `${collection} counts one series win for a duplicate delivery`);
+      `${collection} counts one series win for a duplicate delivery`);
     assert.strictEqual(
-        (event.replays || []).filter(id => id === 'replay-early').length,
-        1, `${collection} tracks the replay once`);
+      (event.replays || []).filter(id => id === 'replay-early').length,
+      1, `${collection} tracks the replay once`);
     const match = db.dataAt(`events/${prefix}/${collection}/${matchId}`);
     assert.strictEqual(match.replays.length, 1);
     const a0 = db.dataAt(`events/${prefix}/players/A0`);
     assert.strictEqual(a0.points, 8,
-        `${collection} duplicate delivery does not double-award`);
+      `${collection} duplicate delivery does not double-award`);
     assert.strictEqual(a0.currentStreak, 3);
     assert.strictEqual(
-        a0.record.filter(r => r.replayId === 'replay-early').length, 1);
+      a0.record.filter(r => r.replayId === 'replay-early').length, 1);
   }
   console.log('  team match idempotency passed');
 }
 
 async function testTeamMatchDistinctResults() {
   for (const [prefix, collection, matchId, number, handlerPath, resultsKey] of [
-      ['seqd', 'dyp-matches', 'm7', '7',
-          'events/{eventId}/dyp-matches/{matchId}', 'results'],
-      ['seqb', 'matches', 'm1', '5',
-          'events/{eventId}/matches/{matchId}', 'bracket']]) {
+    ['seqd', 'dyp-matches', 'm7', '7',
+      'events/{eventId}/dyp-matches/{matchId}', 'results'],
+    ['seqb', 'matches', 'm1', '5',
+      'events/{eventId}/matches/{matchId}', 'bracket']]) {
     const db = new FakeFirestore();
     global.__testFirestore = db;
     getCalls = [];
     replayListResponse = [
-      {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
-      {id: 'replay-early2', started: 6000, ranking: [0, 1, 2, 3]},
+      { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
+      { id: 'replay-early2', started: 6000, ranking: [0, 1, 2, 3] },
     ];
     stubAxios();
     if (collection === 'dyp-matches') {
       seedDypMatch(db, prefix, matchId,
-          [['A0', 'A1'], ['B0', 'B1']], {modifiers: [9, 10]});
+        [['A0', 'A1'], ['B0', 'B1']], { modifiers: [9, 10] });
     } else {
-      seedMatchEvent(db, prefix, collection, {modifiers: [9, 10]});
+      seedMatchEvent(db, prefix, collection, { modifiers: [9, 10] });
     }
     db.doc(`events/${prefix}/players/A0`).set({
       name: 'A0', points: 4, currentStreak: 2,
@@ -1353,42 +1363,43 @@ async function testTeamMatchDistinctResults() {
     await invokeHandler(handlerPath, matchRef);
     await invokeHandler(handlerPath, matchRef);
     const event = db.dataAt(`events/${prefix}`);
-    const results = resultsKey === 'bracket' ?
-        event.bracket.results : event.results;
+    const results = resultsKey === 'bracket'
+        ? event.bracket.results
+        : event.results;
     assert.strictEqual(results[number].team1Score, 2,
-        `${collection} counts both distinct completed games`);
+      `${collection} counts both distinct completed games`);
     const match = db.dataAt(`events/${prefix}/${collection}/${matchId}`);
     assert.strictEqual(match.replays.length, 2);
     const a0 = db.dataAt(`events/${prefix}/players/A0`);
     assert.strictEqual(a0.record.length, 4,
-        `${collection} preserves both records`);
+      `${collection} preserves both records`);
     assert.ok(a0.record.some(r => r.replayId === 'replay-early'));
     assert.ok(a0.record.some(r => r.replayId === 'replay-early2'));
     assert.strictEqual(a0.points, 12, `${collection} 2 + 2 + 4 + 4`);
     assert.strictEqual(a0.currentStreak, 4,
-        `${collection} streak normalizes across both wins`);
+      `${collection} streak normalizes across both wins`);
   }
   console.log('  team match distinct results passed');
 }
 
 async function testTeamMatchRetry() {
   for (const [prefix, collection, matchId, number, handlerPath, resultsKey] of [
-      ['retd', 'dyp-matches', 'm7', '7',
-          'events/{eventId}/dyp-matches/{matchId}', 'results'],
-      ['retb', 'matches', 'm1', '5',
-          'events/{eventId}/matches/{matchId}', 'bracket']]) {
+    ['retd', 'dyp-matches', 'm7', '7',
+      'events/{eventId}/dyp-matches/{matchId}', 'results'],
+    ['retb', 'matches', 'm1', '5',
+      'events/{eventId}/matches/{matchId}', 'bracket']]) {
     const db = new FakeFirestore();
     global.__testFirestore = db;
     getCalls = [];
     replayListResponse = [
-      {id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3]},
+      { id: 'replay-early', started: 5000, ranking: [0, 1, 2, 3] },
     ];
     stubAxios();
     if (collection === 'dyp-matches') {
       seedDypMatch(db, prefix, matchId,
-          [['A0', 'A1'], ['B0', 'B1']], {modifiers: [9, 10]});
+        [['A0', 'A1'], ['B0', 'B1']], { modifiers: [9, 10] });
     } else {
-      seedMatchEvent(db, prefix, collection, {modifiers: [9, 10]});
+      seedMatchEvent(db, prefix, collection, { modifiers: [9, 10] });
     }
     db.doc(`events/${prefix}/players/A0`).set({
       name: 'A0', points: 4, currentStreak: 2,
@@ -1407,17 +1418,18 @@ async function testTeamMatchRetry() {
       return realRunTransaction(fn);
     };
     await invokeHandler(handlerPath,
-        db.doc(`events/${prefix}/${collection}/${matchId}`));
+      db.doc(`events/${prefix}/${collection}/${matchId}`));
     const a0 = db.dataAt(`events/${prefix}/players/A0`);
     const latest = a0.record.find(r => r.replayId === 'replay-early');
     assert.strictEqual(latest.finished, 5000 + 5 * 1000,
-        `${collection} retry keeps the real death finish`);
+      `${collection} retry keeps the real death finish`);
     assert.strictEqual(latest.points, 4);
     assert.strictEqual(
-        a0.record.filter(r => r.replayId === 'replay-early').length, 1);
+      a0.record.filter(r => r.replayId === 'replay-early').length, 1);
     const event = db.dataAt(`events/${prefix}`);
-    const results = resultsKey === 'bracket' ?
-        event.bracket.results : event.results;
+    const results = resultsKey === 'bracket'
+        ? event.bracket.results
+        : event.results;
     assert.strictEqual(results[number].team1Score, 1);
   }
   console.log('  team match retry passed');
@@ -1430,8 +1442,9 @@ async function testPlayerUpdateNormalization() {
   getCalls = [];
   stubAxios();
   const baseGet = functionsAxios.get;
-  const starsGet = url => url.includes('starsAndRanks') ?
-      Promise.resolve({data: {stars: {duel: 7}}}) : baseGet(url);
+  const starsGet = url => url.includes('starsAndRanks')
+      ? Promise.resolve({ data: { stars: { duel: 7 } } })
+      : baseGet(url);
   axios.get = starsGet;
   axios.default.get = starsGet;
   functionsAxios.get = starsGet;
@@ -1445,9 +1458,9 @@ async function testPlayerUpdateNormalization() {
   const threeWins = [
     priorWin('A0', 'w1', 'ax', 200),
     priorWin('A0', 'w2', 'ay', 400),
-    {name: 'A0', kills: 0, rank: 1, points: 4, lastTurn: 10,
+    { name: 'A0', kills: 0, rank: 1, points: 4, lastTurn: 10,
       tilesAfterFirstRound: 1, streak: true, teamCount: 2, teamId: 'az',
-      started: 500, finished: 600, replayId: 'w3'},
+      started: 500, finished: 600, replayId: 'w3' },
   ];
   db.doc('events/up1/players/A0').set({
     name: 'A0', points: 8, currentStreak: 3, record: threeWins,
@@ -1458,61 +1471,61 @@ async function testPlayerUpdateNormalization() {
     ref: db.doc('events/up1/players/A0'),
     data: () => ({
       name: 'A0', points: 4, currentStreak: 2,
-      record: threeWins.slice(0, 2).map(r => ({...r})),
+      record: threeWins.slice(0, 2).map(r => ({ ...r })),
     }),
   };
-  const params = {params: {eventId: 'up1', playerId: 'A0'}};
-  await HANDLERS[handler].onUpdate({before: {exists: true}, after: staleA0},
-      params);
+  const params = { params: { eventId: 'up1', playerId: 'A0' } };
+  await HANDLERS[handler].onUpdate({ before: { exists: true }, after: staleA0 },
+    params);
   let player = db.dataAt('events/up1/players/A0');
   assert.strictEqual(player.record.length, 3,
-      'the current record survives a stale trigger snapshot');
+    'the current record survives a stale trigger snapshot');
   assert.strictEqual(player.points, 8);
   assert.strictEqual(player.currentStreak, 3);
   assert.strictEqual(player.stats.totalGames, 3);
   assert.strictEqual(typeof player.stats.currentStars, 'number');
 
-  await HANDLERS[handler].onUpdate({before: {exists: true}, after: staleA0},
-      params);
+  await HANDLERS[handler].onUpdate({ before: { exists: true }, after: staleA0 },
+    params);
   player = db.dataAt('events/up1/players/A0');
   assert.strictEqual(player.record.length, 3,
-      'a repeated stale delivery stays idempotent');
+    'a repeated stale delivery stays idempotent');
   assert.strictEqual(player.points, 8);
   assert.strictEqual(player.currentStreak, 3);
 
   const overlapping = [
-    {name: 'C0', kills: 0, rank: 2, points: 0, lastTurn: 10,
+    { name: 'C0', kills: 0, rank: 2, points: 0, lastTurn: 10,
       tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-      started: 100, finished: 500, replayId: 'o1'},
-    {name: 'C0', kills: 0, rank: 2, points: 0, lastTurn: 10,
+      started: 100, finished: 500, replayId: 'o1' },
+    { name: 'C0', kills: 0, rank: 2, points: 0, lastTurn: 10,
       tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-      started: 200, finished: 600, replayId: 'o2'},
+      started: 200, finished: 600, replayId: 'o2' },
   ];
   db.doc('events/up1/players/C0').set({
     name: 'C0', points: 0, currentStreak: 0, dq: false,
-    record: overlapping.map(r => ({...r})),
+    record: overlapping.map(r => ({ ...r })),
   });
   const staleC0 = {
     id: 'C0',
     exists: true,
     ref: db.doc('events/up1/players/C0'),
-    data: () => ({name: 'C0', dq: false,
-      record: overlapping.map(r => ({...r}))}),
+    data: () => ({ name: 'C0', dq: false,
+      record: overlapping.map(r => ({ ...r })) }),
   };
-  const paramsC = {params: {eventId: 'up1', playerId: 'C0'}};
-  await HANDLERS[handler].onUpdate({before: {exists: true}, after: staleC0},
-      paramsC);
+  const paramsC = { params: { eventId: 'up1', playerId: 'C0' } };
+  await HANDLERS[handler].onUpdate({ before: { exists: true }, after: staleC0 },
+    paramsC);
   assert.strictEqual(db.dataAt('events/up1/players/C0').dq, true);
   const messageCount = () => [...db.docs.keys()]
-      .filter(k => k.startsWith('events/up1/messages/')).length;
+    .filter(k => k.startsWith('events/up1/messages/')).length;
   assert.strictEqual(messageCount(), 1,
-      'the dq transition posts exactly one message');
-  await HANDLERS[handler].onUpdate({before: {exists: true}, after: staleC0},
-      paramsC);
+    'the dq transition posts exactly one message');
+  await HANDLERS[handler].onUpdate({ before: { exists: true }, after: staleC0 },
+    paramsC);
   assert.strictEqual(messageCount(), 1,
-      'a repeated delivery does not repost the dq message');
+    'a repeated delivery does not repost the dq message');
   assert.strictEqual(db.dataAt('events/up1/players/C0').dq, true,
-      'a stale snapshot never clears a current dq');
+    'a stale snapshot never clears a current dq');
   console.log('  player update normalization passed');
 }
 
@@ -1533,23 +1546,23 @@ function testTeamRecordStreaks() {
 
   {
     const record = [
-      teamRec('ab', 1000, 1, 2, {teamId: 'ab'}),
-      teamRec('ac', 2000, 1, 2, {teamId: 'ac'}),
-      teamRec('ad', 3000, 1, 2, {teamId: 'ad'}),
+      teamRec('ab', 1000, 1, 2, { teamId: 'ab' }),
+      teamRec('ac', 2000, 1, 2, { teamId: 'ac' }),
+      teamRec('ad', 3000, 1, 2, { teamId: 'ad' }),
     ];
     const r = recordSanityCheck(record, arena);
     assert.deepStrictEqual(r.record.map(g => g.points), [2, 2, 4]);
     assert.deepStrictEqual(r.record.map(g => g.streak),
-        [false, false, true]);
+      [false, false, true]);
     assert.strictEqual(r.currentStreak, 3);
     assert.strictEqual(r.points, 8);
 
     const d = recordSanityCheck(
-        [teamRec('ad', 3000, 1, 2, {name: 'D'})], arena);
+      [teamRec('ad', 3000, 1, 2, { name: 'D' })], arena);
     assert.deepStrictEqual(d.record.map(g => g.points), [2]);
     assert.strictEqual(d.currentStreak, 1);
     const b = recordSanityCheck(
-        [teamRec('ab', 1000, 1, 2, {name: 'B'})], arena);
+      [teamRec('ab', 1000, 1, 2, { name: 'B' })], arena);
     assert.strictEqual(b.currentStreak, 1);
 
     const again = recordSanityCheck(r.record, arena);
@@ -1571,11 +1584,11 @@ function testTeamRecordStreaks() {
 
   {
     const record = [1, 2, 3].map(i =>
-        teamRec('t' + i, i * 1000, 1, 10, {teamCount: 3}));
+      teamRec('t' + i, i * 1000, 1, 10, { teamCount: 3 }));
     const r = recordSanityCheck(record, arena);
     assert.deepStrictEqual(r.record.map(g => g.points), [10, 10, 10]);
     assert.deepStrictEqual(r.record.map(g => g.streak),
-        [false, false, false]);
+      [false, false, false]);
   }
 
   {
@@ -1591,12 +1604,12 @@ function testTeamRecordStreaks() {
 
   {
     const legacy = [1, 2, 3].map(i =>
-        teamRec('l' + i, i * 1000, 1, 2, {teamCount: undefined}));
+      teamRec('l' + i, i * 1000, 1, 2, { teamCount: undefined }));
     const r = recordSanityCheck(legacy, arena);
     assert.deepStrictEqual(r.record.map(g => g.points), [2, 2, 2]);
     const r2 = recordSanityCheck([1, 2, 3].map(i =>
-        teamRec('o' + i, i * 1000, 1, 2, {teamCount: undefined})),
-        {type: EventType.ONE_VS_ONE});
+      teamRec('o' + i, i * 1000, 1, 2, { teamCount: undefined })),
+    { type: EventType.ONE_VS_ONE });
     assert.deepStrictEqual(r2.record.map(g => g.points), [2, 2, 4]);
   }
   console.log('  team record streaks passed');
@@ -1608,35 +1621,35 @@ async function testMismatchRejects() {
   // ChessClock config does not match the event options, before any write
   const clockExpected = {
     modifiers: [11],
-    modifier_options: {ChessClock: CLOCK_OPTIONS},
+    modifier_options: { ChessClock: CLOCK_OPTIONS },
   };
   const cases = [
     {
       label: 'event expects no modifiers, replay has modifiers',
-      eventOptions: {modifiers: []},
+      eventOptions: { modifiers: [] },
       replayId: 'replay-plain',
     },
     {
       label: 'event expects modifiers, replay modifier set differs',
-      eventOptions: {modifiers: [9]},
+      eventOptions: { modifiers: [9] },
       replayId: 'replay-plain',
     },
     {
       label: 'wrong ClockIncrement',
-      eventOptions: {modifiers: [11], modifier_options: {ChessClock: {
-        ...CLOCK_OPTIONS, ClockIncrement: 5}}},
+      eventOptions: { modifiers: [11], modifier_options: { ChessClock: {
+        ...CLOCK_OPTIONS, ClockIncrement: 5 } } },
       replayId: 'replay-clock',
     },
     {
       label: 'wrong StartingClock',
-      eventOptions: {modifiers: [11], modifier_options: {ChessClock: {
-        ...CLOCK_OPTIONS, StartingClock: 10}}},
+      eventOptions: { modifiers: [11], modifier_options: { ChessClock: {
+        ...CLOCK_OPTIONS, StartingClock: 10 } } },
       replayId: 'replay-clock',
     },
     {
       label: 'wrong DontLimitMoveSpeed',
-      eventOptions: {modifiers: [11], modifier_options: {ChessClock: {
-        ...CLOCK_OPTIONS, DontLimitMoveSpeed: false}}},
+      eventOptions: { modifiers: [11], modifier_options: { ChessClock: {
+        ...CLOCK_OPTIONS, DontLimitMoveSpeed: false } } },
       replayId: 'replay-clock',
     },
     {
@@ -1651,7 +1664,7 @@ async function testMismatchRejects() {
     },
   ];
 
-  for (const {label, eventOptions, replayId} of cases) {
+  for (const { label, eventOptions, replayId } of cases) {
     // arena games writer
     {
       const db = new FakeFirestore();
@@ -1665,12 +1678,12 @@ async function testMismatchRejects() {
       });
       resetWriteJournal(db);
       await invokeHandler('events/{eventId}/games/{gameId}',
-          db.doc('events/arena1/games/g1'));
+        db.doc('events/arena1/games/g1'));
       assert.strictEqual(db.invocations.length, 0,
-          `arena/${label}: no writes after mismatch`);
+        `arena/${label}: no writes after mismatch`);
       assert.strictEqual(
-          getCalls.filter(u => u.endsWith('.gior')).length, 1,
-          `arena/${label}: only the stubbed replay read happened`);
+        getCalls.filter(u => u.endsWith('.gior')).length, 1,
+        `arena/${label}: only the stubbed replay read happened`);
     }
 
     // bracket matches writer
@@ -1679,19 +1692,19 @@ async function testMismatchRejects() {
       global.__testFirestore = db;
       getCalls = [];
       replayListResponse = [
-        {id: replayId, started: 5000, ranking: [0, 1, 2, 3]},
+        { id: replayId, started: 5000, ranking: [0, 1, 2, 3] },
       ];
       stubAxios();
       seedMatchEvent(db, 'br1', 'matches', eventOptions);
-      db.doc('events/br1/matches/m1').update({timesChecked: 1000});
+      db.doc('events/br1/matches/m1').update({ timesChecked: 1000 });
       resetWriteJournal(db);
       await invokeHandler('events/{eventId}/matches/{matchId}',
-          db.doc('events/br1/matches/m1'));
+        db.doc('events/br1/matches/m1'));
       assert.strictEqual(db.invocations.length, 0,
-          `bracket/${label}: no writes after mismatch`);
+        `bracket/${label}: no writes after mismatch`);
       assert.strictEqual(
-          getCalls.filter(u => u.endsWith('.gior')).length, 1,
-          `bracket/${label}: only the stubbed replay read happened`);
+        getCalls.filter(u => u.endsWith('.gior')).length, 1,
+        `bracket/${label}: only the stubbed replay read happened`);
     }
 
     // dynamic DYP writer
@@ -1700,19 +1713,19 @@ async function testMismatchRejects() {
       global.__testFirestore = db;
       getCalls = [];
       replayListResponse = [
-        {id: replayId, started: 5000, ranking: [0, 1, 2, 3]},
+        { id: replayId, started: 5000, ranking: [0, 1, 2, 3] },
       ];
       stubAxios();
       seedMatchEvent(db, 'dyp1', 'dyp-matches', eventOptions);
-      db.doc('events/dyp1/dyp-matches/m1').update({timesChecked: 1000});
+      db.doc('events/dyp1/dyp-matches/m1').update({ timesChecked: 1000 });
       resetWriteJournal(db);
       await invokeHandler('events/{eventId}/dyp-matches/{matchId}',
-          db.doc('events/dyp1/dyp-matches/m1'));
+        db.doc('events/dyp1/dyp-matches/m1'));
       assert.strictEqual(db.invocations.length, 0,
-          `dyp/${label}: no writes after mismatch`);
+        `dyp/${label}: no writes after mismatch`);
       assert.strictEqual(
-          getCalls.filter(u => u.endsWith('.gior')).length, 1,
-          `dyp/${label}: only the stubbed replay read happened`);
+        getCalls.filter(u => u.endsWith('.gior')).length, 1,
+        `dyp/${label}: only the stubbed replay read happened`);
     }
   }
   console.log('  mismatch rejects passed');
@@ -1733,7 +1746,7 @@ function testRecordSanity() {
     finished,
     replayId,
   });
-  const ffa = {type: EventType.FFA};
+  const ffa = { type: EventType.FFA };
 
   // ambiguous case: a legacy Chess Clock record with an unknown finish
   // followed by a game that started later cannot be proven to overlap —
@@ -1745,7 +1758,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, false,
-        'unknown finish must never end an interval');
+      'unknown finish must never end an interval');
   }
 
   // unambiguous case: a game that provably started while a known-finish
@@ -1758,7 +1771,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, true,
-        'a start inside a known interval is unambiguous overlap');
+      'a start inside a known interval is unambiguous overlap');
   }
 
   // an unknown-finish record sorted between two known-overlapping games
@@ -1771,7 +1784,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, true,
-        'unknown-finish records must not mask a known overlap');
+      'unknown-finish records must not mask a known overlap');
   }
 
   // undefined finish (malformed/older records) never ends an interval
@@ -1782,7 +1795,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, false,
-        'undefined finish must never trigger an overlap DQ');
+      'undefined finish must never trigger an overlap DQ');
   }
 
   // a non-finite finish value is guarded, not compared
@@ -1793,7 +1806,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, false,
-        'NaN finish must never trigger an overlap DQ');
+      'NaN finish must never trigger an overlap DQ');
   }
 
   // a known finish that actually overlaps the next game still DQs
@@ -1804,7 +1817,7 @@ function testRecordSanity() {
     ];
     const result = recordSanityCheck(record, ffa);
     assert.strictEqual(result.dq, true,
-        'finite overlap must still disqualify');
+      'finite overlap must still disqualify');
   }
   console.log('  record sanity passed');
 }

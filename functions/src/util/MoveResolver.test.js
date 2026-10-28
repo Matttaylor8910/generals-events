@@ -48,22 +48,22 @@ function makeMap(slippery) {
 
 function cycleMoves() {
   return [
-    {playerIndex: 0, start: 0, end: 1, is50: false, attackIndex: 0},
-    {playerIndex: 1, start: 1, end: 5, is50: false, attackIndex: 0},
-    {playerIndex: 2, start: 5, end: 4, is50: false, attackIndex: 0},
-    {playerIndex: 3, start: 4, end: 0, is50: false, attackIndex: 0},
+    { playerIndex: 0, start: 0, end: 1, is50: false, attackIndex: 0 },
+    { playerIndex: 1, start: 1, end: 5, is50: false, attackIndex: 0 },
+    { playerIndex: 2, start: 5, end: 4, is50: false, attackIndex: 0 },
+    { playerIndex: 3, start: 4, end: 0, is50: false, attackIndex: 0 },
   ];
 }
 
 function cyclePlusIndependentMoves() {
   return cycleMoves().concat([
-    {playerIndex: 4, start: 10, end: 11, is50: false, attackIndex: 0},
+    { playerIndex: 4, start: 10, end: 11, is50: false, attackIndex: 0 },
   ]);
 }
 
 function resolve(slippery, moves, installLogger) {
-  const hadLogger =
-      Object.prototype.hasOwnProperty.call(global, 'logger');
+  const hadLogger
+      = Object.prototype.hasOwnProperty.call(global, 'logger');
   const savedLogger = global.logger;
   if (installLogger) {
     global.logger = installLogger;
@@ -87,8 +87,8 @@ function assertWholeMoves(moves, ordered, message) {
   assert.strictEqual(ordered.length, moves.length, message);
   for (const move of moves) {
     assert.strictEqual(
-        ordered.filter(out => out === move).length, 1,
-        `${message}: every input move must appear exactly once`);
+      ordered.filter(out => out === move).length, 1,
+      `${message}: every input move must appear exactly once`);
   }
 }
 
@@ -98,7 +98,7 @@ function testNormalCycleOrdering() {
   const moves = cycleMoves();
   const ordered = resolve(false, moves, null);
   assert.deepStrictEqual(ordered.map(mv => mv.playerIndex),
-      [0, 1, 2, 3], 'normal pure cycle order');
+    [0, 1, 2, 3], 'normal pure cycle order');
   assertWholeMoves(moves, ordered, 'normal pure cycle');
 
   // with the independent smaller move last in sort order, it resolves
@@ -107,7 +107,7 @@ function testNormalCycleOrdering() {
   const moves5 = cyclePlusIndependentMoves();
   const ordered5 = resolve(false, moves5, null);
   assert.deepStrictEqual(ordered5.map(mv => mv.playerIndex),
-      [4, 0, 1, 2, 3], 'normal cycle + independent order');
+    [4, 0, 1, 2, 3], 'normal cycle + independent order');
   assertWholeMoves(moves5, ordered5, 'normal cycle + independent');
   console.log('  normal ordering passed');
 }
@@ -119,13 +119,13 @@ function testSlipperyCycleOrdering() {
   const moves = cycleMoves();
   const ordered = resolve(true, moves, null);
   assert.deepStrictEqual(ordered.map(mv => mv.playerIndex),
-      [0, 3, 2, 1], 'slippery pure cycle order');
+    [0, 3, 2, 1], 'slippery pure cycle order');
   assertWholeMoves(moves, ordered, 'slippery pure cycle');
 
   const moves5 = cyclePlusIndependentMoves();
   const ordered5 = resolve(true, moves5, null);
   assert.deepStrictEqual(ordered5.map(mv => mv.playerIndex),
-      [4, 0, 3, 2, 1], 'slippery cycle + independent order');
+    [4, 0, 3, 2, 1], 'slippery cycle + independent order');
   assertWholeMoves(moves5, ordered5, 'slippery cycle + independent');
   console.log('  slippery ordering passed');
 }
@@ -138,18 +138,18 @@ function testDiagnosticsWithLogger() {
 
   const ordered = resolve(false, cyclePlusIndependentMoves(), stubLogger);
   assert.deepStrictEqual(ordered.map(mv => mv.playerIndex),
-      [4, 0, 1, 2, 3], 'ordering is unchanged with a logger installed');
+    [4, 0, 1, 2, 3], 'ordering is unchanged with a logger installed');
 
   const cycleLog = calls.find(line =>
-      line.startsWith('Breaking cycle with highest priority move'));
+    line.startsWith('Breaking cycle with highest priority move'));
   assert.ok(cycleLog, 'cycle-break diagnostic must be logged');
   for (const token of ['0 0(', '1 1(', '2 5(', '3 4(']) {
     assert.ok(cycleLog.includes(token),
-        `unresolved cycle move ${token} must be listed; got: ${cycleLog}`);
+      `unresolved cycle move ${token} must be listed; got: ${cycleLog}`);
   }
   assert.ok(!cycleLog.includes('4 10('),
-      'cycle diagnostic must not deref/list the already-resolved ' +
-      `player 4 move; got: ${cycleLog}`);
+    'cycle diagnostic must not deref/list the already-resolved '
+      + `player 4 move; got: ${cycleLog}`);
   console.log('  diagnostic logging passed');
 }
 
@@ -158,10 +158,10 @@ function testDiagnosticsWithoutLogger() {
   // throw even though the diagnostic retry pass still runs
   const ordered = resolve(false, cyclePlusIndependentMoves(), null);
   assert.deepStrictEqual(ordered.map(mv => mv.playerIndex),
-      [4, 0, 1, 2, 3], 'ordering is unchanged without a logger');
+    [4, 0, 1, 2, 3], 'ordering is unchanged without a logger');
   assert.strictEqual(
-      Object.prototype.hasOwnProperty.call(global, 'logger'), false,
-      'logger global must be restored/absent after the call');
+    Object.prototype.hasOwnProperty.call(global, 'logger'), false,
+    'logger global must be restored/absent after the call');
   console.log('  no-logger path passed');
 }
 

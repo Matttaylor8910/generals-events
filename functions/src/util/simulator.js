@@ -31,7 +31,7 @@ function getReplay(replayId, server = 'na') {
 function getReplayStats(replayId, server = 'na', expectedOptions) {
   return getReplay(replayId, server).then(replay => {
     EventGameOptions.assertReplayMatchesExpectedOptions(
-        replay, expectedOptions);
+      replay, expectedOptions);
     return simulate(replay);
   });
 }
@@ -49,10 +49,10 @@ function getReplayStats(replayId, server = 'na', expectedOptions) {
  *     elapsedMs?: number|null, teamOutcomes: object[]}>}
  */
 function getTeamArenaReplayStats(
-    replayId, server = 'na', expectedOptions, expectedTeams) {
+  replayId, server = 'na', expectedOptions, expectedTeams) {
   return getReplay(replayId, server).then(replay => {
     EventGameOptions.assertReplayMatchesExpectedOptions(
-        replay, expectedOptions);
+      replay, expectedOptions);
     TeamArena.assertReplayTeams(replay, expectedTeams);
     return simulate(replay, expectedTeams);
   });
@@ -73,34 +73,34 @@ function simulate(replay, expectedTeams) {
   }
 
   const isChessClock = (replay.modifiers || [])
-      .includes(Constants.MODIFIER_INDEXES.ChessClock);
+    .includes(Constants.MODIFIER_INDEXES.ChessClock);
 
   // exact elapsed metadata for Chess Clock replays; validated rather than
   // trusted so malformed timing data throws instead of producing plausible
-  // but wrong results. Replays serialized at v21+ must carry a complete
+  // but wrong results. Replays serialized at v20 (wire 19) or later must carry a complete
   // exact-timing object: partial or missing metadata means the game never
   // finished and must not be scored (a fake idle winner and a fabricated
   // short duration is exactly what this rejects). Older clock replays
   // predate the tail and score normally with an unknown elapsed time.
   let elapsed = null;
-  if (isChessClock && replay.version >= 20) {
+  if (isChessClock && replay.version >= 19) {
     EventGameOptions.assertCompletedChessClockElapsed(
-        replay.chessClockElapsed, replay.usernames.length);
+      replay.chessClockElapsed, replay.usernames.length);
     const executionTimestamps = replay.chessClockMoveExecutionTimestamps || [];
-    if (replay.chessClockElapsed.turns.length !==
-        executionTimestamps.length) {
-      throw new Error('chessClockElapsed turns do not align with ' +
-          'execution timestamps');
+    if (replay.chessClockElapsed.turns.length
+        !== executionTimestamps.length) {
+      throw new Error('chessClockElapsed turns do not align with '
+          + 'execution timestamps');
     }
     elapsed = replay.chessClockElapsed;
   } else if (isChessClock && replay.chessClockElapsed) {
     EventGameOptions.assertValidChessClockElapsed(
-        replay.chessClockElapsed, replay.usernames.length);
+      replay.chessClockElapsed, replay.usernames.length);
     const executionTimestamps = replay.chessClockMoveExecutionTimestamps || [];
-    if (replay.chessClockElapsed.turns.length !==
-        executionTimestamps.length) {
-      throw new Error('chessClockElapsed turns do not align with ' +
-          'execution timestamps');
+    if (replay.chessClockElapsed.turns.length
+        !== executionTimestamps.length) {
+      throw new Error('chessClockElapsed turns do not align with '
+          + 'execution timestamps');
     }
     elapsed = replay.chessClockElapsed;
   }
@@ -110,8 +110,8 @@ function simulate(replay, expectedTeams) {
   // landing between executions; simulating past that means the replay was
   // truncated before its final move and the all-AFK idle limit would
   // fabricate a winner under a finite "exact" duration
-  const boundToRecordedTurns =
-      elapsed && replay.version >= 20 ? elapsed.turns.length : -1;
+  const boundToRecordedTurns
+      = elapsed && replay.version >= 19 ? elapsed.turns.length : -1;
 
   const summary = [];
   const currentAFK = new Set();
@@ -123,13 +123,13 @@ function simulate(replay, expectedTeams) {
   // first turn on which every member of a team is dead
   let teamTracking = null;
   if (expectedTeams) {
-    if (!Array.isArray(replay.teams) ||
-        replay.teams.length !== replay.usernames.length) {
+    if (!Array.isArray(replay.teams)
+        || replay.teams.length !== replay.usernames.length) {
       throw new Error('Replay has no valid team roster');
     }
     teamTracking = expectedTeams.map(team => {
-      const playerIndexes =
-          team.players.map(name => replay.usernames.indexOf(name));
+      const playerIndexes
+          = team.players.map(name => replay.usernames.indexOf(name));
       return {
         id: team.id,
         replayTeam: replay.teams[playerIndexes[0]],
@@ -141,8 +141,8 @@ function simulate(replay, expectedTeams) {
 
   // Simulate the game!
   while (!game.isOver()) {
-    if (boundToRecordedTurns >= 0 &&
-        game.turn > boundToRecordedTurns) {
+    if (boundToRecordedTurns >= 0
+        && game.turn > boundToRecordedTurns) {
       throw new Error('No recorded terminal outcome');
     }
     game.nextTurn();
@@ -152,9 +152,9 @@ function simulate(replay, expectedTeams) {
       // that share a summary turn would falsely tie two eliminations that
       // actually resolved in order
       for (const tracked of teamTracking) {
-        if (tracked.eliminatedTurn === null &&
-            tracked.playerIndexes.every(
-                index => game.isDead(game.sockets[index]))) {
+        if (tracked.eliminatedTurn === null
+            && tracked.playerIndexes.every(
+              index => game.isDead(game.sockets[index]))) {
           tracked.eliminatedTurn = game.turn;
         }
       }
@@ -183,10 +183,10 @@ function simulate(replay, expectedTeams) {
   let teamOutcomes;
   if (teamTracking) {
     const winners = game.isOver() || [];
-    const winnerReplayTeam =
-        winners.length ?
-        replay.teams[replay.usernames.indexOf(winners[0].gio_username)] :
-        undefined;
+    const winnerReplayTeam
+        = winners.length
+            ? replay.teams[replay.usernames.indexOf(winners[0].gio_username)]
+            : undefined;
     teamOutcomes = teamTracking.map(tracked => ({
       id: tracked.id,
       winner: tracked.replayTeam === winnerReplayTeam,
@@ -196,15 +196,15 @@ function simulate(replay, expectedTeams) {
       const index = replay.usernames.indexOf(socket.gio_username);
       // a teammate who died earlier keeps their real death turn; only the
       // survivors carry the terminal turn
-      if (index >= 0 &&
-          !game.isDead(game.sockets[index]) &&
-          !players[index].lastTurn) {
+      if (index >= 0
+          && !game.isDead(game.sockets[index])
+          && !players[index].lastTurn) {
         players[index].lastTurn = turn;
       }
     }
     if (winners.length) {
       const winnerNames = winners
-          .map(socket => socket.gio_username).join(', ');
+        .map(socket => socket.gio_username).join(', ');
       summary.push(`${winnerNames} win!`);
     }
   } else {
@@ -215,8 +215,8 @@ function simulate(replay, expectedTeams) {
 
     // if the player that came in second quit or surrendered, give that
     // kill to the player who won
-    if (rankedScores.length > 1 &&
-        replay.afks.find(afk => afk.index === rankedScores[1].i)) {
+    if (rankedScores.length > 1
+        && replay.afks.find(afk => afk.index === rankedScores[1].i)) {
       const secondPlace = players[rankedScores[1].i].name;
 
       // only increment if they aren't already in their list of kills

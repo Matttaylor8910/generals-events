@@ -19,4 +19,4 @@ class DatePipe {
   }
 }
 
-module.exports = {DatePipe};
+module.exports = { DatePipe };

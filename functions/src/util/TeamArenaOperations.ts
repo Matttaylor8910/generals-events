@@ -223,10 +223,10 @@ export class TeamArenaOperations {
 
       // only idle, incomplete, opt-in teams are eligible; candidates are
       // revalidated against the state read inside this transaction
-      const candidates = context.teams.filter(team =>
-          team.acceptFill &&
-          team.members.length < context.event.teamSize! &&
-          !context.teamIsBusy(team));
+      const candidates = context.teams.filter(candidate =>
+          candidate.acceptFill &&
+          candidate.members.length < context.event.teamSize! &&
+          !context.teamIsBusy(candidate));
       if (!candidates.length) {
         throw new Error('No teams are accepting fill players right now');
       }

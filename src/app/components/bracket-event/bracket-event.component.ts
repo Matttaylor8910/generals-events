@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output, SimpleChange} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges} from '@angular/core';
 import {cloneDeep} from 'lodash';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
@@ -17,7 +17,7 @@ import {getShuffledBracket} from './bracket-creator';
   templateUrl: './bracket-event.component.html',
   styleUrls: ['./bracket-event.component.scss'],
 })
-export class BracketEventComponent {
+export class BracketEventComponent implements OnChanges, OnDestroy {
   private destroyed$ = new Subject<void>();
 
   @Input() event: IDoubleElimEvent;
@@ -40,11 +40,11 @@ export class BracketEventComponent {
     this.utilService.selectTab$
       .pipe(takeUntil(this.destroyed$))
       .subscribe(tab => {
-        if (this.tabs.includes(tab)) this.selectedTab = tab;
+        if (this.tabs.includes(tab)) { this.selectedTab = tab; }
       });
   }
 
-  ngOnChanges(changes: SimpleChange) {
+  ngOnChanges(changes: SimpleChanges) {
     if (this.event?.bracket) {
       this.bracket = this.event.bracket;
 
@@ -57,8 +57,8 @@ export class BracketEventComponent {
               'The event has started! Good luck have fun!', 5000);
         }
       }
-    } else if (changes['event'] !== undefined ||
-               changes['players'] !== undefined) {
+    } else if (changes.event !== undefined ||
+               changes.players !== undefined) {
       this.generatePreviewBracket();
     }
   }

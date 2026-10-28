@@ -266,18 +266,18 @@
         </ion-item>
 
         <!-- City Fairness of the map -->
-        <label>City Fairness: {{ city_fairness | number:'1.1-2' }}</label>
+        <label>City Fairness: {{ cityFairness | number:'1.1-2' }}</label>
         <ion-item>
-          <ion-range min="0" max="1" step=".01" [(ngModel)]="city_fairness">
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="cityFairness">
             <ion-label slot="start">low</ion-label>
             <ion-label slot="end">high</ion-label>
           </ion-range>
         </ion-item>
 
         <!-- Spawn Fairness of the map -->
-        <label>Spawn Fairness: {{ spawn_fairness | number:'1.1-2' }}</label>
+        <label>Spawn Fairness: {{ spawnFairness | number:'1.1-2' }}</label>
         <ion-item>
-          <ion-range min="0" max="1" step=".01" [(ngModel)]="spawn_fairness">
+          <ion-range min="0" max="1" step=".01" [(ngModel)]="spawnFairness">
             <ion-label slot="start">low</ion-label>
             <ion-label slot="end">high</ion-label>
           </ion-range>
@@ -294,9 +294,9 @@
         <label>Tunnel Army Limits</label>
         <ion-item>
           <ion-label>min</ion-label>
-          <input type="number" min="5" max="400" step="1" [(ngModel)]="tunnel_min">
+        <input type="number" min="5" max="400" step="1" [(ngModel)]="tunnelMin">
           <ion-label>max</ion-label>
-          <input type="number" min="5" max="500" step="1" [(ngModel)]="tunnel_max">
+        <input type="number" min="5" max="500" step="1" [(ngModel)]="tunnelMax">
         </ion-item>
 
         <!-- strongholds are placed through custom maps only; generated
@@ -318,15 +318,15 @@
       <ng-container *ngIf="chessClockSelected">
         <label>Chess Clock Starting Time (seconds)</label>
         <ion-item>
-          <input type="number" min="1" step="1" [(ngModel)]="chess_clock_starting">
+        <input type="number" min="1" step="1" [(ngModel)]="chessClockStarting">
         </ion-item>
         <label>Chess Clock Increment (seconds)</label>
         <ion-item>
-          <input type="number" min="0" step="0.1" [(ngModel)]="chess_clock_increment">
+        <input type="number" min="0" step="0.1" [(ngModel)]="chessClockIncrement">
         </ion-item>
         <ion-item>
           <ion-label>Don't Limit Move Speed</ion-label>
-          <ion-checkbox [(ngModel)]="chess_clock_dont_limit"></ion-checkbox>
+        <ion-checkbox [(ngModel)]="chessClockDontLimit"></ion-checkbox>
         </ion-item>
       </ng-container>
 

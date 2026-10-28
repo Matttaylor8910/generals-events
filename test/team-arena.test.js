@@ -16,8 +16,8 @@ global.localStorage = {
   setItem() {},
   removeItem() {},
 };
-global.window = {open() {}, addEventListener() {}};
-global.location = {href: ''};
+global.window = { open() {}, addEventListener() {} };
+global.location = { href: '' };
 
 const assert = require('assert');
 const path = require('path');
@@ -26,31 +26,31 @@ const axios = require('axios');
 // functions code resolves axios through functions/node_modules — stub that
 // instance too or replay/simulator requests escape to the real network
 const functionsAxios = require(require.resolve('axios', {
-    paths: [path.resolve(__dirname, '../functions')]}));
+  paths: [path.resolve(__dirname, '../functions')] }));
 
-const {FakeFirestore} = require('./fakes');
+const { FakeFirestore } = require('./fakes');
 const functionsStub = require('firebase-functions');
 const TeamArena = require('../functions/src/util/TeamArena.js');
 const deserializeReplay = require(
-    '../functions/src/util/ReplayDeserializer');
+  '../functions/src/util/ReplayDeserializer');
 const simulator = require('../functions/src/util/simulator');
 const {
   DoublesPairingStrategy, EventFormat, EventStatus, EventType, GameStatus,
 } = require('../types');
-const {isTeamArena, normalizeEventTeam, rankArenaTeams,
-    validateTeamArenaConfig} = require('../team-arena');
-const {handleArenaEventUpdate} = require(
-    '../functions/src/events/arena');
-const {TeamArenaService} = require(
-    '../src/app/services/team-arena.service');
-const {EventService} = require(
-    '../src/app/services/event.service');
-const {GeneralsService} = require(
-    '../src/app/services/generals.service');
-const {ArenaQueueComponent} = require(
-    '../src/app/components/arena-queue/arena-queue.component.ts');
-const {EventTrophiesComponent} = require(
-    '../src/app/components/event-trophies/event-trophies.component.ts');
+const { isTeamArena, normalizeEventTeam, rankArenaTeams,
+  validateTeamArenaConfig } = require('../team-arena');
+const { handleArenaEventUpdate } = require(
+  '../functions/src/events/arena');
+const { TeamArenaService } = require(
+  '../src/app/services/team-arena.service');
+const { EventService } = require(
+  '../src/app/services/event.service');
+const { GeneralsService } = require(
+  '../src/app/services/generals.service');
+const { ArenaQueueComponent } = require(
+  '../src/app/components/arena-queue/arena-queue.component.ts');
+const { EventTrophiesComponent } = require(
+  '../src/app/components/event-trophies/event-trophies.component.ts');
 
 // registering the result writers captures their triggers on the stub
 global.__testFirestore = new FakeFirestore();
@@ -127,16 +127,17 @@ function seedEvent(store, event, players) {
 }
 
 function makeSnapshot(store, eventId) {
-  return {data: () => store.dataAt(`events/${eventId}`),
-      ref: store.doc(`events/${eventId}`)};
+  return { data: () => store.dataAt(`events/${eventId}`),
+    ref: store.doc(`events/${eventId}`) };
 }
 
 async function expectReject(promise, match, label) {
   try {
     await promise;
   } catch (e) {
-    const ok = !match ||
-        (match instanceof RegExp ? match.test(String(e.message))
+    const ok = !match
+        || (match instanceof RegExp
+            ? match.test(String(e.message))
             : String(e.message).includes(match));
     if (!ok) {
       assert.fail(`${label}: rejected with unexpected error: ${e.message}`);
@@ -149,7 +150,7 @@ async function expectReject(promise, match, label) {
 // the client facade routes through the real callable handler; the fake
 // AngularFireFunctions passes the caller as context.auth.uid, exactly how
 // production identity arrives
-const {teamArenaAction} = require('../functions/src/https/callable/team-arena');
+const { teamArenaAction } = require('../functions/src/https/callable/team-arena');
 function makeService(store, caller) {
   global.__testFirestore = store;
   // Lazerpent is the seeded organizer in every fixture store; the admins
@@ -159,19 +160,19 @@ function makeService(store, caller) {
   }
   return new TeamArenaService({
     httpsCallable: () => data =>
-        ({toPromise: () => teamArenaAction(data, {auth: {uid: caller}})}),
+      ({ toPromise: () => teamArenaAction(data, { auth: { uid: caller } }) }),
   });
 }
 
 function seedOrganizer(store, name) {
-  const existing = store.dataAt('generals.io/admins') || {names: []};
+  const existing = store.dataAt('generals.io/admins') || { names: [] };
   store.docs.set('generals.io/admins',
-      {names: [...new Set([...existing.names, name])]});
+    { names: [...new Set([...existing.names, name])] });
 }
 
 function makeEventService(store, caller) {
   global.__testFirestore = store;
-  return new EventService(store, {name: caller}, makeService(store, caller));
+  return new EventService(store, { name: caller }, makeService(store, caller));
 }
 
 // ------------------------------------------------- replay fixtures ------
@@ -197,7 +198,7 @@ function makeReplayFields(overrides = {}) {
 
 function compressReplay(fields) {
   return Buffer.from(
-      LZString.compressToUint8Array(JSON.stringify(fields)));
+    LZString.compressToUint8Array(JSON.stringify(fields)));
 }
 
 // a 6-player team arena replay: teams a=[a0,a1], b=[b0,b1], c=[c0,c1];
@@ -213,9 +214,9 @@ const TA_REPLAY = compressReplay(makeReplayFields({
 }));
 
 const TA_GAME_TEAMS = [
-  {id: 'team_a', name: 'A Team', players: ['a0', 'a1']},
-  {id: 'team_b', name: 'B Team', players: ['b0', 'b1']},
-  {id: 'team_c', name: 'C Team', players: ['c0', 'c1']},
+  { id: 'team_a', name: 'A Team', players: ['a0', 'a1'] },
+  { id: 'team_b', name: 'B Team', players: ['b0', 'b1'] },
+  { id: 'team_c', name: 'C Team', players: ['c0', 'c1'] },
 ];
 
 const ADV_USERNAMES = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -249,9 +250,9 @@ const ADV_REPLAY = compressReplay(makeReplayFields({
   teams: [1, 1, 2, 2, 3, 3],
 }));
 const ADV_GAME_TEAMS = [
-  {id: '0', name: 'A Team', players: ['A1', 'A2']},
-  {id: '1', name: 'B Team', players: ['B1', 'B2']},
-  {id: '2', name: 'C Team', players: ['C1', 'C2']},
+  { id: '0', name: 'A Team', players: ['A1', 'A2'] },
+  { id: '1', name: 'B Team', players: ['B1', 'B2'] },
+  { id: '2', name: 'C Team', players: ['C1', 'C2'] },
 ];
 
 const EARLY_USERNAMES = ['A0', 'A1', 'B0', 'B1'];
@@ -267,8 +268,8 @@ const EARLY_REPLAY = compressReplay(makeReplayFields({
   teams: [1, 1, 2, 2],
 }));
 const EARLY_GAME_TEAMS = [
-  {id: 'team_a', name: 'A Team', players: ['A0', 'A1']},
-  {id: 'team_b', name: 'B Team', players: ['B0', 'B1']},
+  { id: 'team_a', name: 'A Team', players: ['A0', 'A1'] },
+  { id: 'team_b', name: 'B Team', players: ['B0', 'B1'] },
 ];
 
 // --------------------------------------------------- axios interception -
@@ -295,12 +296,12 @@ function stubAxios() {
         return Promise.reject(new Error(`unstubbed replay ${id}`));
       }
       onReplayFetch(id);
-      return Promise.resolve({data: buffers[id]});
+      return Promise.resolve({ data: buffers[id] });
     }
     if (url.includes('replaysForUsername')) {
-      return Promise.resolve({data: replayListResponse});
+      return Promise.resolve({ data: replayListResponse });
     }
-    return Promise.resolve({data: []});
+    return Promise.resolve({ data: [] });
   };
   axios.get = fakeGet;
   axios.default.get = fakeGet;
@@ -311,13 +312,13 @@ function stubAxios() {
 // --------------------------------------------------- unit: contracts ----
 
 function testDetectionAndConfig() {
-  assert.ok(isTeamArena({format: EventFormat.ARENA, type: EventType.BIG_TEAM}));
-  assert.ok(isTeamArena({format: EventFormat.ARENA, type: EventType.TWO_VS_TWO}));
-  assert.ok(!isTeamArena({format: EventFormat.ARENA, type: EventType.FFA}));
-  assert.ok(!isTeamArena({format: EventFormat.DOUBLE_ELIM,
-      type: EventType.BIG_TEAM}));
-  assert.ok(!isTeamArena({format: EventFormat.DYNAMIC_DYP,
-      type: EventType.TWO_VS_TWO}));
+  assert.ok(isTeamArena({ format: EventFormat.ARENA, type: EventType.BIG_TEAM }));
+  assert.ok(isTeamArena({ format: EventFormat.ARENA, type: EventType.TWO_VS_TWO }));
+  assert.ok(!isTeamArena({ format: EventFormat.ARENA, type: EventType.FFA }));
+  assert.ok(!isTeamArena({ format: EventFormat.DOUBLE_ELIM,
+    type: EventType.BIG_TEAM }));
+  assert.ok(!isTeamArena({ format: EventFormat.DYNAMIC_DYP,
+    type: EventType.TWO_VS_TWO }));
   assert.ok(!isTeamArena(null) && !isTeamArena({}));
 
   // every legal boundary: teamSize 2..8, gameSize = 2..(16/teamSize) teams
@@ -330,12 +331,12 @@ function testDetectionAndConfig() {
     }
     // out-of-range game sizes reject
     for (const bad of [teamSize, teamSize * 2 - 1, 17 + teamSize,
-        teamSize * 2 + 1]) {
+      teamSize * 2 + 1]) {
       assert.throws(() => validateTeamArenaConfig({
         format: EventFormat.ARENA, type: EventType.BIG_TEAM, teamSize,
         playersPerGame: bad, doublesPairingStrategy: BYP,
       }), /multiple|2-16/i,
-          `teamSize ${teamSize} gameSize ${bad} rejected`);
+      `teamSize ${teamSize} gameSize ${bad} rejected`);
     }
   }
 
@@ -375,21 +376,21 @@ function testNormalizeLobby() {
     teams: [['a', 'b'], ['c'], ['d', 'e']],
   }, 'short-handed rosters normalize');
   assert.deepStrictEqual(Object.keys(lobby),
-      ['version', 'teamSize', 'gameSize', 'teams']);
+    ['version', 'teamSize', 'gameSize', 'teams']);
 
   for (const bad of [
     // unknown keys reject outright; the wire contract is exact
-    {version: 1, teamSize: 2, gameSize: 4,
-        teams: [['a', 'b'], ['c', 'd']], extra: 'nope'},
-    {version: 2, teamSize: 2, gameSize: 4, teams: [['a', 'b'], ['c', 'd']]},
-    {version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'b']]},
-    {version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'a'], ['c', 'd']]},
-    {version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'b'], ['c', '']]},
-    {version: 1, teamSize: 2, gameSize: 4, teams: 'nope'},
+    { version: 1, teamSize: 2, gameSize: 4,
+      teams: [['a', 'b'], ['c', 'd']], extra: 'nope' },
+    { version: 2, teamSize: 2, gameSize: 4, teams: [['a', 'b'], ['c', 'd']] },
+    { version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'b']] },
+    { version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'a'], ['c', 'd']] },
+    { version: 1, teamSize: 2, gameSize: 4, teams: [['a', 'b'], ['c', '']] },
+    { version: 1, teamSize: 2, gameSize: 4, teams: 'nope' },
     'not an object',
   ]) {
     assert.throws(() => normalizeEventTeam(bad), /roster|team|size|count/i,
-        `bad lobby ${JSON.stringify(bad)} rejected`);
+      `bad lobby ${JSON.stringify(bad)} rejected`);
   }
   console.log('  normalizeLobby passed');
 }
@@ -398,9 +399,9 @@ function testAssertReplayTeams() {
   // the frozen permutation: replay player order differs from dispatch
   // order but team ids must map consistently
   const expected = [
-    {id: 'a', name: 'A', players: ['a0', 'a1']},
-    {id: 'b', name: 'B', players: ['b0', 'b1']},
-    {id: 'c', name: 'C', players: ['c0', 'c1']},
+    { id: 'a', name: 'A', players: ['a0', 'a1'] },
+    { id: 'b', name: 'B', players: ['b0', 'b1'] },
+    { id: 'c', name: 'C', players: ['c0', 'c1'] },
   ];
   const replay = {
     usernames: ['b1', 'a0', 'c1', 'a1', 'c0', 'b0'],
@@ -425,25 +426,25 @@ function testAssertReplayTeams() {
 function testScoring() {
   // frozen expectation from the authoritative module
   const teams = [
-    {id: 'a', name: 'A', players: ['a0', 'a1']},
-    {id: 'b', name: 'B', players: ['b0', 'b1']},
-    {id: 'c', name: 'C', players: ['c0', 'c1']},
+    { id: 'a', name: 'A', players: ['a0', 'a1'] },
+    { id: 'b', name: 'B', players: ['b0', 'b1'] },
+    { id: 'c', name: 'C', players: ['c0', 'c1'] },
   ];
   const playerScores = [
-    {name: 'a0', killed: ['b0', 'b1', 'a1']},  // friendly a1 must not count
-    {name: 'a1', killed: []},
-    {name: 'b0', killed: ['c0', 'c1']},
-    {name: 'b1', killed: []},
-    {name: 'c0', killed: []},
-    {name: 'c1', killed: []},
+    { name: 'a0', killed: ['b0', 'b1', 'a1'] },  // friendly a1 must not count
+    { name: 'a1', killed: [] },
+    { name: 'b0', killed: ['c0', 'c1'] },
+    { name: 'b1', killed: [] },
+    { name: 'c0', killed: [] },
+    { name: 'c1', killed: [] },
   ];
   const outcomes = [
-    {id: 'a', winner: true, eliminatedTurn: null},
-    {id: 'b', winner: false, eliminatedTurn: 20},
-    {id: 'c', winner: false, eliminatedTurn: 10},
+    { id: 'a', winner: true, eliminatedTurn: null },
+    { id: 'b', winner: false, eliminatedTurn: 20 },
+    { id: 'c', winner: false, eliminatedTurn: 10 },
   ];
-  const {teams: scoredTeams, scores: scoredPlayers} =
-      TeamArena.scoreTeamArena(teams, playerScores, outcomes, 4);
+  const { teams: scoredTeams, scores: scoredPlayers }
+      = TeamArena.scoreTeamArena(teams, playerScores, outcomes, 4);
   const byName = new Map(scoredPlayers.map(s => [s.name, s]));
 
   // [id, rank, points, kills]
@@ -461,70 +462,70 @@ function testScoring() {
     }
   }
   assert.deepStrictEqual(
-      scoredPlayers.map(s => s.points), [13, 13, 5, 5, 0, 0]);
+    scoredPlayers.map(s => s.points), [13, 13, 5, 5, 0, 0]);
 
   // ties in elimination turn share the rank
   const tied = TeamArena.scoreTeamArena(teams, playerScores, [
-    {id: 'a', winner: true, eliminatedTurn: null},
-    {id: 'b', winner: false, eliminatedTurn: 10},
-    {id: 'c', winner: false, eliminatedTurn: 10},
+    { id: 'a', winner: true, eliminatedTurn: null },
+    { id: 'b', winner: false, eliminatedTurn: 10 },
+    { id: 'c', winner: false, eliminatedTurn: 10 },
   ], 0);
   assert.deepStrictEqual(tied.scores.map(s => s.rank), [1, 1, 2, 2, 2, 2]);
 
   // frozen lead review expectations: placement points count only teams
   // strictly outlived, so simultaneously-eliminated teams get no credit for
   // outliving each other
-  const noKills = playerScores.map(s => ({name: s.name, killed: []}));
+  const noKills = playerScores.map(s => ({ name: s.name, killed: [] }));
   const simultaneous = TeamArena.scoreTeamArena(teams, noKills, [
-    {id: 'a', winner: true, eliminatedTurn: null},
-    {id: 'b', winner: false, eliminatedTurn: 10},
-    {id: 'c', winner: false, eliminatedTurn: 10},
+    { id: 'a', winner: true, eliminatedTurn: null },
+    { id: 'b', winner: false, eliminatedTurn: 10 },
+    { id: 'c', winner: false, eliminatedTurn: 10 },
   ], 0);
   assert.deepStrictEqual(
-      simultaneous.teams.map(t => [t.id, t.rank, t.points]),
-      [['a', 1, 7], ['b', 2, 0], ['c', 2, 0]]);
+    simultaneous.teams.map(t => [t.id, t.rank, t.points]),
+    [['a', 1, 7], ['b', 2, 0], ['c', 2, 0]]);
 
   const sequential = TeamArena.scoreTeamArena(teams, noKills, [
-    {id: 'a', winner: true, eliminatedTurn: null},
-    {id: 'b', winner: false, eliminatedTurn: 11},
-    {id: 'c', winner: false, eliminatedTurn: 10},
+    { id: 'a', winner: true, eliminatedTurn: null },
+    { id: 'b', winner: false, eliminatedTurn: 11 },
+    { id: 'c', winner: false, eliminatedTurn: 10 },
   ], 0);
   assert.deepStrictEqual(
-      sequential.teams.map(t => [t.id, t.rank, t.points]),
-      [['a', 1, 7], ['b', 2, 1], ['c', 3, 0]]);
+    sequential.teams.map(t => [t.id, t.rank, t.points]),
+    [['a', 1, 7], ['b', 2, 1], ['c', 3, 0]]);
 
   const sharedVictim = TeamArena.scoreTeamArena(teams, [
-    {name: 'a0', killed: ['b0']},
-    {name: 'a1', killed: ['b0']},
-    {name: 'b0', killed: []},
-    {name: 'b1', killed: []},
-    {name: 'c0', killed: []},
-    {name: 'c1', killed: []},
+    { name: 'a0', killed: ['b0'] },
+    { name: 'a1', killed: ['b0'] },
+    { name: 'b0', killed: [] },
+    { name: 'b1', killed: [] },
+    { name: 'c0', killed: [] },
+    { name: 'c1', killed: [] },
   ], outcomes, 0);
   assert.strictEqual(sharedVictim.teams.find(t => t.id === 'a').kills, 1,
-      'a victim captured by two teammates counts once');
+    'a victim captured by two teammates counts once');
 
   for (const s of scoredPlayers) {
     assert.strictEqual(s.teamCount, 3);
   }
 
   const twoTeams = [
-    {id: 'x', name: 'X', players: ['x0', 'x1']},
-    {id: 'y', name: 'Y', players: ['y0', 'y1']},
+    { id: 'x', name: 'X', players: ['x0', 'x1'] },
+    { id: 'y', name: 'Y', players: ['y0', 'y1'] },
   ];
   const two = TeamArena.scoreTeamArena(twoTeams, [
-    {name: 'x0', killed: ['y0']},
-    {name: 'x1', killed: []},
-    {name: 'y0', killed: ['x0', 'x1']},
-    {name: 'y1', killed: []},
+    { name: 'x0', killed: ['y0'] },
+    { name: 'x1', killed: [] },
+    { name: 'y0', killed: ['x0', 'x1'] },
+    { name: 'y1', killed: [] },
   ], [
-    {id: 'x', winner: true, eliminatedTurn: null},
-    {id: 'y', winner: false, eliminatedTurn: 30},
+    { id: 'x', winner: true, eliminatedTurn: null },
+    { id: 'y', winner: false, eliminatedTurn: 30 },
   ], 100);
   assert.deepStrictEqual(
-      two.teams.map(t => [t.id, t.rank, t.points, t.kills]),
-      [['x', 1, 2, 1], ['y', 2, 0, 2]],
-      'two-team games score flat base while kills still report');
+    two.teams.map(t => [t.id, t.rank, t.points, t.kills]),
+    [['x', 1, 2, 1], ['y', 2, 0, 2]],
+    'two-team games score flat base while kills still report');
   assert.deepStrictEqual(two.scores.map(s => s.points), [2, 2, 0, 0]);
   for (const s of two.scores) {
     assert.strictEqual(s.teamCount, 2);
@@ -532,9 +533,9 @@ function testScoring() {
 
   // ranked team ordering: points, then win rate, then games, then id
   const ranked = rankArenaTeams([
-    {...team('t1', 'p1', ['p1', 'p2']), points: 10, games: 4, wins: 2},
-    {...team('t2', 'q1', ['q1', 'q2']), points: 10, games: 2, wins: 2},
-    {...team('t3', 'r1', ['r1', 'r2']), points: 3, games: 9, wins: 3},
+    { ...team('t1', 'p1', ['p1', 'p2']), points: 10, games: 4, wins: 2 },
+    { ...team('t2', 'q1', ['q1', 'q2']), points: 10, games: 2, wins: 2 },
+    { ...team('t3', 'r1', ['r1', 'r2']), points: 3, games: 9, wins: 3 },
   ]);
   assert.deepStrictEqual(ranked.map(t => t.id), ['t2', 't1', 't3']);
   console.log('  scoring passed');
@@ -542,28 +543,28 @@ function testScoring() {
 
 function testTeamOutcomeScoring() {
   const replay = deserializeReplay(ADV_REPLAY);
-  const {scores, teamOutcomes} = simulator.simulate(replay, ADV_GAME_TEAMS);
+  const { scores, teamOutcomes } = simulator.simulate(replay, ADV_GAME_TEAMS);
   assert.deepStrictEqual(scores.map(s => s.name),
-      ['C1', 'C2', 'A1', 'B2', 'A2', 'B1'],
-      'individual order puts killers ahead of survival');
+    ['C1', 'C2', 'A1', 'B2', 'A2', 'B1'],
+    'individual order puts killers ahead of survival');
   const outcomeById = new Map(teamOutcomes.map(o => [o.id, o]));
   assert.strictEqual(outcomeById.get('2').winner, true);
-  assert.ok(outcomeById.get('1').eliminatedTurn >
-      outcomeById.get('0').eliminatedTurn,
-      'team B outlived team A even though A1 outranks B2 individually');
+  assert.ok(outcomeById.get('1').eliminatedTurn
+      > outcomeById.get('0').eliminatedTurn,
+  'team B outlived team A even though A1 outranks B2 individually');
 
-  const {teams: scoredTeams, scores: scoredPlayers} =
-      TeamArena.scoreTeamArena(ADV_GAME_TEAMS, scores, teamOutcomes, 0);
+  const { teams: scoredTeams, scores: scoredPlayers }
+      = TeamArena.scoreTeamArena(ADV_GAME_TEAMS, scores, teamOutcomes, 0);
   assert.deepStrictEqual(scoredTeams.map(t => [t.id, t.rank, t.points]),
-      [['2', 1, 10], ['1', 2, 1], ['0', 3, 1]],
-      'C: 2 outlived + 3 captures + 5 win; B outlived 1; A captured 1');
+    [['2', 1, 10], ['1', 2, 1], ['0', 3, 1]],
+    'C: 2 outlived + 3 captures + 5 win; B outlived 1; A captured 1');
   for (const s of scoredPlayers) {
     const expected = ADV_GAME_TEAMS.find(t => t.players.includes(s.name));
     const scored = scoredTeams.find(t => t.id === expected.id);
     assert.strictEqual(s.rank, scored.rank,
-        `${s.name} shares its team rank`);
+      `${s.name} shares its team rank`);
     assert.strictEqual(s.points, scored.points,
-        `${s.name} shares the team base`);
+      `${s.name} shares the team base`);
     assert.strictEqual(s.teamCount, 3);
   }
   console.log('  team outcome scoring passed');
@@ -578,7 +579,7 @@ async function testTeamLifecycle() {
 
   function members4() {
     return [player('alice'), player('bob'), player('carol'), player('dave'),
-        player('erin')];
+      player('erin')];
   }
 
   // createTeam: captain becomes the first member; ids come from the
@@ -598,17 +599,17 @@ async function testTeamLifecycle() {
   service = makeService(store, 'carol');
   await service.createTeam('evt-byp', 'Gammas');
   assert.strictEqual(
-      store.dataAt('events/evt-byp').arenaTeams[1].id, 'team_2');
+    store.dataAt('events/evt-byp').arenaTeams[1].id, 'team_2');
 
   // cannot create a second team while on one
   service = makeService(store, 'alice');
   await expectReject(service.createTeam('evt-byp', 'Nope'),
-      'already on a team', 'createTeam on team');
+    'already on a team', 'createTeam on team');
 
   // unregistered callers cannot create
   service = makeService(store, 'ghost');
   await expectReject(service.createTeam('evt-byp', 'Ghosts'),
-      'not registered', 'unregistered createTeam');
+    'not registered', 'unregistered createTeam');
 
   // request + captain accept
   service = makeService(store, 'bob');
@@ -619,7 +620,7 @@ async function testTeamLifecycle() {
   // non-captains cannot accept
   service = makeService(store, 'bob');
   await expectReject(service.acceptPlayer('evt-byp', 'bob'),
-      'captain', 'non-captain accept');
+    'captain', 'non-captain accept');
 
   service = makeService(store, 'alice');
   await service.acceptPlayer('evt-byp', 'bob');
@@ -630,14 +631,14 @@ async function testTeamLifecycle() {
   // capacity: the team is full (teamSize 2), so even requesting rejects
   service = makeService(store, 'dave');
   await expectReject(service.requestTeam('evt-byp', 'team_1'),
-      'full', 'request to a full team');
+    'full', 'request to a full team');
   data = store.dataAt('events/evt-byp');
   assert.deepStrictEqual(data.arenaTeams[0].members, ['alice', 'bob']);
 
   // captain options: opt into fill and rename
   service = makeService(store, 'carol');
   await service.setTeamOptions('evt-byp',
-      {acceptFill: true, name: 'Gammas+'});
+    { acceptFill: true, name: 'Gammas+' });
   data = store.dataAt('events/evt-byp');
   const gammas = data.arenaTeams.find(t => t.id === 'team_2');
   assert.strictEqual(gammas.acceptFill, true);
@@ -651,25 +652,25 @@ async function testTeamLifecycle() {
   await service.joinRandomTeam('evt-byp');
   data = store.dataAt('events/evt-byp');
   assert.deepStrictEqual(
-      data.arenaTeams.find(t => t.id === 'team_2').members,
-      ['carol', 'erin']);
+    data.arenaTeams.find(t => t.id === 'team_2').members,
+    ['carol', 'erin']);
   await expectReject(
-      makeService(store, 'carol').acceptPlayer('evt-byp', 'dave'),
-      'full', 'accept over capacity');
+    makeService(store, 'carol').acceptPlayer('evt-byp', 'dave'),
+    'full', 'accept over capacity');
 
   // with no incomplete opt-in team, random join rejects; teamless players
   // cannot fill a full one
   await expectReject(
-      makeService(store, 'erin').joinRandomTeam('evt-byp'),
-      'already on a team', 'joinRandomTeam while teamed');
+    makeService(store, 'erin').joinRandomTeam('evt-byp'),
+    'already on a team', 'joinRandomTeam while teamed');
   await expectReject(
-      makeService(store, 'dave').joinRandomTeam('evt-byp'),
-      'No teams', 'joinRandomTeam with nothing open');
+    makeService(store, 'dave').joinRandomTeam('evt-byp'),
+    'No teams', 'joinRandomTeam with nothing open');
 
   // no-show handling: captain removes a member, self-mark is rejected
   service = makeService(store, 'alice');
   await expectReject(service.markNoShow('evt-byp', 'alice'),
-      'captain', 'self no-show');
+    'captain', 'self no-show');
   await service.markNoShow('evt-byp', 'bob');
   data = store.dataAt('events/evt-byp');
   const alphas = data.arenaTeams.find(t => t.id === 'team_1');
@@ -681,7 +682,7 @@ async function testTeamLifecycle() {
   await service.leaveTeam('evt-byp');
   data = store.dataAt('events/evt-byp');
   assert.ok(!data.arenaTeams.some(t => t.id === 'team_1'),
-      'emptied team removed');
+    'emptied team removed');
   console.log('  team lifecycle passed');
 }
 
@@ -702,21 +703,21 @@ async function testReadiness() {
   const solo = new FakeFirestore();
   seedEvent(solo, teamArenaEvent('evt-solo'), [player('lone')]);
   await expectReject(
-      makeService(solo, 'lone').setReady('evt-solo', true),
-      'team', 'unassigned BYP ready');
+    makeService(solo, 'lone').setReady('evt-solo', true),
+    'team', 'unassigned BYP ready');
 
   // incomplete teams cannot ready without the short-handed opt-in
   const short = new FakeFirestore();
-  seedEvent(short, teamArenaEvent('evt-short', {teamSize: 4,
-      playersPerGame: 8}), [player('s0'), player('s1'), player('s2')]);
+  seedEvent(short, teamArenaEvent('evt-short', { teamSize: 4,
+    playersPerGame: 8 }), [player('s0'), player('s1'), player('s2')]);
   store.short = short;
   short.docs.set('events/evt-short', {
     ...short.dataAt('events/evt-short'),
     arenaTeams: [team('ts', 's0', ['s0', 's1', 's2'])],
   });
   await expectReject(
-      makeService(short, 's0').setReady('evt-short', true),
-      /full|short/, 'incomplete team ready');
+    makeService(short, 's0').setReady('evt-short', true),
+    /full|short/, 'incomplete team ready');
 
   // everyone readies; the freshness timestamps land under arenaReady and
   // the queue positions under arenaQueueAt
@@ -736,27 +737,27 @@ async function testReadiness() {
   const stalePos = Date.now() - 5000;
   store.docs.set('events/evt-ready', {
     ...data,
-    arenaReady: {...data.arenaReady, a0: Date.now() - 3000},
-    arenaQueueAt: {...data.arenaQueueAt, a0: stalePos},
+    arenaReady: { ...data.arenaReady, a0: Date.now() - 3000 },
+    arenaQueueAt: { ...data.arenaQueueAt, a0: stalePos },
   });
   await makeService(store, 'a0').setReady('evt-ready', true);
   data = store.dataAt('events/evt-ready');
   assert.ok(data.arenaReady.a0 > Date.now() - 2000,
-      'freshness timestamp renewed');
+    'freshness timestamp renewed');
   assert.strictEqual(data.arenaQueueAt.a0, stalePos,
-      'queue position preserved across heartbeat');
+    'queue position preserved across heartbeat');
 
   // taking one member off ready unqueues the whole team: all confirmations
   // and queue positions for that team are revoked so everyone must
   // re-confirm the next game
   await makeService(store, 'a0').setReady('evt-ready', false);
   data = store.dataAt('events/evt-ready');
-  assert.ok(data.arenaReady.a0 === undefined &&
-      data.arenaReady.a1 === undefined, 'team a readiness revoked');
-  assert.ok(data.arenaQueueAt.a0 === undefined &&
-      data.arenaQueueAt.a1 === undefined, 'team a queue positions revoked');
-  assert.ok(Number.isFinite(data.arenaReady.b0) &&
-      Number.isFinite(data.arenaReady.b1), 'team b untouched');
+  assert.ok(data.arenaReady.a0 === undefined
+      && data.arenaReady.a1 === undefined, 'team a readiness revoked');
+  assert.ok(data.arenaQueueAt.a0 === undefined
+      && data.arenaQueueAt.a1 === undefined, 'team a queue positions revoked');
+  assert.ok(Number.isFinite(data.arenaReady.b0)
+      && Number.isFinite(data.arenaReady.b1), 'team b untouched');
 
   // unreadying is allowed after the event ends so stale confirmations can
   // always be cleared
@@ -772,8 +773,8 @@ async function testReadiness() {
     startTime: Date.now() - 7200000, endTime: Date.now() - 3600000,
   }), [player('late')]);
   await expectReject(
-      makeService(closed, 'late').setReady('evt-closed', true),
-      'running', 'ready after end');
+    makeService(closed, 'late').setReady('evt-closed', true),
+    'running', 'ready after end');
   console.log('  readiness passed');
 }
 
@@ -783,26 +784,26 @@ async function testReadiness() {
 // position, the way TeamArenaService.setReady does for a first confirm
 function readyAll(store, eventId, names, at = Date.now()) {
   const event = store.dataAt(`events/${eventId}`);
-  const arenaReady = {...event.arenaReady};
-  const arenaQueueAt = {...event.arenaQueueAt};
+  const arenaReady = { ...event.arenaReady };
+  const arenaQueueAt = { ...event.arenaQueueAt };
   for (const name of names) {
     arenaReady[name] = at;
     if (!Number.isFinite(arenaQueueAt[name])) {
       arenaQueueAt[name] = at;
     }
   }
-  store.docs.set(`events/${eventId}`, {...event, arenaReady, arenaQueueAt});
+  store.docs.set(`events/${eventId}`, { ...event, arenaReady, arenaQueueAt });
 }
 
 // a heartbeat only refreshes the freshness timestamp; the queue position
 // never moves
 function heartbeat(store, eventId, names) {
   const event = store.dataAt(`events/${eventId}`);
-  const arenaReady = {...event.arenaReady};
+  const arenaReady = { ...event.arenaReady };
   for (const name of names) {
     arenaReady[name] = Date.now();
   }
-  store.docs.set(`events/${eventId}`, {...event, arenaReady});
+  store.docs.set(`events/${eventId}`, { ...event, arenaReady });
 }
 
 async function dispatch(store, eventId) {
@@ -829,7 +830,7 @@ async function testBypDispatch() {
   readyAll(store, 'evt1', ['a0', 'a1']);
   await dispatch(store, 'evt1');
   assert.strictEqual(store.dataAt('events/evt1').arenaMatchNumber, 0,
-      'no dispatch below a full game');
+    'no dispatch below a full game');
 
   // the second team completes the game; the third team is also ready but
   // waits for the next dispatch
@@ -841,10 +842,10 @@ async function testBypDispatch() {
   assert.strictEqual(event.ongoingGameCount, 1);
   assert.deepStrictEqual(event.arenaPlaying.sort(), ['a0', 'a1', 'b0', 'b1']);
   assert.deepStrictEqual(event.arenaParticipants.sort(),
-      ['a0', 'a1', 'b0', 'b1']);
+    ['a0', 'a1', 'b0', 'b1']);
   // dispatched players' readiness is consumed; the waiting team's survives
-  assert.deepStrictEqual(event.arenaReady, {c0: event.arenaReady.c0,
-      c1: event.arenaReady.c1});
+  assert.deepStrictEqual(event.arenaReady, { c0: event.arenaReady.c0,
+    c1: event.arenaReady.c1 });
 
   const game = store.dataAt('events/evt1/games/game_1');
   assert.strictEqual(game.status, GameStatus.STARTED);
@@ -859,7 +860,7 @@ async function testBypDispatch() {
   assert.strictEqual(redirect.lobby, 'event_team_evt1_1');
   assert.strictEqual(redirect.gameId, 'game_1');
   assert.deepStrictEqual(redirect.players, ['a0', 'a1', 'b0', 'b1'],
-      'the mutable ack list starts with every dispatched player');
+    'the mutable ack list starts with every dispatched player');
 
   // fixed-team participants recorded on the standing team records
   const ta = event.arenaTeams.find(t => t.id === 'ta');
@@ -869,14 +870,14 @@ async function testBypDispatch() {
   // when a second complete pair readies
   await dispatch(store, 'evt1');
   assert.strictEqual(store.dataAt('events/evt1').arenaMatchNumber, 1,
-      'busy teams are not re-dispatched');
+    'busy teams are not re-dispatched');
 
   readyAll(store, 'evt1', ['d0', 'd1']);
   // d0/d1 are unregistered -> their team could never form; register them
   // first and show unregistered readiness does not count
   await dispatch(store, 'evt1');
   assert.strictEqual(store.dataAt('events/evt1').arenaMatchNumber, 1,
-      'unregistered ready players are not counted');
+    'unregistered ready players are not counted');
 
   // the queued team must personally re-confirm for the next game; stale
   // confirmations consumed by the dispatch cannot re-queue them
@@ -887,16 +888,16 @@ async function testBypDispatch() {
   });
   await dispatch(store, 'evt1');
   assert.strictEqual(store.dataAt('events/evt1').arenaMatchNumber, 1,
-      'fresh readiness required for the next game');
+    'fresh readiness required for the next game');
 
   // expiry: confirmations older than the TTL do not queue a team
   const stale = store.dataAt('events/evt1');
-  stale.arenaReady = {a0: Date.now() - READY_TTL_MS - 1,
-      a1: Date.now(), b0: Date.now(), b1: Date.now()};
+  stale.arenaReady = { a0: Date.now() - READY_TTL_MS - 1,
+    a1: Date.now(), b0: Date.now(), b1: Date.now() };
   store.docs.set('events/evt1', stale);
   await dispatch(store, 'evt1');
   assert.strictEqual(store.dataAt('events/evt1').arenaMatchNumber, 1,
-      'expired readiness does not queue');
+    'expired readiness does not queue');
   console.log('  byp dispatch passed');
 }
 
@@ -905,25 +906,25 @@ async function testShortHanded() {
   seedEvent(store, teamArenaEvent('evt-short', {
     teamSize: 4, playersPerGame: 8,
   }), [player('a0'), player('a1'), player('a2'), player('a3'),
-      player('b0'), player('b1'), player('b2')]);
+    player('b0'), player('b1'), player('b2')]);
   store.docs.set('events/evt-short', {
     ...store.dataAt('events/evt-short'),
     arenaTeams: [
       team('ta', 'a0', ['a0', 'a1', 'a2', 'a3']),
       // a no-show left team b at 3-of-4, opted into playing short
       team('tb', 'b0', ['b0', 'b1', 'b2'],
-          {allowShortHanded: true, noShows: ['b3']}),
+        { allowShortHanded: true, noShows: ['b3'] }),
     ],
   });
   readyAll(store, 'evt-short',
-      ['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']);
+    ['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']);
   await dispatch(store, 'evt-short');
 
   const game = store.dataAt('events/evt-short/games/game_1');
   assert.ok(game, 'short-handed dispatch happened');
   assert.deepStrictEqual(TeamArena.loadLobby(game.eventTeam).teams,
-      [['a0', 'a1', 'a2', 'a3'], ['b0', 'b1', 'b2']],
-      'actual short roster preserved, nominal gameSize stays 8');
+    [['a0', 'a1', 'a2', 'a3'], ['b0', 'b1', 'b2']],
+    'actual short roster preserved, nominal gameSize stays 8');
   assert.strictEqual(game.eventTeam.gameSize, 8);
 
   // without the explicit opt-in the incomplete team cannot dispatch
@@ -931,7 +932,7 @@ async function testShortHanded() {
   seedEvent(store2, teamArenaEvent('evt2', {
     teamSize: 4, playersPerGame: 8,
   }), [player('a0'), player('a1'), player('a2'), player('a3'),
-      player('b0'), player('b1'), player('b2')]);
+    player('b0'), player('b1'), player('b2')]);
   store2.docs.set('events/evt2', {
     ...store2.dataAt('events/evt2'),
     arenaTeams: [
@@ -942,7 +943,7 @@ async function testShortHanded() {
   readyAll(store2, 'evt2', ['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']);
   await dispatch(store2, 'evt2');
   assert.strictEqual(store2.dataAt('events/evt2').arenaMatchNumber, 0,
-      'incomplete team without opt-in never queues');
+    'incomplete team without opt-in never queues');
   console.log('  short-handed dispatch passed');
 }
 
@@ -951,7 +952,7 @@ async function testRandomPartners() {
   seedEvent(store, teamArenaEvent('evt-rand', {
     doublesPairingStrategy: RANDOM,
   }), [player('p0'), player('p1'), player('p2'), player('p3'),
-      player('p4')]);
+    player('p4')]);
 
   // individuals ready independently; 5th player waits for the next game
   readyAll(store, 'evt-rand', ['p0', 'p1', 'p2', 'p3', 'p4']);
@@ -969,10 +970,10 @@ async function testRandomPartners() {
   }
   // the leftover player stays ready for the next game
   const left = ['p0', 'p1', 'p2', 'p3', 'p4'].filter(
-      p => !game.players.includes(p));
+    p => !game.players.includes(p));
   assert.strictEqual(left.length, 1);
   assert.ok(Number.isFinite(event.arenaReady[left[0]]),
-      'undispatched player keeps their readiness');
+    'undispatched player keeps their readiness');
   console.log('  random partners passed');
 }
 
@@ -997,9 +998,9 @@ async function testConcurrentDispatch() {
   const event = store.dataAt('events/evt-race');
   assert.strictEqual(event.arenaMatchNumber, 1, 'exactly one dispatch');
   assert.strictEqual(event.ongoingGameCount, 1,
-      'counter incremented exactly once');
+    'counter incremented exactly once');
   assert.ok(!store.dataAt('events/evt-race/games/game_2'),
-      'no duplicate game doc');
+    'no duplicate game doc');
 
   // a queued player cannot mutate a team that is in a game or queued
   const busy = makeService(store, 'a0');
@@ -1012,11 +1013,11 @@ async function testConcurrentDispatch() {
   await busy.setReady('evt-race', true);
   const after = store.dataAt('events/evt-race');
   assert.strictEqual(store.invocations.length, invocationsBefore,
-      'no write issued for a playing caller heartbeat');
+    'no write issued for a playing caller heartbeat');
   assert.strictEqual(after.arenaReady['a0'], before.arenaReady['a0'],
-      'no ready timestamp mutation while playing');
+    'no ready timestamp mutation while playing');
   assert.strictEqual(after.arenaQueueAt['a0'], before.arenaQueueAt['a0'],
-      'no queue slot granted while playing');
+    'no queue slot granted while playing');
   console.log('  heartbeat while already playing passed');
   console.log('  concurrent dispatch passed');
 }
@@ -1035,9 +1036,9 @@ async function testTeamArenaWriter() {
   // replay shows team a winning
   const event = teamArenaEvent('evtW', {
     arenaTeams: [
-      team('team_a', 'a0', ['a0', 'a1'], {name: 'A Team'}),
-      team('team_b', 'b0', ['b0', 'b1'], {name: 'B Team'}),
-      team('team_c', 'c0', ['c0', 'c1'], {name: 'C Team'}),
+      team('team_a', 'a0', ['a0', 'a1'], { name: 'A Team' }),
+      team('team_b', 'b0', ['b0', 'b1'], { name: 'B Team' }),
+      team('team_c', 'c0', ['c0', 'c1'], { name: 'C Team' }),
     ],
     arenaPlaying: TA_USERNAMES.slice(),
     arenaParticipants: TA_USERNAMES.slice(),
@@ -1059,14 +1060,14 @@ async function testTeamArenaWriter() {
     timesChecked: 0,
     // dispatch-time option snapshot: the event's mutable copy can be
     // edited later without invalidating this game's contract
-    options: {speed: '1x'},
+    options: { speed: '1x' },
     server: 'na',
   });
   store.docs.set('events/evtW/redirect/game_1', {
     players: TA_USERNAMES.slice(),
     arenaTeams: clone(TA_GAME_TEAMS),
-    eventTeam: TeamArena.storeLobby({version: 1, teamSize: 2, gameSize: 6,
-        teams: [['a0', 'a1'], ['b0', 'b1'], ['c0', 'c1']]}),
+    eventTeam: TeamArena.storeLobby({ version: 1, teamSize: 2, gameSize: 6,
+      teams: [['a0', 'a1'], ['b0', 'b1'], ['c0', 'c1']] }),
     gameId: 'game_1', lobby: 'event_team_evtW_1', started: 1000000,
   });
 
@@ -1074,26 +1075,26 @@ async function testTeamArenaWriter() {
   // invalidate the dispatched contract
   store.docs.set('events/evtW', {
     ...store.dataAt('events/evtW'),
-    options: {modifiers: [9]},  // would fail validation if consulted
+    options: { modifiers: [9] },  // would fail validation if consulted
   });
 
   // every player's recent replays report the same game, started after the
   // lobby was created, with the exact dispatched roster
   replayListResponse = [{
     id: 'replay-ta', started: 2000000,
-    ranking: TA_USERNAMES.map(name => ({name})),
+    ranking: TA_USERNAMES.map(name => ({ name })),
   }];
 
   const gameRef = store.doc('events/evtW/games/game_1');
   const snap = await gameRef.get();
   await HANDLERS[handler].onWrite(
-      {before: {exists: false}, after: snap}, {params: {}});
+    { before: { exists: false }, after: snap }, { params: {} });
 
   const game = store.dataAt('events/evtW/games/game_1');
   assert.strictEqual(game.status, GameStatus.FINISHED);
   assert.strictEqual(game.replayId, 'replay-ta');
   assert.ok(!store.dataAt('events/evtW/redirect/game_1'),
-      'consumed redirect deleted with the score transaction');
+    'consumed redirect deleted with the score transaction');
   assert.ok(game.replay.teamOutcomes, 'team outcomes persisted');
   const outcomeA = game.replay.teamOutcomes.find(o => o.id === 'team_a');
   assert.strictEqual(outcomeA.winner, true);
@@ -1118,27 +1119,27 @@ async function testTeamArenaWriter() {
 
   // every participant got the shared team points and a tagged record
   for (const [name, points] of [['a0', 7], ['a1', 7], ['b0', 1], ['b1', 1],
-      ['c0', 0], ['c1', 0]]) {
+    ['c0', 0], ['c1', 0]]) {
     const doc = store.dataAt(`events/evtW/players/${name}`);
     assert.strictEqual(doc.points, points, `${name} shared team points`);
     assert.strictEqual(doc.record.length, 1);
     assert.strictEqual(doc.record[0].teamId,
-        `team_${name[0]}`, `${name} record carries its team id`);
+      `team_${name[0]}`, `${name} record carries its team id`);
     assert.ok(store.dataAt(`events/evtW/records/replay-ta_${name}`),
-        `${name} record doc written`);
+      `${name} record doc written`);
   }
 
   // retry safety: replaying the same write does not double-apply
   const snap2 = await gameRef.get();
   await HANDLERS[handler].onWrite(
-      {before: {exists: true}, after: snap2}, {params: {}});
+    { before: { exists: true }, after: snap2 }, { params: {} });
   const again = store.dataAt('events/evtW');
   assert.strictEqual(again.completedGameCount, 1, 'counters unchanged');
   assert.strictEqual(
-      again.arenaTeams.find(t => t.id === 'team_a').points, 7,
-      'team points not double-applied');
+    again.arenaTeams.find(t => t.id === 'team_a').points, 7,
+    'team points not double-applied');
   assert.strictEqual(store.dataAt('events/evtW/players/a0').points, 7,
-      'player points not double-applied');
+    'player points not double-applied');
   console.log('  result writer passed');
 }
 
@@ -1150,8 +1151,8 @@ async function testTwoTeamArenaWriter() {
 
   const event = teamArenaEvent('evt2', {
     arenaTeams: [
-      team('team_a', 'A0', ['A0', 'A1'], {name: 'A Team'}),
-      team('team_b', 'B0', ['B0', 'B1'], {name: 'B Team'}),
+      team('team_a', 'A0', ['A0', 'A1'], { name: 'A Team' }),
+      team('team_b', 'B0', ['B0', 'B1'], { name: 'B Team' }),
     ],
     arenaPlaying: EARLY_USERNAMES.slice(),
     arenaParticipants: EARLY_USERNAMES.slice(),
@@ -1163,24 +1164,24 @@ async function testTwoTeamArenaWriter() {
       points: 4,
       currentStreak: 2,
       record: [
-        {name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
+        { name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 100, finished: 200, replayId: 'w1'},
-        {name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
+          started: 100, finished: 200, replayId: 'w1' },
+        { name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 300, finished: 400, replayId: 'w2'},
+          started: 300, finished: 400, replayId: 'w2' },
       ],
     }),
     player('A1', {
       points: 4,
       currentStreak: 2,
       record: [
-        {name: 'A1', kills: 0, rank: 1, points: 2, lastTurn: 10,
+        { name: 'A1', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 100, finished: 200, replayId: 'w1'},
-        {name: 'A1', kills: 0, rank: 1, points: 2, lastTurn: 10,
+          started: 100, finished: 200, replayId: 'w1' },
+        { name: 'A1', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 300, finished: 400, replayId: 'w2'},
+          started: 300, finished: 400, replayId: 'w2' },
       ],
     }),
     player('B0'), player('B1'),
@@ -1192,7 +1193,7 @@ async function testTwoTeamArenaWriter() {
     started: 1000000,
     status: GameStatus.STARTED,
     timesChecked: 0,
-    options: {speed: '1x'},
+    options: { speed: '1x' },
     server: 'na',
   });
   store.docs.set('events/evt2/redirect/game_1', {
@@ -1203,36 +1204,36 @@ async function testTwoTeamArenaWriter() {
 
   replayListResponse = [{
     id: 'replay-early', started: 2000000,
-    ranking: EARLY_USERNAMES.map(name => ({name})),
+    ranking: EARLY_USERNAMES.map(name => ({ name })),
   }];
 
   const gameRef = store.doc('events/evt2/games/game_1');
   await HANDLERS[handler].onWrite(
-      {before: {exists: false}, after: await gameRef.get()}, {params: {}});
+    { before: { exists: false }, after: await gameRef.get() }, { params: {} });
 
   const game = store.dataAt('events/evt2/games/game_1');
   assert.strictEqual(game.status, GameStatus.FINISHED);
   const outcomeA = game.replay.teamOutcomes.find(o => o.id === 'team_a');
   assert.strictEqual(outcomeA.winner, true, 'real team outcome wins for A');
   assert.strictEqual(game.replay.scores[0].name, 'B0',
-      'the losing dead killer still tops the individual leaderboard');
+    'the losing dead killer still tops the individual leaderboard');
   const scoredA0 = game.replay.scores.find(s => s.name === 'A0');
   assert.strictEqual(scoredA0.rank, 1,
-      'earlier-dead teammate shares the win');
+    'earlier-dead teammate shares the win');
   assert.strictEqual(scoredA0.points, 4,
-      'replay detail carries the personal streak award');
+    'replay detail carries the personal streak award');
   assert.strictEqual(scoredA0.streak, true);
   assert.strictEqual(scoredA0.teamCount, 2);
   const scoredA1 = game.replay.scores.find(s => s.name === 'A1');
   assert.strictEqual(scoredA1.points, 4,
-      'both partners earn the doubled award together');
+    'both partners earn the doubled award together');
   assert.strictEqual(scoredA1.streak, true);
 
   const after = store.dataAt('events/evt2');
   const teamA = after.arenaTeams.find(t => t.id === 'team_a');
   const teamB = after.arenaTeams.find(t => t.id === 'team_b');
   assert.strictEqual(teamA.points, 4,
-      'standing team gains the shared streak award once');
+    'standing team gains the shared streak award once');
   assert.strictEqual(teamA.wins, 1);
   assert.strictEqual(teamB.points, 0);
 
@@ -1245,13 +1246,13 @@ async function testTwoTeamArenaWriter() {
   assert.strictEqual(latest.teamCount, 2);
   assert.strictEqual(latest.teamId, 'team_a');
   assert.strictEqual(latest.finished, 2000000 + 5 * 1000,
-      'an early-dead teammate keeps its real death finish');
+    'an early-dead teammate keeps its real death finish');
 
   const a1 = store.dataAt('events/evt2/players/A1');
   assert.strictEqual(a1.points, 8);
   assert.strictEqual(a1.currentStreak, 3);
   assert.strictEqual(
-      a1.record.find(r => r.replayId === 'replay-early').points, 4);
+    a1.record.find(r => r.replayId === 'replay-early').points, 4);
   for (const name of ['B0', 'B1']) {
     const loser = store.dataAt(`events/evt2/players/${name}`);
     assert.strictEqual(loser.points, 0);
@@ -1283,12 +1284,12 @@ async function testRandomPartnersWriter() {
       points: 4,
       currentStreak: 2,
       record: [
-        {name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
+        { name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 100, finished: 200, replayId: 'w1'},
-        {name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
+          started: 100, finished: 200, replayId: 'w1' },
+        { name: 'A0', kills: 0, rank: 1, points: 2, lastTurn: 10,
           tilesAfterFirstRound: 1, streak: false, teamCount: 2,
-          started: 300, finished: 400, replayId: 'w2'},
+          started: 300, finished: 400, replayId: 'w2' },
       ],
     }),
     player('A1'), player('B0'), player('B1'),
@@ -1300,7 +1301,7 @@ async function testRandomPartnersWriter() {
     started: 1000000,
     status: GameStatus.STARTED,
     timesChecked: 0,
-    options: {speed: '1x'},
+    options: { speed: '1x' },
     server: 'na',
   });
   store.docs.set('events/evtR/redirect/game_1', {
@@ -1311,21 +1312,21 @@ async function testRandomPartnersWriter() {
 
   replayListResponse = [{
     id: 'replay-early', started: 2000000,
-    ranking: EARLY_USERNAMES.map(name => ({name})),
+    ranking: EARLY_USERNAMES.map(name => ({ name })),
   }];
 
   const gameRef = store.doc('events/evtR/games/game_1');
   await HANDLERS[handler].onWrite(
-      {before: {exists: false}, after: await gameRef.get()}, {params: {}});
+    { before: { exists: false }, after: await gameRef.get() }, { params: {} });
 
   const after = store.dataAt('events/evtR');
   assert.ok(!after.arenaTeams || after.arenaTeams.length === 0,
-      'random-partner games have no standing teams');
+    'random-partner games have no standing teams');
   const game = store.dataAt('events/evtR/games/game_1');
   const scoredA0 = game.replay.scores.find(s => s.name === 'A0');
   const scoredA1 = game.replay.scores.find(s => s.name === 'A1');
   assert.strictEqual(scoredA0.points, 4,
-      'A0 streaks on its own history even with a fresh partner');
+    'A0 streaks on its own history even with a fresh partner');
   assert.strictEqual(scoredA0.streak, true);
   assert.strictEqual(scoredA1.points, 2, 'fresh partner earns the base');
   assert.strictEqual(scoredA1.streak, false);
@@ -1356,12 +1357,12 @@ async function testWriterTimeout() {
       arenaMatchNumber: 1,
     });
     seedEvent(store, event, [player('a0'), player('a1'), player('b0'),
-        player('b1')]);
+      player('b1')]);
     store.docs.set('events/evtT/games/game_1', {
       players: ['a0', 'a1', 'b0', 'b1'],
       arenaTeams: [
-        {id: 'ta', name: 'A', players: ['a0', 'a1']},
-        {id: 'tb', name: 'B', players: ['b0', 'b1']},
+        { id: 'ta', name: 'A', players: ['a0', 'a1'] },
+        { id: 'tb', name: 'B', players: ['b0', 'b1'] },
       ],
       started: 1000, status: GameStatus.STARTED, timesChecked: 0,
     });
@@ -1379,13 +1380,13 @@ async function testWriterTimeout() {
   try {
     const snap = await store.doc('events/evtT/games/game_1').get();
     await HANDLERS[handler].onWrite(
-        {before: {exists: true}, after: snap}, {params: {}});
+      { before: { exists: true }, after: snap }, { params: {} });
   } finally {
     global.setTimeout = realSetTimeout;
   }
   let game = store.dataAt('events/evtT/games/game_1');
   assert.strictEqual(game.status, GameStatus.STARTED,
-      'game inside the grace window is not cancelled');
+    'game inside the grace window is not cancelled');
   assert.strictEqual(store.dataAt('events/evtT').ongoingGameCount, 1);
   assert.strictEqual(game.timesChecked, 1, 'retry counter incremented');
 
@@ -1394,32 +1395,32 @@ async function testWriterTimeout() {
   seedGame(Date.now() - 21 * 60 * 1000);
   const snap = await store.doc('events/evtT/games/game_1').get();
   await HANDLERS[handler].onWrite(
-      {before: {exists: true}, after: snap}, {params: {}});
+    { before: { exists: true }, after: snap }, { params: {} });
 
   const after = store.dataAt('events/evtT');
   game = store.dataAt('events/evtT/games/game_1');
   assert.strictEqual(game.status, GameStatus.CANCELLED,
-      'deadline cancels the game rather than deleting it');
+    'deadline cancels the game rather than deleting it');
   assert.deepStrictEqual(after.arenaPlaying, [],
-      'cancelled game releases its players');
+    'cancelled game releases its players');
   assert.strictEqual(after.ongoingGameCount, 0, 'counter decremented once');
   assert.ok(!store.dataAt('events/evtT/redirect/game_1'),
-      'pending redirect deleted so a stale ack cannot launch it');
+    'pending redirect deleted so a stale ack cannot launch it');
 
   // a stale trigger on a cancelled game does nothing: no second decrement,
   // no replay processing
   replayListResponse = [{
     id: 'replay-ta', started: 2000000,
-    ranking: ['a0', 'a1', 'b0', 'b1'].map(name => ({name})),
+    ranking: ['a0', 'a1', 'b0', 'b1'].map(name => ({ name })),
   }];
   const snap2 = await store.doc('events/evtT/games/game_1').get();
   await HANDLERS[handler].onWrite(
-      {before: {exists: true}, after: snap2}, {params: {}});
+    { before: { exists: true }, after: snap2 }, { params: {} });
   assert.strictEqual(store.dataAt('events/evtT').ongoingGameCount, 0,
-      'cancelled game never decrements again');
+    'cancelled game never decrements again');
   assert.strictEqual(
-      store.dataAt('events/evtT/games/game_1').status, GameStatus.CANCELLED,
-      'a stale trigger cannot score a cancelled game');
+    store.dataAt('events/evtT/games/game_1').status, GameStatus.CANCELLED,
+    'a stale trigger cannot score a cancelled game');
 
   // concurrent cancel attempts only resolve once
   const store2 = new FakeFirestore();
@@ -1433,19 +1434,19 @@ async function testWriterTimeout() {
   seedEvent(store2, event2, [player('x0'), player('x1')]);
   store2.docs.set('events/evtC/games/game_1', {
     players: ['x0', 'x1'],
-    arenaTeams: [{id: 'tx', name: 'X', players: ['x0', 'x1']}],
+    arenaTeams: [{ id: 'tx', name: 'X', players: ['x0', 'x1'] }],
     started: 1000, status: GameStatus.STARTED, timesChecked: 0,
   });
   const c1 = await store2.doc('events/evtC/games/game_1').get();
   const c2 = await store2.doc('events/evtC/games/game_1').get();
   await Promise.all([
-    HANDLERS[handler].onWrite({before: {exists: true}, after: c1},
-        {params: {}}),
-    HANDLERS[handler].onWrite({before: {exists: true}, after: c2},
-        {params: {}}),
+    HANDLERS[handler].onWrite({ before: { exists: true }, after: c1 },
+      { params: {} }),
+    HANDLERS[handler].onWrite({ before: { exists: true }, after: c2 },
+      { params: {} }),
   ]);
   assert.strictEqual(store2.dataAt('events/evtC').ongoingGameCount, 0,
-      'concurrent cancels decrement exactly once');
+    'concurrent cancels decrement exactly once');
   console.log('  writer timeout passed');
 }
 
@@ -1457,9 +1458,9 @@ async function testConcurrentCandidateClaim() {
 
   const event = teamArenaEvent('evtCC', {
     arenaTeams: [
-      team('team_a', 'a0', ['a0', 'a1'], {name: 'A Team'}),
-      team('team_b', 'b0', ['b0', 'b1'], {name: 'B Team'}),
-      team('team_c', 'c0', ['c0', 'c1'], {name: 'C Team'}),
+      team('team_a', 'a0', ['a0', 'a1'], { name: 'A Team' }),
+      team('team_b', 'b0', ['b0', 'b1'], { name: 'B Team' }),
+      team('team_c', 'c0', ['c0', 'c1'], { name: 'C Team' }),
     ],
     arenaPlaying: TA_USERNAMES.slice(),
     arenaParticipants: TA_USERNAMES.slice(),
@@ -1485,10 +1486,10 @@ async function testConcurrentCandidateClaim() {
   // claimed by a different game between the metadata fetch and the commit
   // transaction, so the loop must move on to the second
   replayListResponse = [
-    {id: 'replay-claimed', started: 2000000,
-        ranking: TA_USERNAMES.map(name => ({name}))},
-    {id: 'replay-ta', started: 2000000,
-        ranking: TA_USERNAMES.map(name => ({name}))},
+    { id: 'replay-claimed', started: 2000000,
+      ranking: TA_USERNAMES.map(name => ({ name })) },
+    { id: 'replay-ta', started: 2000000,
+      ranking: TA_USERNAMES.map(name => ({ name })) },
   ];
   onReplayFetch = id => {
     if (id === 'replay-claimed') {
@@ -1501,13 +1502,13 @@ async function testConcurrentCandidateClaim() {
 
   const snap = await store.doc('events/evtCC/games/game_1').get();
   await HANDLERS[handler].onWrite(
-      {before: {exists: false}, after: snap}, {params: {}});
+    { before: { exists: false }, after: snap }, { params: {} });
 
   const game = store.dataAt('events/evtCC/games/game_1');
   assert.strictEqual(game.status, GameStatus.FINISHED,
-      'the loop moves past the claimed candidate');
+    'the loop moves past the claimed candidate');
   assert.strictEqual(game.replayId, 'replay-ta',
-      'a later valid replay resolves the game');
+    'a later valid replay resolves the game');
   const after = store.dataAt('events/evtCC');
   assert.strictEqual(after.ongoingGameCount, 0);
   assert.deepStrictEqual(after.arenaPlaying, []);
@@ -1524,7 +1525,7 @@ function fakeAfsForRedirects(store) {
       return {
         subscribe(fn) {
           fn(value);
-          return {unsubscribe() {}};
+          return { unsubscribe() {} };
         },
       };
     },
@@ -1547,16 +1548,17 @@ function fakeAfsForRedirects(store) {
             snapshotChanges: () => {
               const docs = [];
               for (const [p, data] of store.docs) {
-                if (!p.startsWith(prefix) ||
-                    p.slice(prefix.length).includes('/')) {
+                if (!p.startsWith(prefix)
+                    || p.slice(prefix.length).includes('/')) {
                   continue;
                 }
                 const ok = filters.every(([f, op, v]) =>
-                    op === 'array-contains' ?
-                        (data[f] || []).includes(v) : data[f] === v);
+                    op === 'array-contains'
+                        ? (data[f] || []).includes(v)
+                        : data[f] === v);
                 if (ok) {
-                  docs.push({payload: {doc: {
-                      id: p.slice(prefix.length), data: () => data}}});
+                  docs.push({ payload: { doc: {
+                    id: p.slice(prefix.length), data: () => data } } });
                 }
               }
               return emit(docs);
@@ -1572,43 +1574,43 @@ async function testRedirectProjection() {
   const store = new FakeFirestore();
   global.__testFirestore = store;
   const event = teamArenaEvent('evtP', {
-    options: {speed: '2x'},
+    options: { speed: '2x' },
     server: 'eu',
   });
   seedEvent(store, event, [player('a0')]);
   store.docs.set('events/evtP/redirect/game_1', {
     players: ['a0'],
-    arenaTeams: [{id: 'ta', name: 'A', players: ['a0']}],
-    eventTeam: TeamArena.storeLobby({version: 1, teamSize: 2, gameSize: 4,
-        teams: [['a0'], ['b0']]}),
+    arenaTeams: [{ id: 'ta', name: 'A', players: ['a0'] }],
+    eventTeam: TeamArena.storeLobby({ version: 1, teamSize: 2, gameSize: 4,
+      teams: [['a0'], ['b0']] }),
     gameId: 'game_1',
     lobby: 'event_team_evtP_1',
     started: 1,
     // dispatch-time snapshots; the event's own copies are mutated below
-    options: {speed: '2x'},
+    options: { speed: '2x' },
     server: 'eu',
   });
   // editing the live event after dispatch must not leak into the lobby URL
   store.docs.set('events/evtP', {
     ...store.dataAt('events/evtP'),
-    options: {speed: '4x'},
+    options: { speed: '4x' },
     server: 'na',
   });
 
   const utilStub = {
     showToast() {},
     getParamString: obj => '?' + Object.entries(obj)
-        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'),
+      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'),
   };
   // constructor is (aff, afAuth, router, util): the afAuth stub never
   // emits so the cached name below stays the test's chosen user
   const generals = new GeneralsService(
-      {}, {authState: {subscribe: () => {}}}, {}, utilStub);
+    {}, { authState: { subscribe: () => {} } }, {}, utilStub);
   generals.name = 'a0';
   const eventService = new EventService(
-      fakeAfsForRedirects(store), generals, {});
+    fakeAfsForRedirects(store), generals, {});
   const component = new ArenaQueueComponent(
-      generals, eventService, {}, utilStub);
+    generals, eventService, {}, utilStub);
   component.event = store.dataAt('events/evtP');
   component.inEvent = true;
   component.status = EventStatus.ONGOING;
@@ -1618,18 +1620,18 @@ async function testRedirectProjection() {
   const url = decodeURIComponent(global.location.href);
   assert.ok(url.includes('event_team='), 'event_team in the lobby URL');
   assert.ok(url.includes('"teamSize":2') && url.includes('"gameSize":4'),
-      'normalized contract serialized');
+    'normalized contract serialized');
   assert.ok(url.includes('speed=2x'),
-      'dispatch-time options snapshot reaches the URL');
+    'dispatch-time options snapshot reaches the URL');
   assert.ok(!url.includes('speed=4x'),
-      'the post-dispatch event edit never reaches the URL');
+    'the post-dispatch event edit never reaches the URL');
   assert.ok(url.startsWith('https://eu.generals.io'),
-      'dispatch-time server snapshot reaches the URL');
+    'dispatch-time server snapshot reaches the URL');
   console.log('  redirect projection passed');
 }
 
 async function testEventTrophies() {
-  const generals = {name: 'alice'};
+  const generals = { name: 'alice' };
 
   // BYP: the top-ranked team carries a DQ'd participant, so the podium
   // drops to the next eligible team; a replacement who never played is
@@ -1638,31 +1640,31 @@ async function testEventTrophies() {
   byp.event = teamArenaEvent('evt-trophy', {
     arenaTeams: [
       team('ta', 'a0', ['a0', 'new1'],
-          {points: 30, games: 2, wins: 2, participants: ['a0', 'a1']}),
+        { points: 30, games: 2, wins: 2, participants: ['a0', 'a1'] }),
       team('tb', 'b0', ['b0', 'b1'],
-          {points: 10, games: 2, wins: 0, participants: ['b0', 'b1']}),
+        { points: 10, games: 2, wins: 0, participants: ['b0', 'b1'] }),
       // never played: no podium place
-      team('tc', 'c0', ['c0', 'c1'], {points: 0, games: 0}),
+      team('tc', 'c0', ['c0', 'c1'], { points: 0, games: 0 }),
     ],
   });
   byp.players = [
-    player('a0', {points: 30, dq: true, record: [{replayId: 'r',
-        teamId: 'ta', rank: 1}]}),
-    player('a1', {points: 30, record: [{replayId: 'r', teamId: 'ta',
-        rank: 1}]}),
-    player('new1', {points: 0, record: []}),
-    player('b0', {points: 10, record: [{replayId: 'r', teamId: 'tb'}]}),
-    player('b1', {points: 10, record: [{replayId: 'r', teamId: 'tb'}]}),
-    player('c0', {points: 0, record: []}),
+    player('a0', { points: 30, dq: true, record: [{ replayId: 'r',
+      teamId: 'ta', rank: 1 }] }),
+    player('a1', { points: 30, record: [{ replayId: 'r', teamId: 'ta',
+      rank: 1 }] }),
+    player('new1', { points: 0, record: [] }),
+    player('b0', { points: 10, record: [{ replayId: 'r', teamId: 'tb' }] }),
+    player('b1', { points: 10, record: [{ replayId: 'r', teamId: 'tb' }] }),
+    player('c0', { points: 0, record: [] }),
   ];
   byp.status = EventStatus.FINISHED;
   assert.strictEqual(byp.first.name,
-      "b0's Team (b0, b1)",
-      'a DQ on the top team passes the trophy to the next eligible team');
+    'b0\'s Team (b0, b1)',
+    'a DQ on the top team passes the trophy to the next eligible team');
   assert.strictEqual(byp.second, null,
-      'only one eligible team, no silver');
+    'only one eligible team, no silver');
   assert.deepStrictEqual(
-      byp.arenaTeams.map(t => t.id), ['tb'], 'ineligible teams filtered');
+    byp.arenaTeams.map(t => t.id), ['tb'], 'ineligible teams filtered');
 
   // an archived team (roster emptied by withdrawals) still presents its
   // earned historical participants
@@ -1670,18 +1672,18 @@ async function testEventTrophies() {
   archived.event = teamArenaEvent('evt-arch', {
     arenaTeams: [
       team('ta', 'a0', [],
-          {points: 20, games: 1, wins: 1, participants: ['a0', 'a1']}),
+        { points: 20, games: 1, wins: 1, participants: ['a0', 'a1'] }),
     ],
   });
   archived.players = [
-    player('a0', {points: 20, record: [{replayId: 'r', teamId: 'ta',
-        rank: 1}]}),
-    player('a1', {points: 20, record: [{replayId: 'r', teamId: 'ta',
-        rank: 1}]}),
+    player('a0', { points: 20, record: [{ replayId: 'r', teamId: 'ta',
+      rank: 1 }] }),
+    player('a1', { points: 20, record: [{ replayId: 'r', teamId: 'ta',
+      rank: 1 }] }),
   ];
   archived.status = EventStatus.FINISHED;
-  assert.strictEqual(archived.first.name, "a0's Team (a0, a1)",
-      'archived team presents its earned participants');
+  assert.strictEqual(archived.first.name, 'a0\'s Team (a0, a1)',
+    'archived team presents its earned participants');
 
   // a BYP event where every team has zero games has no first place; it
   // does not fall back to an individual podium
@@ -1689,10 +1691,10 @@ async function testEventTrophies() {
   unplayed.event = teamArenaEvent('evt-zero', {
     arenaTeams: [team('ta', 'a0', ['a0', 'a1'])],
   });
-  unplayed.players = [player('a0', {points: 99, record: [{replayId: 'r'}]})];
+  unplayed.players = [player('a0', { points: 99, record: [{ replayId: 'r' }] })];
   unplayed.status = EventStatus.FINISHED;
   assert.strictEqual(unplayed.first, null,
-      'BYP with no played teams never shows an individual podium');
+    'BYP with no played teams never shows an individual podium');
 
   // random partners: only participants with at least one record and no DQ
   // make the podium, ranked points/winrate/games/name
@@ -1702,20 +1704,20 @@ async function testEventTrophies() {
     arenaParticipants: ['w', 'x', 'y', 'z'],
   });
   random.players = [
-    player('w', {points: 9, record: [{replayId: 'r', rank: 1}]}),
-    player('x', {points: 9, record: [{replayId: 'r'}]}),
-    player('y', {points: 9, dq: true, record: [{replayId: 'r', rank: 1}]}),
+    player('w', { points: 9, record: [{ replayId: 'r', rank: 1 }] }),
+    player('x', { points: 9, record: [{ replayId: 'r' }] }),
+    player('y', { points: 9, dq: true, record: [{ replayId: 'r', rank: 1 }] }),
     // high points but never participated: not on the podium
-    player('q', {points: 50, record: [{replayId: 'r', rank: 1}]}),
-    player('z', {points: 3, record: [{replayId: 'r'}]}),
+    player('q', { points: 50, record: [{ replayId: 'r', rank: 1 }] }),
+    player('z', { points: 3, record: [{ replayId: 'r' }] }),
   ];
   random.status = EventStatus.FINISHED;
   assert.strictEqual(random.first.name, 'w', 'random winner by win rate');
   assert.strictEqual(random.second.name, 'x',
-      'record-less and DQ participants excluded');
+    'record-less and DQ participants excluded');
   assert.strictEqual(random.third.name, 'z');
   assert.ok(!random.arenaPlayers.some(p => p.name === 'q'),
-      'non-participants never reach the podium');
+    'non-participants never reach the podium');
   console.log('  event trophies passed');
 }
 
@@ -1730,7 +1732,7 @@ function loadApi() {
   const path = require('path');
   const Module = require('module');
   const file = path.resolve(
-      __dirname, '../functions/src/https/api/api.ts');
+    __dirname, '../functions/src/https/api/api.ts');
   const js = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
@@ -1775,15 +1777,16 @@ function fakeApiResponse() {
 
 async function callApi(api, path, options = {}) {
   const headers = {
-    authorization: options.key === null ? undefined :
-        `Bearer ${options.key === undefined ? 'test-api-key' : options.key}`,
+    authorization: options.key === null
+        ? undefined
+        : `Bearer ${options.key === undefined ? 'test-api-key' : options.key}`,
     'content-type': 'application/json',
   };
   const req = {
     url: path, method: options.method || 'GET', headers,
     httpVersion: '1.1', httpVersionMajor: 1, httpVersionMinor: 1,
-    socket: {remoteAddress: '127.0.0.1'},
-    connection: {remoteAddress: '127.0.0.1'},
+    socket: { remoteAddress: '127.0.0.1' },
+    connection: { remoteAddress: '127.0.0.1' },
     get: name => headers[name.toLowerCase()],
     body: options.body,
   };
@@ -1801,33 +1804,33 @@ async function testLobbyApi() {
   // a team arena redirect returns the immutable contract and dispatch-time
   // options/server, never the event's post-dispatch copies
   const event = teamArenaEvent('evtA', {
-    options: {speed: '4x'}, server: 'na',
+    options: { speed: '4x' }, server: 'na',
   });
   seedEvent(store, event, [player('a0')]);
   store.docs.set('events/evtA/redirect/game_1', {
     players: ['a0'],
-    eventTeam: TeamArena.storeLobby({version: 1, teamSize: 2, gameSize: 4,
-        teams: [['a0'], ['b0']]}),
-    arenaTeams: [{id: 'ta', name: 'A', players: ['a0']}],
+    eventTeam: TeamArena.storeLobby({ version: 1, teamSize: 2, gameSize: 4,
+      teams: [['a0'], ['b0']] }),
+    arenaTeams: [{ id: 'ta', name: 'A', players: ['a0'] }],
     gameId: 'game_1',
     lobby: 'event_team_evtA_1',
     started: 1,
-    options: {speed: '2x'},
+    options: { speed: '2x' },
     server: 'eu',
   });
   let res = await callApi(api, '/v1/events/evtA/lobby/a0');
   assert.strictEqual(res.statusCode, 200, `api error: ${res._body}`);
   const payload = JSON.parse(res._body);
   assert.strictEqual(payload.lobby, 'event_team_evtA_1');
-  assert.deepStrictEqual(payload.options, {speed: '2x'},
-      'dispatch options snapshot, not the live event options');
+  assert.deepStrictEqual(payload.options, { speed: '2x' },
+    'dispatch options snapshot, not the live event options');
   assert.strictEqual(payload.server, 'eu', 'dispatch server snapshot');
   assert.strictEqual(payload.players, 4, 'nominal game size');
   assert.strictEqual(payload.eventTeam.gameSize, 4,
-      'normalized contract echoed back');
+    'normalized contract echoed back');
   assert.deepStrictEqual(
-      store.dataAt('events/evtA/redirect/game_1').players, [],
-      'acknowledgement consumed the redirect');
+    store.dataAt('events/evtA/redirect/game_1').players, [],
+    'acknowledgement consumed the redirect');
 
   // a malformed roster is never acknowledged: the redirect survives for
   // diagnosis instead of being consumed into a broken join
@@ -1835,17 +1838,17 @@ async function testLobbyApi() {
   seedEvent(store, bad, [player('a0')]);
   store.docs.set('events/evtB/redirect/game_1', {
     players: ['a0'],
-    eventTeam: TeamArena.storeLobby({version: 1, teamSize: 2, gameSize: 8,
-        teams: [['a0'], ['b0'], ['c0'], ['d0']]}),
+    eventTeam: TeamArena.storeLobby({ version: 1, teamSize: 2, gameSize: 8,
+      teams: [['a0'], ['b0'], ['c0'], ['d0']] }),
     lobby: 'event_team_evtB_1',
     started: 1,
   });
   res = await callApi(api, '/v1/events/evtB/lobby/a0');
   assert.strictEqual(res.statusCode, 500,
-      'a contract that disagrees with the event is rejected');
+    'a contract that disagrees with the event is rejected');
   assert.deepStrictEqual(
-      store.dataAt('events/evtB/redirect/game_1').players, ['a0'],
-      'malformed redirect is not consumed');
+    store.dataAt('events/evtB/redirect/game_1').players, ['a0'],
+    'malformed redirect is not consumed');
 
   // a legacy redirect keeps the exact old response shape (query a user
   // not still pending on the malformed redirect above)
@@ -1854,8 +1857,8 @@ async function testLobbyApi() {
   });
   res = await callApi(api, '/v1/events/evtB/lobby/b0');
   assert.strictEqual(res.statusCode, 200);
-  assert.deepStrictEqual(JSON.parse(res._body), {lobby: 'event_evtB_2'},
-      'legacy responses stay {lobby}');
+  assert.deepStrictEqual(JSON.parse(res._body), { lobby: 'event_evtB_2' },
+    'legacy responses stay {lobby}');
   console.log('  lobby api passed');
 }
 
@@ -1881,21 +1884,21 @@ async function testTeamArenaLobbyApi() {
   await dispatch(store, 'evtL');
   const game = store.dataAt('events/evtL/games/game_1');
   assert.ok(game && game.status === GameStatus.STARTED,
-      'matchmaker produced a STARTED dispatch');
+    'matchmaker produced a STARTED dispatch');
   const lobby = game.lobby;
 
   const post = (body, key) =>
-      callApi(api, '/v1/events/evtL/team-arena/lobby',
-          {method: 'POST', body, key});
+    callApi(api, '/v1/events/evtL/team-arena/lobby',
+      { method: 'POST', body, key });
 
   // no and wrong API keys are rejected by the real middleware
-  let res = await post({lobby, username: 'a0'}, null);
+  let res = await post({ lobby, username: 'a0' }, null);
   assert.strictEqual(res.statusCode, 401);
-  res = await post({lobby, username: 'a0'}, 'wrong-key');
+  res = await post({ lobby, username: 'a0' }, 'wrong-key');
   assert.strictEqual(res.statusCode, 401);
 
   // the happy path returns exactly the immutable snapshot
-  res = await post({lobby, username: 'a0'});
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 200, `api error: ${res._body}`);
   const payload = JSON.parse(res._body);
   assert.strictEqual(payload.lobby, lobby);
@@ -1904,54 +1907,54 @@ async function testTeamArenaLobbyApi() {
   assert.deepStrictEqual(payload.options, game.options);
 
   // every member of every dispatched team passes
-  res = await post({lobby, username: 'b1'});
+  res = await post({ lobby, username: 'b1' });
   assert.strictEqual(res.statusCode, 200);
 
   // a registered player who is not on the roster is refused
-  res = await post({lobby, username: 'c0'});
+  res = await post({ lobby, username: 'c0' });
   assert.strictEqual(res.statusCode, 403);
 
   // malformed bodies: wrong event id in lobby, extra keys, missing fields
-  res = await post({lobby: 'event_team_other_1', username: 'a0'});
+  res = await post({ lobby: 'event_team_other_1', username: 'a0' });
   assert.strictEqual(res.statusCode, 400);
-  res = await post({lobby, username: 'a0', eventTeam: {teams: [['c0']]}});
+  res = await post({ lobby, username: 'a0', eventTeam: { teams: [['c0']] } });
   assert.strictEqual(res.statusCode, 400);
-  res = await post({lobby});
+  res = await post({ lobby });
   assert.strictEqual(res.statusCode, 400);
-  res = await post({lobby: 'event_evtL_1', username: 'a0'});
+  res = await post({ lobby: 'event_evtL_1', username: 'a0' });
   assert.strictEqual(res.statusCode, 400);
 
   // a non-STARTED game is not a dispatch
-  const g2 = {...game, status: GameStatus.CANCELLED};
+  const g2 = { ...game, status: GameStatus.CANCELLED };
   store.docs.set('events/evtL/games/game_1', g2);
-  res = await post({lobby, username: 'a0'});
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 403, 'CANCELLED is not dispatchable');
   store.docs.set('events/evtL/games/game_1',
-      {...game, status: GameStatus.FINISHED});
-  res = await post({lobby, username: 'a0'});
+    { ...game, status: GameStatus.FINISHED });
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 403, 'FINISHED is not dispatchable');
   store.docs.set('events/evtL/games/game_1', game);
 
   // a roster that disagrees with the contract fails closed
   store.docs.set('events/evtL/games/game_1',
-      {...game, players: ['a0', 'a1', 'b0', 'zz']});
-  res = await post({lobby, username: 'a0'});
+    { ...game, players: ['a0', 'a1', 'b0', 'zz'] });
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 403, 'roster mismatch rejected');
   store.docs.set('events/evtL/games/game_1',
-      {...game, options: null});
-  res = await post({lobby, username: 'a0'});
+    { ...game, options: null });
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 403, 'missing options snapshot');
   store.docs.set('events/evtL/games/game_1',
-      {...game, server: 'not-a-server'});
-  res = await post({lobby, username: 'a0'});
+    { ...game, server: 'not-a-server' });
+  res = await post({ lobby, username: 'a0' });
   assert.strictEqual(res.statusCode, 403, 'invalid server rejected');
   store.docs.set('events/evtL/games/game_1', game);
 
   // short-handed dispatch: a 3-of-4 roster still proves correctly
   const short = new FakeFirestore();
   global.__testFirestore = short;
-  seedEvent(short, teamArenaEvent('evtS', {teamSize: 4,
-      playersPerGame: 8}), [
+  seedEvent(short, teamArenaEvent('evtS', { teamSize: 4,
+    playersPerGame: 8 }), [
     player('a0'), player('a1'), player('a2'), player('a3'),
     player('b0'), player('b1'), player('b2'),
   ]);
@@ -1959,9 +1962,9 @@ async function testTeamArenaLobbyApi() {
     ...short.dataAt('events/evtS'),
     arenaTeams: [
       team('ta', 'a0', ['a0', 'a1', 'a2', 'a3'],
-          {allowShortHanded: true}),
+        { allowShortHanded: true }),
       team('tb', 'b0', ['b0', 'b1', 'b2'],
-          {allowShortHanded: true}),
+        { allowShortHanded: true }),
     ],
   });
   readyAll(short, 'evtS', ['a0', 'a1', 'a2', 'a3', 'b0', 'b1', 'b2']);
@@ -1970,13 +1973,13 @@ async function testTeamArenaLobbyApi() {
   assert.ok(shortGame, 'short-handed game dispatched');
   res = await callApi(api, '/v1/events/evtS/team-arena/lobby', {
     method: 'POST',
-    body: {lobby: shortGame.lobby, username: 'b2'},
+    body: { lobby: shortGame.lobby, username: 'b2' },
   });
   assert.strictEqual(res.statusCode, 200,
-      'short-handed roster proves: ' + res._body);
+    'short-handed roster proves: ' + res._body);
   res = await callApi(api, '/v1/events/evtS/team-arena/lobby', {
     method: 'POST',
-    body: {lobby: shortGame.lobby, username: 'c0'},
+    body: { lobby: shortGame.lobby, username: 'c0' },
   });
   assert.strictEqual(res.statusCode, 403);
   console.log('  team arena lobby api passed');
@@ -1997,14 +2000,14 @@ async function testRedirectNoop() {
       players: ['a0', 'a1'], started: 1, gameId: 'game_1',
       lobby: 'event_team_evtR_1',
     }),
-  }, {params: {eventId: 'evtR'}});
+  }, { params: { eventId: 'evtR' } });
   const games = await store.collection('events/evtR/games').get();
   assert.strictEqual(games.docs.length, 0, 'no duplicate game created');
 
   // a legacy redirect without gameId still spawns its game
   await HANDLERS[handler].onCreate({
-    data: () => ({players: ['x0'], started: 1, lobby: 'event_evtR_9'}),
-  }, {params: {eventId: 'evtR'}});
+    data: () => ({ players: ['x0'], started: 1, lobby: 'event_evtR_9' }),
+  }, { params: { eventId: 'evtR' } });
   const games2 = await store.collection('events/evtR/games').get();
   assert.strictEqual(games2.docs.length, 1, 'legacy path unchanged');
   console.log('  redirect noop passed');
@@ -2016,14 +2019,14 @@ async function testWithdrawPreservesHistory() {
   const event = teamArenaEvent('evtW2', {
     arenaTeams: [
       team('ta', 'a0', ['a0', 'a1'],
-          {points: 12, games: 2, wins: 1, participants: ['a0', 'a1']}),
+        { points: 12, games: 2, wins: 1, participants: ['a0', 'a1'] }),
     ],
   });
-  seedEvent(store, event, [player('a0', {points: 12,
-      record: [{replayId: 'r1', points: 6, teamId: 'ta'}]}),
-      player('a1', {points: 12, record: [{replayId: 'r1', points: 6,
-          teamId: 'ta'}]}),
-      player('ghost')]);
+  seedEvent(store, event, [player('a0', { points: 12,
+    record: [{ replayId: 'r1', points: 6, teamId: 'ta' }] }),
+  player('a1', { points: 12, record: [{ replayId: 'r1', points: 6,
+    teamId: 'ta' }] }),
+  player('ghost')]);
 
   // a scored player's withdrawal keeps the registration doc flagged
   // withdrawn: their points, records, and the team's history survive
@@ -2040,11 +2043,11 @@ async function testWithdrawPreservesHistory() {
 
   // withdrawn players cannot ready up or mutate teams
   await expectReject(
-      makeService(store, 'a1').setReady('evtW2', true),
-      'not registered', 'withdrawn ready');
+    makeService(store, 'a1').setReady('evtW2', true),
+    'not registered', 'withdrawn ready');
   await expectReject(
-      makeService(store, 'a1').createTeam('evtW2', 'Rejects'),
-      'not registered', 'withdrawn createTeam');
+    makeService(store, 'a1').createTeam('evtW2', 'Rejects'),
+    'not registered', 'withdrawn createTeam');
 
   // an explicit rejoin clears the flag and keeps every bit of history
   const eventService = makeEventService(store, 'a1');
@@ -2057,7 +2060,7 @@ async function testWithdrawPreservesHistory() {
   // an unscored withdrawal deletes the registration outright
   await makeService(store, 'ghost').withdrawPlayer('evtW2', 'ghost');
   assert.ok(!store.dataAt('events/evtW2/players/ghost'),
-      'never-scored registration removed');
+    'never-scored registration removed');
 
   // the last member leaving a never-played team removes it; an emptied
   // team with history stays as an archive
@@ -2078,8 +2081,8 @@ async function testFillAndMutationGuards() {
   store.docs.set('events/evt-guards', {
     ...store.dataAt('events/evt-guards'),
     arenaTeams: [
-      team('ta', 'a0', ['a0'], {acceptFill: true}),
-      team('tb', 'b0', ['b0'], {acceptFill: true}),
+      team('ta', 'a0', ['a0'], { acceptFill: true }),
+      team('tb', 'b0', ['b0'], { acceptFill: true }),
     ],
   });
 
@@ -2089,22 +2092,22 @@ async function testFillAndMutationGuards() {
   await makeService(store, 'fill').joinRandomTeam('evt-guards');
   let teams = store.dataAt('events/evt-guards').arenaTeams;
   assert.ok(!teams.find(t => t.id === 'ta').members.includes('fill'),
-      'queued team not a fill target');
+    'queued team not a fill target');
   assert.ok(teams.find(t => t.id === 'tb').members.includes('fill'),
-      'idle team took the fill');
+    'idle team took the fill');
   await makeService(store, 'fill').leaveTeam('evt-guards');
 
   // a team with a member in a live game is not a fill target either; with
   // tb busy the only eligible team is ta (readiness cleared above)
   const playing = store.dataAt('events/evt-guards');
   store.docs.set('events/evt-guards',
-      {...playing, arenaPlaying: ['b0'], arenaReady: {}});
+    { ...playing, arenaPlaying: ['b0'], arenaReady: {} });
   await makeService(store, 'fill').joinRandomTeam('evt-guards');
   teams = store.dataAt('events/evt-guards').arenaTeams;
   assert.ok(teams.find(t => t.id === 'ta').members.includes('fill'),
-      'fill joins the idle team');
+    'fill joins the idle team');
   assert.ok(!teams.find(t => t.id === 'tb').members.includes('fill'),
-      'playing team not a fill target');
+    'playing team not a fill target');
   store.docs.set('events/evt-guards', {
     ...store.dataAt('events/evt-guards'), arenaPlaying: [],
   });
@@ -2116,8 +2119,8 @@ async function testFillAndMutationGuards() {
   stale.arenaTeams.find(t => t.id === 'ta').requests.push('b0');
   store.docs.set('events/evt-guards', stale);
   await expectReject(
-      makeService(store, 'a0').acceptPlayer('evt-guards', 'b0'),
-      'already on a team', 'stale request cannot poach');
+    makeService(store, 'a0').acceptPlayer('evt-guards', 'b0'),
+    'already on a team', 'stale request cannot poach');
 
   // no mutations after the event ends or is finalized
   const done = new FakeFirestore();
@@ -2127,14 +2130,14 @@ async function testFillAndMutationGuards() {
     winners: ['d0'],
   }), [player('d0'), player('d1')]);
   await expectReject(
-      makeService(done, 'd1').createTeam('evt-done', 'Late'),
-      /finalized|ended/, 'createTeam after finalize');
+    makeService(done, 'd1').createTeam('evt-done', 'Late'),
+    /finalized|ended/, 'createTeam after finalize');
   await expectReject(
-      makeService(done, 'd0').leaveTeam('evt-done'),
-      /finalized|ended/, 'leaveTeam after finalize');
+    makeService(done, 'd0').leaveTeam('evt-done'),
+    /finalized|ended/, 'leaveTeam after finalize');
   await expectReject(
-      makeService(done, 'd0').setTeamOptions('evt-done', {acceptFill: true}),
-      /finalized|ended/, 'options after finalize');
+    makeService(done, 'd0').setTeamOptions('evt-done', { acceptFill: true }),
+    /finalized|ended/, 'options after finalize');
   console.log('  fill and mutation guards passed');
 }
 
@@ -2148,24 +2151,24 @@ async function testFinalize() {
     endTime: Date.now() - 60000,
     arenaTeams: [
       team('ta', 'a0', ['a0', 'a1', 'fill'],
-          {points: 20, games: 1, wins: 1, participants: ['a0', 'a1']}),
-      team('tb', 'b0', ['b0', 'b1'], {points: 5, games: 1}),
+        { points: 20, games: 1, wins: 1, participants: ['a0', 'a1'] }),
+      team('tb', 'b0', ['b0', 'b1'], { points: 5, games: 1 }),
     ],
     arenaParticipants: ['a0', 'a1', 'b0', 'b1'],
   }), [
-    player('a0', {points: 20, record: [{replayId: 'r', rank: 1,
-        teamId: 'ta'}]}),
-    player('a1', {points: 20, record: [{replayId: 'r', rank: 1,
-        teamId: 'ta'}]}),
+    player('a0', { points: 20, record: [{ replayId: 'r', rank: 1,
+      teamId: 'ta' }] }),
+    player('a1', { points: 20, record: [{ replayId: 'r', rank: 1,
+      teamId: 'ta' }] }),
     // a fill who never played for team a cannot share its win
-    player('fill', {points: 0}),
-    player('b0', {points: 5, record: [{replayId: 'r', teamId: 'tb'}]}),
-    player('b1', {points: 5, record: [{replayId: 'r', teamId: 'tb'}]}),
+    player('fill', { points: 0 }),
+    player('b0', { points: 5, record: [{ replayId: 'r', teamId: 'tb' }] }),
+    player('b1', { points: 5, record: [{ replayId: 'r', teamId: 'tb' }] }),
   ]);
   await makeService(store, 'Lazerpent').finalize('evt-fin');
   assert.deepStrictEqual(
-      store.dataAt('events/evt-fin').winners.sort(), ['a0', 'a1'],
-      'BYP winners are the earned participants, not unplayed fills');
+    store.dataAt('events/evt-fin').winners.sort(), ['a0', 'a1'],
+    'BYP winners are the earned participants, not unplayed fills');
 
   // random partners: exactly one individual winner by
   // points/winrate/games/name
@@ -2174,13 +2177,13 @@ async function testFinalize() {
     doublesPairingStrategy: RANDOM, endTime: Date.now() - 60000,
     arenaParticipants: ['p0', 'p1', 'p2'],
   }), [
-    player('p0', {points: 9, record: [{replayId: 'r', rank: 1}]}),
-    player('p1', {points: 9, record: [{replayId: 'r'}]}),
-    player('p2', {points: 9, record: [{replayId: 'r'}]}),
+    player('p0', { points: 9, record: [{ replayId: 'r', rank: 1 }] }),
+    player('p1', { points: 9, record: [{ replayId: 'r' }] }),
+    player('p2', { points: 9, record: [{ replayId: 'r' }] }),
   ]);
   await makeService(rand, 'Lazerpent').finalize('evt-rfin');
   assert.deepStrictEqual(rand.dataAt('events/evt-rfin').winners, ['p0'],
-      'exactly one individual winner in random partners');
+    'exactly one individual winner in random partners');
 
   // a DQ'd participant disqualifies their whole fixed team; the next
   // ranked eligible team wins instead
@@ -2189,35 +2192,35 @@ async function testFinalize() {
     endTime: Date.now() - 60000,
     arenaTeams: [
       team('ta', 'a0', ['a0', 'a1'],
-          {points: 99, games: 1, wins: 1, participants: ['a0', 'a1']}),
+        { points: 99, games: 1, wins: 1, participants: ['a0', 'a1'] }),
       team('tb', 'b0', ['b0', 'b1'],
-          {points: 1, games: 1, participants: ['b0', 'b1']}),
+        { points: 1, games: 1, participants: ['b0', 'b1'] }),
     ],
   }), [
-    player('a0', {points: 99, dq: true, record: [{replayId: 'r', rank: 1,
-        teamId: 'ta'}]}),
-    player('a1', {points: 99, record: [{replayId: 'r', teamId: 'ta'}]}),
-    player('b0', {points: 1, record: [{replayId: 'r', teamId: 'tb'}]}),
-    player('b1', {points: 1, record: [{replayId: 'r', teamId: 'tb'}]}),
+    player('a0', { points: 99, dq: true, record: [{ replayId: 'r', rank: 1,
+      teamId: 'ta' }] }),
+    player('a1', { points: 99, record: [{ replayId: 'r', teamId: 'ta' }] }),
+    player('b0', { points: 1, record: [{ replayId: 'r', teamId: 'tb' }] }),
+    player('b1', { points: 1, record: [{ replayId: 'r', teamId: 'tb' }] }),
   ]);
   await makeService(dq, 'Lazerpent').finalize('evt-dq');
   assert.deepStrictEqual(
-      dq.dataAt('events/evt-dq').winners.sort(), ['b0', 'b1'],
-      'a DQ on the top team passes the win to the next eligible team');
+    dq.dataAt('events/evt-dq').winners.sort(), ['b0', 'b1'],
+    'a DQ on the top team passes the win to the next eligible team');
 
   // refuses while running or while games are in flight
   const early = new FakeFirestore();
   seedEvent(early, teamArenaEvent('evt-early'), [player('e0')]);
   await expectReject(
-      makeService(early, 'Lazerpent').finalize('evt-early'),
-      'running', 'finalize before end');
+    makeService(early, 'Lazerpent').finalize('evt-early'),
+    'running', 'finalize before end');
   const inflight = new FakeFirestore();
   seedEvent(inflight, teamArenaEvent('evt-flight', {
     endTime: Date.now() - 60000, ongoingGameCount: 1,
   }), [player('e0')]);
   await expectReject(
-      makeService(inflight, 'Lazerpent').finalize('evt-flight'),
-      'in progress', 'finalize with games in flight');
+    makeService(inflight, 'Lazerpent').finalize('evt-flight'),
+    'in progress', 'finalize with games in flight');
 
   // an empty event has no winner
   const empty = new FakeFirestore();
@@ -2226,7 +2229,7 @@ async function testFinalize() {
   }), []);
   await makeService(empty, 'Lazerpent').finalize('evt-empty');
   assert.deepStrictEqual(empty.dataAt('events/evt-empty').winners, [],
-      'empty event has no winner');
+    'empty event has no winner');
 
   // non-admins cannot finalize
   const notAdmin = new FakeFirestore();
@@ -2234,8 +2237,8 @@ async function testFinalize() {
     endTime: Date.now() - 60000,
   }), [player('e0')]);
   await expectReject(
-      makeService(notAdmin, 'e0').finalize('evt-na'),
-      'organizer', 'non-admin finalize');
+    makeService(notAdmin, 'e0').finalize('evt-na'),
+    'organizer', 'non-admin finalize');
   console.log('  finalize passed');
 }
 
@@ -2250,24 +2253,24 @@ async function testUpdateEventLock() {
 
   // a live team arena rejects structural changes
   await expectReject(
-      service.updateEvent('evt-lock', {teamSize: 3, playersPerGame: 6}),
-      'structure', 'teamSize change on a live arena');
+    service.updateEvent('evt-lock', { teamSize: 3, playersPerGame: 6 }),
+    'structure', 'teamSize change on a live arena');
   await expectReject(
-      service.updateEvent('evt-lock', {format: 'Double Elimination'}),
-      'structure', 'format change on a live arena');
+    service.updateEvent('evt-lock', { format: 'Double Elimination' }),
+    'structure', 'format change on a live arena');
   await expectReject(
-      service.updateEvent('evt-lock', {type: 'FFA'}),
-      'structure', 'type change on a live arena');
+    service.updateEvent('evt-lock', { type: 'FFA' }),
+    'structure', 'type change on a live arena');
   await expectReject(
-      service.updateEvent('evt-lock',
-          {doublesPairingStrategy: RANDOM}),
-      'structure', 'mode change on a live arena');
+    service.updateEvent('evt-lock',
+      { doublesPairingStrategy: RANDOM }),
+    'structure', 'mode change on a live arena');
 
   // non-structural edits still work
-  await service.updateEvent('evt-lock', {name: 'Renamed'});
+  await service.updateEvent('evt-lock', { name: 'Renamed' });
   assert.strictEqual(store.dataAt('events/evt-lock').name, 'Renamed');
   // identical structural values are not a change
-  await service.updateEvent('evt-lock', {teamSize: 2, playersPerGame: 4});
+  await service.updateEvent('evt-lock', { teamSize: 2, playersPerGame: 4 });
   console.log('  updateEvent lock passed');
 }
 
@@ -2297,12 +2300,12 @@ async function testQueueOrder() {
   await dispatch(store, 'evt-order');
   const game = store.dataAt('events/evt-order/games/game_1');
   assert.deepStrictEqual(game.players.sort(), ['a0', 'a1', 'b0', 'b1'],
-      'heartbeats cannot push queued teams behind later arrivals');
+    'heartbeats cannot push queued teams behind later arrivals');
   const event = store.dataAt('events/evt-order');
-  assert.ok(Number.isFinite(event.arenaReady.c0) &&
-      Number.isFinite(event.arenaReady.c1), 'team c stays queued');
+  assert.ok(Number.isFinite(event.arenaReady.c0)
+      && Number.isFinite(event.arenaReady.c1), 'team c stays queued');
   assert.deepStrictEqual(event.arenaPlaying.sort(),
-      ['a0', 'a1', 'b0', 'b1']);
+    ['a0', 'a1', 'b0', 'b1']);
   console.log('  queue order passed');
 }
 
@@ -2314,7 +2317,7 @@ async function testArenaQueueComponent() {
   const realSetInterval = global.setInterval;
   const realClearInterval = global.clearInterval;
   global.setInterval = (fn, ms) => {
-    const timer = {fn, ms, cleared: false};
+    const timer = { fn, ms, cleared: false };
     intervals.push(timer);
     return timer;
   };
@@ -2329,8 +2332,8 @@ async function testArenaQueueComponent() {
       name: 'alice',
       nameChanged$: {
         subscribe(fn) {
-          const sub = {fn, unsubscribed: false,
-              unsubscribe() { this.unsubscribed = true; }};
+          const sub = { fn, unsubscribed: false,
+            unsubscribe() { this.unsubscribed = true; } };
           nameChangedSubs.push(sub);
           return sub;
         },
@@ -2341,23 +2344,24 @@ async function testArenaQueueComponent() {
     const teamArena = {
       setReady(eventId, ready) {
         readyCalls.push([eventId, ready]);
-        return readyError ? Promise.reject(readyError) :
-            Promise.resolve();
+        return readyError
+            ? Promise.reject(readyError)
+            : Promise.resolve();
       },
     };
     const eventService = {
       addPlayer() { return Promise.resolve(); },
-      getRedirect() { return {subscribe() { return {unsubscribe() {}}; }}; },
+      getRedirect() { return { subscribe() { return { unsubscribe() {} }; } }; },
       clearRedirect() { return Promise.resolve(); },
     };
-    const util = {toasts: [], showToast(m) { this.toasts.push(m); }};
+    const util = { toasts: [], showToast(m) { this.toasts.push(m); } };
     const component = new ArenaQueueComponent(
-        generals, eventService, teamArena, util);
+      generals, eventService, teamArena, util);
     assert.strictEqual(nameChangedSubs.length, 1,
-        'name change subscription created');
+      'name change subscription created');
 
     const setEvent = (arenaReady) => {
-      component.event = teamArenaEvent('evt-q', {arenaReady});
+      component.event = teamArenaEvent('evt-q', { arenaReady });
       component.inEvent = true;
       component.status = EventStatus.ONGOING;
       component.ngOnChanges();
@@ -2365,17 +2369,17 @@ async function testArenaQueueComponent() {
 
     // ready -> exactly one renewal timer; re-syncs while the same context
     // stays ready do not stack timers
-    setEvent({alice: Date.now()});
+    setEvent({ alice: Date.now() });
     assert.strictEqual(intervals.length, 1, 'one timer for ready');
     component.ngOnChanges();
     assert.strictEqual(intervals.length, 1,
-        'same context does not stack timers');
+      'same context does not stack timers');
 
     // unready stops the timer; the first ready after an unready must start
     // a new one (context equality alone is not enough)
     setEvent({});
     assert.ok(intervals[0].cleared, 'unready cleared the timer');
-    setEvent({alice: Date.now()});
+    setEvent({ alice: Date.now() });
     assert.strictEqual(intervals.length, 2, 'new timer after re-ready');
 
     // a renewal tick confirms the caller's own name and event only
@@ -2383,17 +2387,17 @@ async function testArenaQueueComponent() {
     await Promise.resolve();
     await Promise.resolve();
     assert.deepStrictEqual(readyCalls, [['evt-q', true]],
-        'renewal renews the caller only');
+      'renewal renews the caller only');
 
     // a fresh Firestore snapshot replaces the event object; the timer must
     // keep running because the context is the id+name, not object identity
-    component.event = teamArenaEvent('evt-q', {arenaReady: {alice: Date.now()}});
+    component.event = teamArenaEvent('evt-q', { arenaReady: { alice: Date.now() } });
     component.ngOnChanges();
     intervals[1].fn();
     await Promise.resolve();
     await Promise.resolve();
     assert.strictEqual(readyCalls.length, 2,
-        'snapshot replacement does not stop renewal');
+      'snapshot replacement does not stop renewal');
     assert.ok(!intervals[1].cleared, 'timer survives new event objects');
 
     // an in-flight renewal makes the next tick skip a beat, not stop the
@@ -2407,7 +2411,7 @@ async function testArenaQueueComponent() {
     intervals[1].fn();
     intervals[1].fn();
     assert.strictEqual(pendingCalls, 1,
-        'overlapping ticks do not double-renew');
+      'overlapping ticks do not double-renew');
     assert.ok(!intervals[1].cleared, 'overlap skips, never stops');
     resolvers[0]();
     await Promise.resolve();
@@ -2429,10 +2433,10 @@ async function testArenaQueueComponent() {
     await Promise.resolve();
     assert.ok(component.error.includes('expired'), 'failure reported');
     assert.ok(intervals[1].cleared, 'failed renewal stops the timer');
-    component.event = teamArenaEvent('evt-q', {arenaReady: {alice: Date.now()}});
+    component.event = teamArenaEvent('evt-q', { arenaReady: { alice: Date.now() } });
     component.ngOnChanges();
     assert.strictEqual(intervals.length, 2,
-        'a latched failure does not re-arm on snapshots');
+      'a latched failure does not re-arm on snapshots');
 
     // an explicit retry clears the latch and re-arms
     component.readyFailed = null;
@@ -2443,13 +2447,13 @@ async function testArenaQueueComponent() {
     // renew under the previous name
     const old = intervals[2];
     generals.name = 'bob';
-    component.event = teamArenaEvent('evt-q', {arenaReady: {bob: Date.now()}});
+    component.event = teamArenaEvent('evt-q', { arenaReady: { bob: Date.now() } });
     component.ngOnChanges();
     assert.ok(old.cleared, 'identity change clears the old timer');
     old.fn();
     await Promise.resolve();
     assert.strictEqual(readyCalls.filter(c => c[0] === 'evt-q').length, 3,
-        'a late tick under an old identity never renews');
+      'a late tick under an old identity never renews');
 
     // a renewal promise settling under a changed context cannot record its
     // failure on the new context
@@ -2464,13 +2468,13 @@ async function testArenaQueueComponent() {
     bobsTimer.fn();
     generals.name = 'carol';
     component.event = teamArenaEvent('evt-q',
-        {arenaReady: {carol: Date.now()}});
+      { arenaReady: { carol: Date.now() } });
     component.ngOnChanges();
     settleStale(new Error('stale failure'));
     await Promise.resolve();
     await Promise.resolve();
     assert.strictEqual(component.error, null,
-        'a stale promise cannot poison the new context');
+      'a stale promise cannot poison the new context');
 
     // destroy stops everything and unsubscribes the name listener
     component.ngOnDestroy();
@@ -2485,15 +2489,15 @@ async function testArenaQueueComponent() {
 
 async function testFakes() {
   const store = new FakeFirestore();
-  store.docs.set('c/a', {x: 1, y: 2});
-  store.docs.set('c/b', {x: 1, y: 1});
-  store.docs.set('c/c', {x: 0, y: 9});
+  store.docs.set('c/a', { x: 1, y: 2 });
+  store.docs.set('c/b', { x: 1, y: 1 });
+  store.docs.set('c/c', { x: 0, y: 9 });
   const ordered = await store.collection('c')
-      .orderBy('x', 'asc').orderBy('y', 'desc').get();
+    .orderBy('x', 'asc').orderBy('y', 'desc').get();
   // x ascending puts c first; the x=1 tie breaks on y descending (2 > 1)
   assert.deepStrictEqual(ordered.docs.map(d => d.id), ['c', 'a', 'b'],
-      'orderBy is lexicographic: first field primary, later break ties');
-  const added = await store.collection('c').add({x: 5});
+    'orderBy is lexicographic: first field primary, later break ties');
+  const added = await store.collection('c').add({ x: 5 });
   assert.ok(added.id, 'add returns a ref');
   assert.ok(store.dataAt(`c/${added.id}`), 'add persisted before resolve');
   console.log('  fakes passed');

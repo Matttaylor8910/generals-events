@@ -149,12 +149,12 @@ export async function handleTeamArenaEventUpdate(
 
       dispatched = [];
       for (let i = 0; i < teamsPerGame; i++) {
-        const players = picked.slice(i * event.teamSize!, (i + 1) *
+        const teamPlayers = picked.slice(i * event.teamSize!, (i + 1) *
             event.teamSize!);
         dispatched.push({
           id: `match_${counter}_team_${i}`,
-          name: players.join(' & '),
-          players,
+          name: teamPlayers.join(' & '),
+          players: teamPlayers,
         });
       }
     }

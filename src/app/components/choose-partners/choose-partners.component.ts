@@ -119,7 +119,7 @@ export class ChoosePartnersComponent {
   }
 
   get confirmedTeamsHeader(): string {
-    switch(this.confirmedTeams.length) {
+    switch (this.confirmedTeams.length) {
       case 0:
         return 'Confirmed Teams:';
       case 1:
@@ -243,11 +243,11 @@ export class ChoosePartnersComponent {
 
   // Invitations are snapshot-derived; cancelling one must allow re-inviting.
   get bigTeamInvites(): string[] {
-    if (!this.isBigTeam || this.me?.teamMembers?.length) return [];
+    if (!this.isBigTeam || this.me?.teamMembers?.length) { return []; }
     return (this.me?.bigTeamInvites || []).filter(name => {
       const captain = this.players?.find(player => player.name === name);
       if (!captain || captain.dq || captain.withdrawn ||
-          !this.event?.checkedInPlayers?.includes(name)) return false;
+          !this.event?.checkedInPlayers?.includes(name)) { return false; }
       const roster = captain.teamMembers;
       return !roster?.length || (isValidTeamMembers(roster) &&
           captain.teamCaptain === name && roster.includes(name) &&
@@ -257,7 +257,7 @@ export class ChoosePartnersComponent {
 
   // players the caller has invited (outbound, cancelable)
   get sentBigTeamInvites(): string[] {
-    if (!this.isBigTeam) return [];
+    if (!this.isBigTeam) { return []; }
     return (this.players || [])
         .filter(player =>
             (player.bigTeamInvites || []).includes(this.generals.name))
@@ -265,7 +265,7 @@ export class ChoosePartnersComponent {
   }
 
   async acceptBigTeamInvite(captain: string) {
-    if (this.busy) return;
+    if (this.busy) { return; }
     this.busy = true;
     try {
       await this.eventService.acceptBigTeamInvite(this.event.id, captain);
@@ -278,7 +278,7 @@ export class ChoosePartnersComponent {
   }
 
   declineBigTeamInvite(captain: string) {
-    if (this.busy) return;
+    if (this.busy) { return; }
     this.busy = true;
     this.eventService.declineBigTeamInvite(this.event.id, captain)
         .catch(e => this.utilService.showToast(
@@ -287,7 +287,7 @@ export class ChoosePartnersComponent {
   }
 
   cancelBigTeamInvite(target: string) {
-    if (this.busy) return;
+    if (this.busy) { return; }
     this.busy = true;
     this.eventService.cancelBigTeamInvite(this.event.id, target)
         .catch(e => this.utilService.showToast(
@@ -305,7 +305,7 @@ export class ChoosePartnersComponent {
       return;
     }
 
-    let name = await this.utilService.promptForText(
+    const name = await this.utilService.promptForText(
         'Team name', 'What should your team name be? Max 20 characters!',
         team.name, 'Save Name', 'Nevermind');
 

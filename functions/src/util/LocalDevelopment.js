@@ -15,13 +15,13 @@ function isLoopback(url) {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return false;
     }
-    if (parsed.username || parsed.password || parsed.search ||
-        parsed.hash) {
+    if (parsed.username || parsed.password || parsed.search
+        || parsed.hash) {
       return false;
     }
     const host = parsed.hostname.toLowerCase();
-    return host === 'localhost' || host === '127.0.0.1' ||
-        host === '::1' || host === '[::1]';
+    return host === 'localhost' || host === '127.0.0.1'
+        || host === '::1' || host === '[::1]';
   } catch (e) {
     return false;
   }
@@ -31,8 +31,8 @@ function localEnvActive() {
   if (process.env.FUNCTIONS_EMULATOR !== 'true') {
     return false;
   }
-  const project = process.env.GCLOUD_PROJECT ||
-      process.env.GOOGLE_CLOUD_PROJECT;
+  const project = process.env.GCLOUD_PROJECT
+      || process.env.GOOGLE_CLOUD_PROJECT;
   if (project !== LOCAL_PROJECT) {
     return false;
   }
@@ -60,12 +60,12 @@ function guardedUrl(envValue, fallback, label) {
 
 function localGioBaseUrl() {
   return guardedUrl(process.env.EVENTS_LOCAL_GIO_URL,
-      DEFAULT_GIO_URL, 'EVENTS_LOCAL_GIO_URL');
+    DEFAULT_GIO_URL, 'EVENTS_LOCAL_GIO_URL');
 }
 
 function localReplayBaseUrl() {
   return guardedUrl(process.env.EVENTS_LOCAL_REPLAY_BASE_URL,
-      DEFAULT_REPLAY_URL, 'EVENTS_LOCAL_REPLAY_BASE_URL');
+    DEFAULT_REPLAY_URL, 'EVENTS_LOCAL_REPLAY_BASE_URL');
 }
 
-module.exports = {localGioBaseUrl, localReplayBaseUrl, localEnvActive};
+module.exports = { localGioBaseUrl, localReplayBaseUrl, localEnvActive };

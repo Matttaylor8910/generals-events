@@ -140,12 +140,13 @@ export function recordSanityCheck(
   // but a later game that started while a known-finish game was still
   // running is unambiguously overlapping
   const byStart = record.slice().sort((a, b) => a.started - b.started);
-  for (let i = 0; i + 1 < byStart.length; i++) {
-    const game = byStart[i];
-    const nextGame = byStart[i + 1];
-    if (Number.isFinite(game.finished) &&
+  for (let gi = 0; gi + 1 < byStart.length; gi++) {
+    const game = byStart[gi];
+    const nextGame = byStart[gi + 1];
+    if (typeof game.finished === 'number' &&
+        Number.isFinite(game.finished) &&
         game.replayId !== nextGame.replayId &&
-        nextGame.started < (game.finished as number)) {
+        nextGame.started < game.finished) {
       console.log(`${game.replayId} overlaps with ${nextGame.replayId}`);
       dq = true;
     }

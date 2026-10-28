@@ -37,8 +37,8 @@ class MoveResolver {
     this.generals = generals;
 
     this.dependencyChecker = !map.modFlags[Constants.MODIFIER_INDEXES.Slippery]
-      ? this.hasDependency
-      : this.isDependency;
+        ? this.hasDependency
+        : this.isDependency;
 
     if (!this.teams || this.teams.length !== this.generals.length) {
       this.teams = [];

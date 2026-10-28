@@ -190,14 +190,14 @@ async function saveReplayToMatch(
         elapsedMs === undefined ? Math.floor(turns / (60 * speedFactor)) :
         (elapsedMs === null ? 0 : Math.floor(elapsedMs / 60000));
     ({teams: scoredTeams, scores} = TeamArena.scoreTeamArena(
-        expectedTeams, stats.scores, stats.teamOutcomes!,
+        expectedTeams, stats.scores, stats.teamOutcomes,
         durationMinutes));
   }
 
   // determine which team won and increment the score of that team
   let winningIndex: number;
   if (scoredTeams) {
-    const winning = scoredTeams.find(team => team.rank === 1)!;
+    const winning = scoredTeams.find(team => team.rank === 1);
     winningIndex =
         expectedTeams.findIndex(team => team.id === winning.id);
   } else {
@@ -236,11 +236,11 @@ async function saveReplayToMatch(
             admin.firestore.FieldValue.increment(1),
       });
 
-      const finalScores: any[] = [];
+      const recordedScores: any[] = [];
       for (const player of scores.map(score => ({...score}))) {
         const playerDoc = playerDocs.get(player.name);
         if (!playerDoc || !playerDoc.exists) {
-          finalScores.push({...player});
+          recordedScores.push({...player});
           continue;
         }
         const playerRef =
@@ -295,7 +295,7 @@ async function saveReplayToMatch(
           points: sanity.points,
           currentStreak: sanity.currentStreak,
         });
-        finalScores.push({
+        recordedScores.push({
           ...player, points: finalized.points, streak: finalized.streak});
       }
 
@@ -307,7 +307,7 @@ async function saveReplayToMatch(
           started: replay.started,
           finished,
           ...(elapsedMs !== undefined ? {elapsedMs} : {}),
-          replay: {scores: finalScores, summary, turns,
+          replay: {scores: recordedScores, summary, turns,
               teams: scoredTeams,
               teamOutcomes: stats.teamOutcomes,
               ...(elapsedMs !== undefined ? {elapsedMs} : {})},

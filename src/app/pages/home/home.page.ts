@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {Observable, Subject} from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -15,7 +15,7 @@ import {CreateEventPage} from './create-event/create-event.page';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage {
+export class HomePage implements OnDestroy {
   private destroyed$ = new Subject<void>();
 
   tabs = ['All', EventType.FFA, EventType.ONE_VS_ONE, EventType.TWO_VS_TWO, EventType.BIG_TEAM, 'Custom'];

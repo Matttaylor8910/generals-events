@@ -127,7 +127,7 @@ export class EventTrophiesComponent {
     const players = this.arenaPlayers;
     const player = players?.length > 0 ? {...players[0]} : null;
     if (player !== null && this.pairAdjacent) {
-      player.name += ` and ${players[1]?.name}`
+      player.name += ` and ${players[1]?.name}`;
     }
     return player;
   }
@@ -140,7 +140,7 @@ export class EventTrophiesComponent {
     const index = this.pairAdjacent ? 2 : 1;
     const player = players?.length > index ? {...players[index]} : null;
     if (player !== null && this.pairAdjacent) {
-      player.name += ` and ${players[index + 1]?.name}`
+      player.name += ` and ${players[index + 1]?.name}`;
     }
     return player;
   }
@@ -153,7 +153,7 @@ export class EventTrophiesComponent {
     const index = this.pairAdjacent ? 4 : 2;
     const player = players?.length > index ? {...players[index]} : null;
     if (player !== null && this.pairAdjacent) {
-      player.name += ` and ${players[index + 1]?.name}`
+      player.name += ` and ${players[index + 1]?.name}`;
     }
     return player;
   }

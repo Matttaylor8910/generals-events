@@ -11,12 +11,12 @@ export class RulesComponent {
   @Input() event: IDoubleElimEvent;
   @Input() status: EventStatus;
 
-  private _showRules = false;
+  private rulesExpanded = false;
 
   constructor() {}
 
   get showRules(): boolean {
-    return this._showRules || this.status === EventStatus.UPCOMING ||
+    return this.rulesExpanded || this.status === EventStatus.UPCOMING ||
         this.isBracket || this.isDynamicDYP;
   }
 
@@ -60,6 +60,6 @@ export class RulesComponent {
   }
 
   toggleShowRules() {
-    this._showRules = !this._showRules;
+    this.rulesExpanded = !this.rulesExpanded;
   }
 }

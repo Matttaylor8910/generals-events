@@ -8,7 +8,10 @@ import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {TeamArenaService} from 'src/app/services/team-arena.service';
 import {UtilService} from 'src/app/services/util.service';
-import {EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent, IEvent, ILeaderboardPlayer, IMatchTeam, Visibility} from 'types';
+import {
+  EventFormat, EventStatus, EventType, IArenaEvent, IDoubleElimEvent, IEvent,
+  ILeaderboardPlayer, IMatchTeam, Visibility,
+} from 'types';
 import * as moment from 'moment-timezone';
 import * as firebase from 'firebase';
 
@@ -69,7 +72,7 @@ export class EventPage implements OnDestroy {
   }
 
   get blocked(): boolean {
-    return this.event?.chatBlocklist?.includes(this.generals.name)
+    return this.event?.chatBlocklist?.includes(this.generals.name);
   }
 
   get status(): EventStatus {
@@ -300,7 +303,7 @@ export class EventPage implements OnDestroy {
 
     // if a child is already selected, update the event whenever it changes
     const selected = events.find(event => event.id === this.event?.id);
-    if (selected) this.setEvent(selected);
+    if (selected) { this.setEvent(selected); }
   }
 
   goHome() {

@@ -203,7 +203,6 @@ function generateEmptyBracket(
 
 /**
  * Generate the placeholders for a given bracket in place
- * @param bracket
  */
 function generatePlaceholders(bracket: IDoubleEliminationBracket) {
   let winnerRound = 0;
@@ -268,10 +267,10 @@ function generateLosingPlaceholder(
     ): IMatchTeam[] {
   // every other round we pull losers down from the winner's bracket
   if (loserRound === 0) {
-    let one = (index * 2);
-    let oneBye = bracket.winners[loserRound].matches[one].bye;
-    let two = ((index * 2) + 1);
-    let twoBye = bracket.winners[loserRound].matches[two].bye
+    const one = (index * 2);
+    const oneBye = bracket.winners[loserRound].matches[one].bye;
+    const two = ((index * 2) + 1);
+    const twoBye = bracket.winners[loserRound].matches[two].bye;
 
     return [
       {placeholder: oneBye ? 'Bye' : 'Loser of ' + (one + 1)},
@@ -348,12 +347,12 @@ function getSeeds(participantsCount: number) {
     const roundMatches = [];
     const sum = Math.pow(2, round + 1) + 1;
 
-    for (var i = 0; i < matches.length; i++) {
-      let home = changeIntoBye(matches[i][0], participantsCount);
-      let away = changeIntoBye(sum - matches[i][0], participantsCount);
+    for (const match of matches) {
+      let home = changeIntoBye(match[0], participantsCount);
+      let away = changeIntoBye(sum - match[0], participantsCount);
       roundMatches.push([home, away]);
-      home = changeIntoBye(sum - matches[i][1], participantsCount);
-      away = changeIntoBye(matches[i][1], participantsCount);
+      home = changeIntoBye(sum - match[1], participantsCount);
+      away = changeIntoBye(match[1], participantsCount);
       roundMatches.push([home, away]);
     }
     matches = roundMatches;

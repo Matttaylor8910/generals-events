@@ -34,15 +34,15 @@ function backupUrl(server, id) {
 }
 
 function isBinary(value) {
-  return Buffer.isBuffer(value) || value instanceof ArrayBuffer ||
-      ArrayBuffer.isView(value);
+  return Buffer.isBuffer(value) || value instanceof ArrayBuffer
+      || ArrayBuffer.isView(value);
 }
 
 async function fetchAndDecode(url) {
   const response = await axios.get(url,
-      {responseType: 'arraybuffer', timeout: 15000, maxRedirects: 0});
-  if (response.status !== undefined &&
-      (response.status < 200 || response.status >= 300)) {
+    { responseType: 'arraybuffer', timeout: 15000, maxRedirects: 0 });
+  if (response.status !== undefined
+      && (response.status < 200 || response.status >= 300)) {
     throw new Error('non-2xx response');
   }
   if (!isBinary(response.data) || !response.data.byteLength) {
@@ -52,20 +52,22 @@ async function fetchAndDecode(url) {
   // through to the next source. Return the decoded replay so callers
   // never parse the same bytes twice.
   const data = response.data;
-  const bytes = ArrayBuffer.isView(data) ?
-      Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data);
+  const bytes = ArrayBuffer.isView(data)
+      ? Buffer.from(data.buffer, data.byteOffset, data.byteLength)
+      : Buffer.from(data);
   return ReplayDeserializer(bytes);
 }
 
 async function savingDown(server) {
-  const origin = server === 'loc' ?
-      LocalDevelopment.localGioBaseUrl() : BACKUP_ORIGINS[server];
+  const origin = server === 'loc'
+      ? LocalDevelopment.localGioBaseUrl()
+      : BACKUP_ORIGINS[server];
   try {
     const response = await axios.get(`${origin}/api/serverSettings`,
-        {timeout: 10000, maxRedirects: 0});
-    return (response.status === undefined ||
-        (response.status >= 200 && response.status < 300)) &&
-        response.data && response.data.aws_replay_saving_down === true;
+      { timeout: 10000, maxRedirects: 0 });
+    return (response.status === undefined
+        || (response.status >= 200 && response.status < 300))
+        && response.data && response.data.aws_replay_saving_down === true;
   } catch (error) {
     return false;
   }
@@ -116,4 +118,4 @@ async function getReplay(replayId, server = 'na') {
   throw new Error('Replay is unavailable on storage and game server');
 }
 
-module.exports = {getReplay};
+module.exports = { getReplay };

@@ -8,16 +8,17 @@ export class HttpPipe implements PipeTransform {
   }
 
   private stylize(text: string): string {
-    let stylizedText: string = '';
+    let stylizedText = '';
     if (text && text.length > 0) {
-      for (let line of text.split('\n')) {
-        for (let t of line.split(' ')) {
+      for (const line of text.split('\n')) {
+        for (const t of line.split(' ')) {
           // Escape both attribute and text contexts; never decode entities first.
           const escaped = this.escape(t);
           if (/^https?:\/\/[^\s]+$/i.test(t)) {
             stylizedText += `<a target="_blank" rel="noopener noreferrer" href="${escaped}">${escaped}</a> `;
-          } else
+          } else {
             stylizedText += escaped + ' ';
+          }
         }
         stylizedText += '<br>';
       }

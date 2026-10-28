@@ -79,9 +79,9 @@ import {TwitchComponent} from './twitch/twitch.component';
     CommonModule,
     FormsModule,
     TooltipModule.forRoot({
-      'placement': 'bottom',
+      placement: 'bottom',
       'hide-delay': 0,
-      'displayTouchscreen': false,
+      displayTouchscreen: false,
     }),
     PipesModule,
   ],

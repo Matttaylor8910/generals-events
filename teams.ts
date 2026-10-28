@@ -48,7 +48,7 @@ export function isValidTeamSize(teamSize: number): boolean {
 export function isValidTeamMembers(members: any): members is string[] {
   return Array.isArray(members) && members.length > 0 &&
       new Set(members).size === members.length &&
-      members.every(member => typeof member === 'string' && !!member);
+      members.every((member) => typeof member === 'string' && !!member);
 }
 
 /**
@@ -85,7 +85,7 @@ export function getConfirmedBigTeams(
     players: ILeaderboardPlayer[],
     ): IMatchTeam[] {
   const teamSize = event?.teamSize;
-  if (typeof teamSize !== "number" || !isValidTeamSize(teamSize)) {
+  if (typeof teamSize !== 'number' || !isValidTeamSize(teamSize)) {
     return [];
   }
 
@@ -127,8 +127,8 @@ export function getConfirmedBigTeams(
 
     // every member must be registered, checked in, eligible, and carry the
     // identical reciprocal roster and captain
-    const memberDocs = members.map(member => byName.get(member));
-    const consistent = memberDocs.every(member => {
+    const memberDocs = members.map((member) => byName.get(member));
+    const consistent = memberDocs.every((member) => {
       return !!member && !dupes.has(member.name) &&
           checkedIn.has(member.name) && !member.dq &&
           member.teamCaptain === captain &&

@@ -114,7 +114,7 @@ export class UtilService {
           {
             text: confirmText,
             handler: (response) => {
-              resolve(response.name || null)
+              resolve(response.name || null);
             }
           }
         ]
@@ -126,7 +126,7 @@ export class UtilService {
 
   getDurationString(startTime: number, endTime: number): string {
     // short circuit when we fdon't have the info we need
-    if (!startTime || !endTime) return '';
+    if (!startTime || !endTime) { return ''; }
 
     const totalSeconds = (endTime - startTime) / 1000;
     const days = Math.floor(totalSeconds / (60 * 60 * 12));
@@ -142,7 +142,7 @@ export class UtilService {
   }
 
   getParamString(params: {[key: string]: any}): string {
-    if (!params) return '';
+    if (!params) { return ''; }
 
     let str = '';
     const entries = Object.entries(params);

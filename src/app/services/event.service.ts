@@ -8,7 +8,10 @@ import {ADMINS} from '../../../constants';
 import {environment} from 'src/environments/environment';
 import {isTeamArena, loadEventTeam} from '../../../team-arena';
 
-import {EventType, GameStatus, IArenaEvent, IArenaGameTeam, IDoubleElimEvent, IEvent, IEventInfo, IEventTeamLobby, IGame, ILeaderboardPlayer, IRedirect, PartnerStatus, Visibility} from '../../../types';
+import {
+  EventType, GameStatus, IArenaEvent, IArenaGameTeam, IDoubleElimEvent, IEvent,
+  IEventInfo, IEventTeamLobby, IGame, ILeaderboardPlayer, IRedirect, PartnerStatus, Visibility,
+} from '../../../types';
 
 import {GeneralsService} from './generals.service';
 import {TeamArenaService} from './team-arena.service';
@@ -84,7 +87,7 @@ export class EventService {
 
               // otherwise, show only those with visibilities you can see
               else {
-                return query.where('visibility', 'in', visibilities)
+                return query.where('visibility', 'in', visibilities);
               }
             })
         .snapshotChanges()
@@ -321,7 +324,7 @@ export class EventService {
             // a later event edit
             options: data?.options,
             server: data?.server,
-          }
+          };
         }));
   }
 
@@ -547,8 +550,6 @@ export class EventService {
   /**
    * Return an id with spaces converted to hyphens and non-alphanumeric
    * characters removed, optional counter appended to the end
-   * @param name
-   * @param counter
    */
   private getId(name: string, counter?: number) {
     let id = name.replace(/[^a-zA-Z0-9 \-]/g, '')  // remove illegal values
@@ -563,8 +564,6 @@ export class EventService {
 
   /**
    * Return true if two values are equal or both are falsey
-   * @param a
-   * @param b
    */
   private equal(a?: number|boolean|null, b?: number|boolean|null): boolean {
     return a === b || (!a && !b);

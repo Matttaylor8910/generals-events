@@ -11,7 +11,7 @@ export class TeamBracketService {
   constructor(private readonly functions: AngularFireFunctions) {}
 
   private call(action: string, eventId: string,
-      payload: {[key: string]: unknown} = {}): Promise<void> {
+               payload: {[key: string]: unknown} = {}): Promise<void> {
     return this.functions.httpsCallable('teamBracketAction')(
         {eventId, action, payload}).toPromise().then(() => undefined);
   }

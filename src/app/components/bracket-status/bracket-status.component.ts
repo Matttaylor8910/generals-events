@@ -1,17 +1,20 @@
-import {Component, Input, OnDestroy} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy} from '@angular/core';
 import {flatten} from 'lodash';
 import {Subscription} from 'rxjs';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {getConfirmedBigTeams} from '../../../../teams';
-import {DoublesPairingStrategy, EventStatus, EventType, IBracketMatch, IBracketRound, IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus, PartnerStatus} from 'types';
+import {
+  DoublesPairingStrategy, EventStatus, EventType, IBracketMatch, IBracketRound,
+  IDoubleElimEvent, ILeaderboardPlayer, MatchStatus, MatchTeamStatus, PartnerStatus,
+} from 'types';
 
 @Component({
   selector: 'app-bracket-status',
   templateUrl: './bracket-status.component.html',
   styleUrls: ['./bracket-status.component.scss'],
 })
-export class BracketStatusComponent implements OnDestroy {
+export class BracketStatusComponent implements OnChanges, OnDestroy {
   @Input() event: IDoubleElimEvent;
   @Input() players: ILeaderboardPlayer[];
   @Input() status: EventStatus;
@@ -139,7 +142,7 @@ export class BracketStatusComponent implements OnDestroy {
         const outcome = winner ? 'winner' : 'loser';
         if ([player1, player2].includes(undefined)) {
           return `You will play the ${outcome} of match ${
-              this.spectateStatus.lobby}, but it may be a while.`
+              this.spectateStatus.lobby}, but it may be a while.`;
         }
         return `You will play the ${outcome} between ${player1} and ${
             player2}!`;
@@ -170,7 +173,7 @@ export class BracketStatusComponent implements OnDestroy {
         } else {
           return this.isBigTeam ?
               'Choose teammates to play with below.' :
-              'Choose a partner to play with below.'
+              'Choose a partner to play with below.';
         }
       }
 
@@ -251,8 +254,8 @@ export class BracketStatusComponent implements OnDestroy {
     }
 
     // reset statuses when we don't find matches to talk about
-    if (!foundReady) this.resetReadyStatus();
-    if (!foundSpectate) this.resetSpectateStatus();
+    if (!foundReady) { this.resetReadyStatus(); }
+    if (!foundSpectate) { this.resetSpectateStatus(); }
   }
 
   setMatchReadyStatus(match: IBracketMatch, sets: number) {
@@ -303,8 +306,8 @@ export class BracketStatusComponent implements OnDestroy {
 
       // if there is a placeholder match, parse out the match number
       if (placeholderMatch) {
-        waitingOn = flatten(winners.map(round => round.matches))
-                        .find(match => match.number === placeholderMatch);
+        waitingOn = flatten(winners.map(winnerRound => winnerRound.matches))
+                        .find(waitingMatch => waitingMatch.number === placeholderMatch);
         winner = false;
       }
 

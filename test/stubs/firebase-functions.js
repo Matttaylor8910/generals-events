@@ -26,7 +26,7 @@ class HttpsError extends Error {
 }
 
 const functions = {
-  firestore: {document: registrar},
+  firestore: { document: registrar },
   https: {
     onRequest: fn => fn,
     onCall: fn => fn,

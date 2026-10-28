@@ -10,25 +10,25 @@
 const Constants = require('./Constants');
 
 const MODIFIERS = [
-  {id: 0, name: 'Leapfrog', exclude: []},
-  {id: 1, name: 'City-State', exclude: []},
-  {id: 2, name: 'Misty Veil', exclude: [3]},
-  {id: 3, name: 'Crystal Clear', exclude: [2, 6, 8]},
-  {id: 4, name: 'Silent War', exclude: []},
-  {id: 5, name: 'Defenseless', exclude: []},
-  {id: 6, name: 'Watchtower', exclude: [3]},
-  {id: 7, name: 'Torus', exclude: []},
-  {id: 8, name: 'Fading Smog', exclude: [3]},
-  {id: 9, name: 'Defection', exclude: []},
-  {id: 10, name: 'Slippery', exclude: []},
-  {id: 11, name: 'Chess Clock', exclude: []},
+  { id: 0, name: 'Leapfrog', exclude: [] },
+  { id: 1, name: 'City-State', exclude: [] },
+  { id: 2, name: 'Misty Veil', exclude: [3] },
+  { id: 3, name: 'Crystal Clear', exclude: [2, 6, 8] },
+  { id: 4, name: 'Silent War', exclude: [] },
+  { id: 5, name: 'Defenseless', exclude: [] },
+  { id: 6, name: 'Watchtower', exclude: [3] },
+  { id: 7, name: 'Torus', exclude: [] },
+  { id: 8, name: 'Fading Smog', exclude: [3] },
+  { id: 9, name: 'Defection', exclude: [] },
+  { id: 10, name: 'Slippery', exclude: [] },
+  { id: 11, name: 'Chess Clock', exclude: [] },
 ];
 
 const MODIFIER_INDEXES = Constants.MODIFIER_INDEXES;
 
 const KNOWN_MODIFIER_OPTION_KEYS = ['ChessClock'];
-const KNOWN_CHESS_CLOCK_KEYS =
-    ['StartingClock', 'ClockIncrement', 'DontLimitMoveSpeed'];
+const KNOWN_CHESS_CLOCK_KEYS
+    = ['StartingClock', 'ClockIncrement', 'DontLimitMoveSpeed'];
 
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
@@ -95,8 +95,8 @@ function normalizeModifierIds(modifiers) {
     for (const excluded of MODIFIERS[id].exclude) {
       if (ids.includes(excluded)) {
         throw new Error(
-            `Invalid modifiers set, ${MODIFIERS[id].name} excludes ` +
-            `${MODIFIERS[excluded].name}`);
+          `Invalid modifiers set, ${MODIFIERS[id].name} excludes `
+            + `${MODIFIERS[excluded].name}`);
       }
     }
   }
@@ -128,27 +128,29 @@ function normalizeChessClockOptions(raw) {
     }
   }
 
-  const startingClock = raw.StartingClock === undefined ||
-      raw.StartingClock === null ? Constants.DEFAULT_CHESS_CLOCK_STARTING :
-      strictFiniteNumber(raw.StartingClock);
+  const startingClock = raw.StartingClock === undefined
+      || raw.StartingClock === null
+      ? Constants.DEFAULT_CHESS_CLOCK_STARTING
+      : strictFiniteNumber(raw.StartingClock);
   if (!isFiniteNumber(startingClock) || startingClock < 1) {
     throw new Error(`Invalid ChessClock StartingClock ${raw.StartingClock}`);
   }
 
-  const clockIncrement = raw.ClockIncrement === undefined ||
-      raw.ClockIncrement === null ? Constants.DEFAULT_CHESS_CLOCK_INCREMENT :
-      strictFiniteNumber(raw.ClockIncrement);
+  const clockIncrement = raw.ClockIncrement === undefined
+      || raw.ClockIncrement === null
+      ? Constants.DEFAULT_CHESS_CLOCK_INCREMENT
+      : strictFiniteNumber(raw.ClockIncrement);
   if (!isFiniteNumber(clockIncrement) || clockIncrement < 0) {
     throw new Error(`Invalid ChessClock ClockIncrement ${raw.ClockIncrement}`);
   }
 
-  const dontLimit = raw.DontLimitMoveSpeed === undefined ||
-      raw.DontLimitMoveSpeed === null ?
-      Constants.DEFAULT_CHESS_CLOCK_DONT_LIMIT_MOVE_SPEED :
-      raw.DontLimitMoveSpeed;
+  const dontLimit = raw.DontLimitMoveSpeed === undefined
+      || raw.DontLimitMoveSpeed === null
+      ? Constants.DEFAULT_CHESS_CLOCK_DONT_LIMIT_MOVE_SPEED
+      : raw.DontLimitMoveSpeed;
   if (typeof dontLimit !== 'boolean') {
     throw new Error(
-        `Invalid ChessClock DontLimitMoveSpeed ${raw.DontLimitMoveSpeed}`);
+      `Invalid ChessClock DontLimitMoveSpeed ${raw.DontLimitMoveSpeed}`);
   }
 
   normalized.StartingClock = startingClock;
@@ -197,7 +199,7 @@ function normalizeEventGameOptions(options) {
   }
   if (Object.prototype.hasOwnProperty.call(normalized, 'modifier_options')) {
     const modifierOptions = normalizeModifierOptions(
-        normalized.modifier_options);
+      normalized.modifier_options);
     if (modifierOptions === undefined) {
       delete normalized.modifier_options;
     } else {
@@ -211,9 +213,9 @@ function normalizeEventGameOptions(options) {
 function validateEventGameOptions(options) {
   try {
     const normalized = normalizeEventGameOptions(options);
-    return {valid: true, normalized};
+    return { valid: true, normalized };
   } catch (error) {
-    return {valid: false, error: error.message};
+    return { valid: false, error: error.message };
   }
 }
 
@@ -237,16 +239,16 @@ function sameIdSet(a, b) {
 function assertReplayMatchesExpectedOptions(replay, expectedOptions) {
   const decoded = normalizeModifierIds(replay && replay.modifiers);
 
-  if (!expectedOptions ||
-      !Object.prototype.hasOwnProperty.call(expectedOptions, 'modifiers')) {
+  if (!expectedOptions
+      || !Object.prototype.hasOwnProperty.call(expectedOptions, 'modifiers')) {
     return;
   }
 
   const expected = normalizeModifierIds(expectedOptions.modifiers);
   if (!sameIdSet(decoded, expected)) {
     throw new Error(
-        `Replay modifiers [${decoded}] do not match expected event ` +
-        `modifiers [${expected}]`);
+      `Replay modifiers [${decoded}] do not match expected event `
+        + `modifiers [${expected}]`);
   }
 
   if (!decoded.includes(MODIFIER_INDEXES.ChessClock)) {
@@ -254,17 +256,17 @@ function assertReplayMatchesExpectedOptions(replay, expectedOptions) {
   }
 
   const expectedClock = normalizeChessClockOptions(
-      expectedOptions.modifier_options &&
-      expectedOptions.modifier_options.ChessClock);
+    expectedOptions.modifier_options
+        && expectedOptions.modifier_options.ChessClock);
   const actualClock = normalizeChessClockOptions(
-      replay.modifier_options && replay.modifier_options.ChessClock);
-  if (expectedClock.StartingClock !== actualClock.StartingClock ||
-      expectedClock.ClockIncrement !== actualClock.ClockIncrement ||
-      expectedClock.DontLimitMoveSpeed !== actualClock.DontLimitMoveSpeed) {
+    replay.modifier_options && replay.modifier_options.ChessClock);
+  if (expectedClock.StartingClock !== actualClock.StartingClock
+      || expectedClock.ClockIncrement !== actualClock.ClockIncrement
+      || expectedClock.DontLimitMoveSpeed !== actualClock.DontLimitMoveSpeed) {
     throw new Error(
-        'Replay ChessClock options ' +
-        `${JSON.stringify(actualClock)} do not match expected ` +
-        `${JSON.stringify(expectedClock)}`);
+      'Replay ChessClock options '
+        + `${JSON.stringify(actualClock)} do not match expected `
+        + `${JSON.stringify(expectedClock)}`);
   }
 }
 
@@ -276,9 +278,9 @@ function assertValidChessClockElapsed(elapsed, playerCount) {
   if (!elapsed || typeof elapsed !== 'object' || Array.isArray(elapsed)) {
     throw new Error('Malformed chessClockElapsed metadata');
   }
-  if (!Array.isArray(elapsed.turns) ||
-      !Array.isArray(elapsed.players) ||
-      !(elapsed.duration === null || isFiniteNumber(elapsed.duration))) {
+  if (!Array.isArray(elapsed.turns)
+      || !Array.isArray(elapsed.players)
+      || !(elapsed.duration === null || isFiniteNumber(elapsed.duration))) {
     throw new Error('Malformed chessClockElapsed metadata');
   }
 
@@ -301,8 +303,8 @@ function assertValidChessClockElapsed(elapsed, playerCount) {
 
   if (elapsed.duration !== null) {
     const floor = Math.max(
-        lastTurnTime,
-        ...elapsed.players.filter(p => p !== null));
+      lastTurnTime,
+      ...elapsed.players.filter(p => p !== null));
     if (elapsed.duration < floor) {
       throw new Error('Malformed chessClockElapsed duration');
     }

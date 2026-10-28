@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDynamicDYPEvent, IDynamicDYPRound, ILeaderboardPlayer} from 'types';
@@ -12,7 +12,7 @@ import {getRounds} from './rounds-creator';
   templateUrl: './dynamic-dyp-event.component.html',
   styleUrls: ['./dynamic-dyp-event.component.scss'],
 })
-export class DynamicDYPEventComponent {
+export class DynamicDYPEventComponent implements OnChanges {
   @Input() event: IDynamicDYPEvent;
   @Input() status: EventStatus;
   @Input() players: ILeaderboardPlayer[];
@@ -25,10 +25,10 @@ export class DynamicDYPEventComponent {
   selectedTab = 'Registration';
   finals: boolean;
 
-  maxRounds: number = 10;
+  maxRounds = 10;
 
   // TODO: remove
-  playersToUse: number = 100;
+  playersToUse = 100;
 
   constructor(
       private readonly generals: GeneralsService,

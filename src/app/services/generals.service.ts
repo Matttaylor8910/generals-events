@@ -12,7 +12,7 @@ import {UtilService} from './util.service';
 
 const DEFAULT_GAME_OPTIONS: IGeneralsGameOptions = {
   spectate_chat: true,
-}
+};
 
 const GENERALS_NAME = 'generals-name';
 const LAST_EVENT = 'generals-last-event';
@@ -243,8 +243,6 @@ export class GeneralsService {
    * event for example:
    * https://events.generals.io/FFA-Jan-2021?handoffToken=...&join=true
    *
-   * @param name
-   * @param eventId
    */
   handleDidLogin(name: string, eventId?: string) {
     this.setName(name);

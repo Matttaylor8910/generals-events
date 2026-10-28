@@ -249,7 +249,7 @@ function getTeamsPerRound(players: string[]): IDynamicDYPTeam[][] {
         // TODO: potential opimization: we can generate the spreads that will
         // work beforehand by finding the least common multiple of spread and
         // players.length, dividing that by spread, and returning true if even
-        if (set0.has(next)) break;
+        if (set0.has(next)) { break; }
 
         // add to round 0
         round0.push(team);
@@ -349,7 +349,11 @@ function buildMatches(
           a.players.join('|').localeCompare(b.players.join('|'));
     });
 
-    const matchTeams = [remaining.shift()!];
+    const firstTeam = remaining.shift();
+    if (!firstTeam) {
+      break;
+    }
+    const matchTeams = [firstTeam];
     while (matchTeams.length < teamsPerMatch) {
       const candidate = remaining
           .map((team, index) => {
@@ -491,8 +495,6 @@ function getPairKey(a: string, b: string): string {
 
 /**
  * Given two players a and b, return a team with these players
- * @param {*} a
- * @param {*} b
  */
 function generateTeam(a: string, b: string): IDynamicDYPTeam {
   return {players: [a, b].sort((x, y) => x.localeCompare(y)), score: 0};

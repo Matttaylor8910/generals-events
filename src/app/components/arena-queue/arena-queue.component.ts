@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {normalizeEventGameOptions} from 'game-options';
 import {isTeamArena, normalizeEventTeam} from 'team-arena';
@@ -18,7 +18,7 @@ const READY_TTL_MS = 90 * 1000;
   templateUrl: './arena-queue.component.html',
   styleUrls: ['./arena-queue.component.scss'],
 })
-export class ArenaQueueComponent implements OnDestroy {
+export class ArenaQueueComponent implements OnChanges, OnDestroy {
   @Input() event: IArenaEvent;
   @Input() inEvent: boolean;
   @Input() status: EventStatus;
@@ -94,7 +94,7 @@ export class ArenaQueueComponent implements OnDestroy {
 
   get queueLabel(): string {
     if (this.isTeamArena) {
-      if (this.playing) return 'Game in progress';
+      if (this.playing) { return 'Game in progress'; }
       return this.inQueue ? 'Unready' : 'Ready';
     }
     return this.inQueue ? 'Leave Queue' : 'Join Queue';

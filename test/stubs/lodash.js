@@ -22,4 +22,4 @@ const shuffle = array => {
 };
 const extend = (target, ...sources) => Object.assign(target, ...sources);
 
-module.exports = {cloneDeep, flatten, map, shuffle, extend};
+module.exports = { cloneDeep, flatten, map, shuffle, extend };

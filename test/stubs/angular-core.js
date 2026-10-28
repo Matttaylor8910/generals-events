@@ -15,7 +15,7 @@ class EventEmitter {
   }
   subscribe(fn) {
     this._subs.push(fn);
-    return {unsubscribe() {}};
+    return { unsubscribe() {} };
   }
   pipe() {
     return this;

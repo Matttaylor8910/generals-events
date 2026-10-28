@@ -73,8 +73,8 @@ function deserializeReplay(serialized) {
   // gio_playerColor set) with the player's index so every player has a valid
   // color, mirroring the live GameReplay deserializer.
   replay.playerColors = rawPlayerColors
-    ? rawPlayerColors.map((c, idx) => (c === null || c === undefined ? idx : c))
-    : replay.usernames.map((u, idx) => idx);
+      ? rawPlayerColors.map((c, idx) => (c === null || c === undefined ? idx : c))
+      : replay.usernames.map((u, idx) => idx);
   replay.lights = obj[i++] || [];
 
   const options = (obj[i++] || [
@@ -175,7 +175,7 @@ function deserializeReplay(serialized) {
     replay.modifier_options = obj[i++] || null;
   }
 
-  // v21: exact chess clock elapsed metadata (milliseconds relative to the
+  // v20 (wire 19): exact chess clock elapsed metadata (milliseconds from the
   // game start) or null for non-clock games and replays that predate it.
   // Malformed tail values are preserved so simulator-side validation can
   // reject them rather than silently treating them as legacy replays.

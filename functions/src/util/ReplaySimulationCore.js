@@ -65,7 +65,7 @@ class ReplaySimulationCore {
     this.deaths = [];
     this.attackIndices = [];
     this.annihilatedArmyAgainstPlayers = [];
-    // Per-turn Defection counterpart accumulator (version >= 20 replays
+    // Per-turn Defection counterpart accumulator (version >= 19 replays
     // only); null outside update() and for legacy replays.
     this._turnDefectionCredits = null;
     this.updatesSinceLastMove = 0;
@@ -247,7 +247,7 @@ class ReplaySimulationCore {
     }
 
     while (this.gameReplay.generalTrades.length > this.currentGeneralTradeIndex
-      && this.gameReplay.generalTrades[this.currentGeneralTradeIndex].turn <= this.turn) {
+        && this.gameReplay.generalTrades[this.currentGeneralTradeIndex].turn <= this.turn) {
       const trade = this.gameReplay.generalTrades[this.currentGeneralTradeIndex++];
       this.onReplayGeneralTrade(trade);
     }
@@ -397,17 +397,18 @@ class ReplaySimulationCore {
     let anyMove = false;
     const moves = this.getNextValidSetOfMovesPrioritized();
     const defection = this.map.modFlags && this.map.modFlags[Constants.MODIFIER_INDEXES.Defection];
-    // Version >= 20 Defection replays record every turn-selected intent and
+    // Version >= 19 Defection replays record every turn-selected intent and
     // award counterpart credit from actual contact in handleAttack.
     // Older replays keep the legacy speculative forward/backward estimate so
     // their historical outcomes decode identically.
     const modernDefection = defection
-      && this.gameReplay.version >= DefectionCredits.MODERN_REPLAY_VERSION;
+        && this.gameReplay.version >= DefectionCredits.MODERN_REPLAY_VERSION;
     this._turnDefectionCredits = modernDefection
-      ? new DefectionCredits(moves, this.sockets.length) : null;
+        ? new DefectionCredits(moves, this.sockets.length)
+        : null;
     const defectionCredit = this._turnDefectionCredits
-      ? this._turnDefectionCredits.credits
-      : (defection ? this.sockets.map(() => 0) : null);
+        ? this._turnDefectionCredits.credits
+        : (defection ? this.sockets.map(() => 0) : null);
     const consumedMoveIndices = new Set();
     // Track tunnel-targeted moves so we can refund overflow when multiple
     // attacks combine to push a tunnel above its limit. Mirrors live Game.update.
@@ -443,8 +444,8 @@ class ReplaySimulationCore {
         for (let j = i + 1; j < moves.length; j++) {
           const moveJ = moves[j];
           if (move.start === moveJ.end && move.end === moveJ.start
-            && this.map.tileAt(moveJ.start) === moveJ.playerIndex
-            && (!this.map.teams || this.map.teams[moveJ.playerIndex] !== this.map.teams[pI])) {
+              && this.map.tileAt(moveJ.start) === moveJ.playerIndex
+              && (!this.map.teams || this.map.teams[moveJ.playerIndex] !== this.map.teams[pI])) {
             const pJ = moveJ.playerIndex;
             const reserve = move.is50 ? Math.ceil(this.map.armyAt(move.start) / 2) : 1;
             const sentArmy = this.map.armyAt(move.start) - reserve;
@@ -456,7 +457,7 @@ class ReplaySimulationCore {
 
         for (let j = 0; j < i; j++) {
           if (move.end === moves[j].end && this.map.tileAt(moves[j].end) === moves[j].playerIndex
-            && (!this.teams || this.teams[moves[j].playerIndex] !== this.teams[pI])) {
+              && (!this.teams || this.teams[moves[j].playerIndex] !== this.teams[pI])) {
             const pJ = moves[j].playerIndex;
             const reserve = move.is50 ? Math.ceil(this.map.armyAt(move.start) / 2) : 1;
             const sentArmy = this.map.armyAt(move.start) - reserve;
@@ -471,8 +472,8 @@ class ReplaySimulationCore {
       // overflow that was contributed by this specific move if multiple
       // attacks pushed the tunnel above its limit.
       const tunnelIncomingArmy = this.map.getTunnelLimit(move.end) > 0
-        ? this.map.getCappedIncomingArmy(move.end, this.map.getMoveArmy(move.start, move.is50))
-        : 0;
+          ? this.map.getCappedIncomingArmy(move.end, this.map.getMoveArmy(move.start, move.is50))
+          : 0;
       const succeeded = this.handleAttack(pI, move.start, move.end, move.is50, move.attackIndex);
       anyMove |= succeeded;
       if (succeeded && tunnelIncomingArmy > 0 && this.map.getTunnelLimit(move.end) > 0) {
@@ -493,7 +494,7 @@ class ReplaySimulationCore {
         // general, which a Leapfrog relocation may have moved this turn);
         // legacy replays keep the original generals>=0-only gate.
         const eligible = this.generals[i] >= 0
-          && (!modernDefection || !this.isDead(this.sockets[i]));
+            && (!modernDefection || !this.isDead(this.sockets[i]));
         if (defectionCredit[i] > 0 && eligible) {
           const newArmy = this.map.armyAt(this.generals[i]) + defectionCredit[i];
           this.map.setArmy(this.generals[i], newArmy);
@@ -677,17 +678,17 @@ class ReplaySimulationCore {
     const annihilated = (startArmyBefore + endArmyBefore - startArmyAfter - endArmyAfter) >>> 1;
 
     if (this.map.modFlags && this.map.modFlags[Constants.MODIFIER_INDEXES.Defection]
-      && annihilated > 0
-      && this.map.teams
-      && this.map.teams[index] !== this.map.teams[oldEndPlayer]) {
+        && annihilated > 0
+        && this.map.teams
+        && this.map.teams[index] !== this.map.teams[oldEndPlayer]) {
       if (oldEndPlayer >= 0) {
-        // Modern (version >= 20) replays: the defender collects the same
+        // Modern (version >= 19) replays: the defender collects the same
         // actual annihilated amount as counterpart credit when its recorded
         // turn-selected intent collided at this tile or crossed it. Legacy
         // replays have no helper and keep the speculative update() credit.
         if (this._turnDefectionCredits) {
           this._turnDefectionCredits.addCounterpart(
-              index, start, end, oldEndPlayer, annihilated);
+            index, start, end, oldEndPlayer, annihilated);
         }
         const newArmy = this.map.armyAt(this.generals[index]) + annihilated;
         this.notifyDefectionArmy(this.turn, index, annihilated);

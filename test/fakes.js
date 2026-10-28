@@ -39,7 +39,7 @@ function resolveValue(oldValue, value) {
       }
       case 'arrayRemove':
         return old.filter(item =>
-            !sentinelValues(value).some(v => sameValue(v, item)));
+          !sentinelValues(value).some(v => sameValue(v, item)));
       case 'increment':
         return (typeof oldValue === 'number' ? oldValue : 0) + value.value;
       case 'serverTimestamp':
@@ -65,7 +65,7 @@ function assertNoNestedArrays(value, trail = 'root') {
     for (const item of value) {
       if (Array.isArray(item)) {
         throw new Error(
-            `Firestore write rejected: nested array at ${trail}`);
+          `Firestore write rejected: nested array at ${trail}`);
       }
       assertNoNestedArrays(item, trail);
     }
@@ -139,7 +139,7 @@ class FakeDocRef {
     // like the real SDK, updating a missing doc rejects rather than creates
     if (!this.db._has(this.path)) {
       return Promise.reject(
-          new Error(`update on nonexistent doc ${this.path}`));
+        new Error(`update on nonexistent doc ${this.path}`));
     }
     this.db._write(this.path, data, 'update');
     return this.db._delay(this.path);
@@ -159,9 +159,10 @@ class FakeDocRef {
 
 function getField(data, field) {
   return field.split('.').reduce(
-      (node, part) => (node === null || node === undefined) ?
-          undefined : node[part],
-      data);
+    (node, part) => (node === null || node === undefined)
+        ? undefined
+        : node[part],
+    data);
 }
 
 function matchesFilter(data, [field, op, value]) {
@@ -173,10 +174,10 @@ function matchesFilter(data, [field, op, value]) {
     case '>=': return actual >= value;
     case '<': return actual < value;
     case '<=': return actual <= value;
-    case 'in': return Array.isArray(value) &&
-        value.some(v => sameValue(v, actual));
-    case 'array-contains': return Array.isArray(actual) &&
-        actual.some(item => sameValue(item, value));
+    case 'in': return Array.isArray(value)
+        && value.some(v => sameValue(v, actual));
+    case 'array-contains': return Array.isArray(actual)
+        && actual.some(item => sameValue(item, value));
     default: throw new Error(`unsupported query operator ${op}`);
   }
 }
@@ -194,26 +195,26 @@ class FakeQuery {
   }
   where(field, op, value) {
     return new FakeQuery(
-        this.db, this.path, [...this.filters, [field, op, value]],
-        this.orders, this.limitN);
+      this.db, this.path, [...this.filters, [field, op, value]],
+      this.orders, this.limitN);
   }
   orderBy(field, dir = 'asc') {
     return new FakeQuery(this.db, this.path, this.filters,
-        [...this.orders, [field, dir]], this.limitN);
+      [...this.orders, [field, dir]], this.limitN);
   }
   limit(n) {
     return new FakeQuery(
-        this.db, this.path, this.filters, this.orders, n);
+      this.db, this.path, this.filters, this.orders, n);
   }
   get() {
     const prefix = `${this.path}/`;
     const docs = [];
     for (const [docPath, data] of this.db.docs) {
-      if (docPath.startsWith(prefix) &&
-          !docPath.slice(prefix.length).includes('/') &&
-          this.filters.every(filter => matchesFilter(data, filter))) {
+      if (docPath.startsWith(prefix)
+          && !docPath.slice(prefix.length).includes('/')
+          && this.filters.every(filter => matchesFilter(data, filter))) {
         docs.push(new FakeDocSnapshot(
-            this.doc(docPath.split('/').pop()), data));
+          this.doc(docPath.split('/').pop()), data));
       }
     }
     if (this.orders.length) {
@@ -231,7 +232,7 @@ class FakeQuery {
       });
     }
     const limited = this.limitN === null ? docs : docs.slice(0, this.limitN);
-    return Promise.resolve({docs: limited, empty: limited.length === 0});
+    return Promise.resolve({ docs: limited, empty: limited.length === 0 });
   }
 }
 
@@ -260,7 +261,7 @@ class FakeTransaction {
     // real Firestore transactions require all reads before all writes
     if (this.wrote) {
       return Promise.reject(
-          new Error('transaction reads must come before writes'));
+        new Error('transaction reads must come before writes'));
     }
     if (ref instanceof FakeQuery) {
       return ref.get();
@@ -269,19 +270,19 @@ class FakeTransaction {
   }
   update(ref, data) {
     this.wrote = true;
-    this.writes.push({path: ref.path, data, op: 'update'});
+    this.writes.push({ path: ref.path, data, op: 'update' });
   }
   set(ref, data) {
     this.wrote = true;
-    this.writes.push({path: ref.path, data, op: 'set'});
+    this.writes.push({ path: ref.path, data, op: 'set' });
   }
   create(ref, data) {
     this.wrote = true;
-    this.writes.push({path: ref.path, data, op: 'create'});
+    this.writes.push({ path: ref.path, data, op: 'create' });
   }
   delete(ref) {
     this.wrote = true;
-    this.writes.push({path: ref.path, op: 'delete'});
+    this.writes.push({ path: ref.path, op: 'delete' });
   }
 }
 
@@ -309,31 +310,31 @@ class FakeFirestore {
     const run = () => {
       const tx = new FakeTransaction(this);
       return Promise.resolve()
-          .then(() => fn(tx))
-          .then(result => {
-            // validate every staged write before publishing anything so a
-            // bad op can never leave partially applied state
-            for (const write of tx.writes) {
-              if (write.op !== 'delete') {
-                assertNoNestedArrays(write.data, write.path);
-              }
-              const exists = this.docs.has(write.path);
-              if (write.op === 'update' && !exists) {
-                throw new Error(`update on nonexistent doc ${write.path}`);
-              }
-              if (write.op === 'create' && exists) {
-                throw new Error(`create on existing doc ${write.path}`);
-              }
+        .then(() => fn(tx))
+        .then(result => {
+          // validate every staged write before publishing anything so a
+          // bad op can never leave partially applied state
+          for (const write of tx.writes) {
+            if (write.op !== 'delete') {
+              assertNoNestedArrays(write.data, write.path);
             }
-            for (const write of tx.writes) {
-              if (write.op === 'delete') {
-                this._delete(write.path);
-              } else {
-                this._write(write.path, write.data, write.op);
-              }
+            const exists = this.docs.has(write.path);
+            if (write.op === 'update' && !exists) {
+              throw new Error(`update on nonexistent doc ${write.path}`);
             }
-            return result;
-          });
+            if (write.op === 'create' && exists) {
+              throw new Error(`create on existing doc ${write.path}`);
+            }
+          }
+          for (const write of tx.writes) {
+            if (write.op === 'delete') {
+              this._delete(write.path);
+            } else {
+              this._write(write.path, write.data, write.op);
+            }
+          }
+          return result;
+        });
     };
     const result = this._txTail.then(run, run);
     this._txTail = result.then(() => {}, () => {});
@@ -347,16 +348,16 @@ class FakeFirestore {
     const staged = [];
     return {
       set: (ref, data) => {
-        staged.push({path: ref.path, data, op: 'set'});
+        staged.push({ path: ref.path, data, op: 'set' });
       },
       update: (ref, data) => {
-        staged.push({path: ref.path, data, op: 'update'});
+        staged.push({ path: ref.path, data, op: 'update' });
       },
       create: (ref, data) => {
-        staged.push({path: ref.path, data, op: 'create'});
+        staged.push({ path: ref.path, data, op: 'create' });
       },
       delete: ref => {
-        staged.push({path: ref.path, op: 'delete'});
+        staged.push({ path: ref.path, op: 'delete' });
       },
       commit() {
         try {
@@ -367,11 +368,11 @@ class FakeFirestore {
             const exists = db.docs.has(write.path);
             if (write.op === 'update' && !exists) {
               return Promise.reject(
-                  new Error(`update on nonexistent doc ${write.path}`));
+                new Error(`update on nonexistent doc ${write.path}`));
             }
             if (write.op === 'create' && exists) {
               return Promise.reject(
-                  new Error(`create on existing doc ${write.path}`));
+                new Error(`create on existing doc ${write.path}`));
             }
           }
         } catch (e) {
@@ -412,7 +413,7 @@ class FakeFirestore {
 
   _write(path, data, op) {
     assertNoNestedArrays(data, path);
-    this.invocations.push({path, op, data: clone(data)});
+    this.invocations.push({ path, op, data: clone(data) });
     if (op === 'set' || op === 'create') {
       this.docs.set(path, clone(data));
     } else {
@@ -421,14 +422,14 @@ class FakeFirestore {
   }
 
   _delete(path) {
-    this.invocations.push({path, op: 'delete'});
+    this.invocations.push({ path, op: 'delete' });
     this.docs.delete(path);
   }
 
   _delay(path) {
     return new Promise(resolve => {
       setTimeout(() => {
-        this.completedWrites.push({path});
+        this.completedWrites.push({ path });
         resolve();
       }, this._delayFor(path));
     });
@@ -444,4 +445,4 @@ class FakeFirestore {
   }
 }
 
-module.exports = {FakeFirestore};
+module.exports = { FakeFirestore };

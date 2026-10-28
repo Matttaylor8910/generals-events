@@ -58,11 +58,11 @@ export const teamBracketAction =
       }
       const caller = context.auth.uid;
 
-      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      if (data === null || typeof data !== 'object' || Array.isArray(data)) {
         throw new functions.https.HttpsError(
             'invalid-argument', 'Malformed request');
       }
-      for (const key of Object.keys(data as object)) {
+      for (const key of Object.keys(data as Record<string, unknown>)) {
         if (!['eventId', 'action', 'payload'].includes(key)) {
           throw new functions.https.HttpsError(
               'invalid-argument', 'Unexpected request field');

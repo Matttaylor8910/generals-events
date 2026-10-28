@@ -8,14 +8,14 @@ function firestore() {
 }
 
 firestore.FieldValue = {
-  arrayUnion: (...values) => ({__sentinel: 'arrayUnion', values}),
-  arrayRemove: (...values) => ({__sentinel: 'arrayRemove', values}),
-  increment: value => ({__sentinel: 'increment', value}),
-  serverTimestamp: () => ({__sentinel: 'serverTimestamp'}),
-  delete: () => ({__sentinel: 'delete'}),
+  arrayUnion: (...values) => ({ __sentinel: 'arrayUnion', values }),
+  arrayRemove: (...values) => ({ __sentinel: 'arrayRemove', values }),
+  increment: value => ({ __sentinel: 'increment', value }),
+  serverTimestamp: () => ({ __sentinel: 'serverTimestamp' }),
+  delete: () => ({ __sentinel: 'delete' }),
 };
 
 module.exports = {
-  default: {firestore},
+  default: { firestore },
   firestore,
 };

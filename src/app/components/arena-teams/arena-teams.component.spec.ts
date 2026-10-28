@@ -33,7 +33,7 @@ function teamArenaEvent(overrides: any = {}) {
 }
 
 function team(id: string, captain: string, members: string[],
-    overrides: any = {}) {
+              overrides: any = {}) {
   return {
     id, name: `${captain}'s Team`, captain, members,
     requests: [], noShows: [], acceptFill: false, allowShortHanded: false,

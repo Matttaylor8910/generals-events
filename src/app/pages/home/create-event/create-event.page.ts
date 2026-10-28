@@ -1,5 +1,5 @@
 import {DatePipe} from '@angular/common';
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ModalController, NavParams} from '@ionic/angular';
 import {extend} from 'lodash';
 import {takeUntil} from 'rxjs/operators';
@@ -40,7 +40,7 @@ const typeFormats = {
   [EventType.BIG_TEAM]: [EventFormat.DOUBLE_ELIM, EventFormat.DYNAMIC_DYP,
       EventFormat.ARENA],
   [EventType.MULTI_STAGE_EVENT]: [EventFormat.MULTI_STAGE_EVENT],
-}
+};
 
 enum WinningSets {
   Bo1 = 'Winner of one game',
@@ -54,7 +54,7 @@ const winningSets = {
   [WinningSets.Bo3]: 2,
   [WinningSets.Bo5]: 3,
   [WinningSets.Bo7]: 4,
-}
+};
 
 enum CheckInTimes {
   CHECKIN_15 = '15 minutes before start',
@@ -68,7 +68,7 @@ const checkInTimes = {
   [CheckInTimes.CHECKIN_30]: 30,
   [CheckInTimes.CHECKIN_45]: 45,
   [CheckInTimes.CHECKIN_60]: 60,
-}
+};
 
 const months = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
@@ -80,7 +80,7 @@ const months = [
   templateUrl: './create-event.page.html',
   styleUrls: ['./create-event.page.scss'],
 })
-export class CreateEventPage implements OnInit {
+export class CreateEventPage implements OnInit, OnDestroy {
   private destroyed$ = new Subject<void>();
   eventId: string;
   event: IEvent;
@@ -111,24 +111,24 @@ export class CreateEventPage implements OnInit {
   height = .75;
   cities = .5;
   mountains = .5;
-  city_fairness = 0.0;
-  spawn_fairness = 0.0;
+  cityFairness = 0.0;
+  spawnFairness = 0.0;
   swamps = 0.0;
   deserts = 0.0;
   observatories = 0.0;
   lookouts = 0.0;
   tunnels = 0;
-  tunnel_min = 20;
-  tunnel_max = 60;
+  tunnelMin = 20;
+  tunnelMax = 60;
   strongholds = 0;
-  stronghold_min = 10;
-  stronghold_max = 25;
+  strongholdMin = 10;
+  strongholdMax = 25;
   // numeric modifier ids matching the generals.io registry (0-11)
   modifiers: number[]|string[]|null = null;
   eventModifiers = MODIFIERS;
-  chess_clock_starting = 10;
-  chess_clock_increment = 5;
-  chess_clock_dont_limit = false;
+  chessClockStarting = 10;
+  chessClockIncrement = 5;
+  chessClockDontLimit = false;
 
   name: string;
   duration: number;
@@ -181,7 +181,7 @@ export class CreateEventPage implements OnInit {
   }
 
   loadEventData() {
-    if (!this.event) return;
+    if (!this.event) { return; }
 
     // Basic fields
     this.name = this.event.name;
@@ -286,18 +286,18 @@ export class CreateEventPage implements OnInit {
       this.height = options.height ?? .75;
       this.cities = options.cities ?? .5;
       this.mountains = options.mountains ?? .5;
-      this.city_fairness = options.city_fairness ?? 0.0;
-      this.spawn_fairness = options.spawn_fairness ?? 0.0;
+      this.cityFairness = options.city_fairness ?? 0.0;
+      this.spawnFairness = options.spawn_fairness ?? 0.0;
       this.swamps = options.swamps ?? 0.0;
       this.deserts = options.deserts ?? 0.0;
       this.observatories = options.observatories ?? 0.0;
       this.lookouts = options.lookouts ?? 0.0;
       this.tunnels = options.tunnels ?? 0;
-      this.tunnel_min = options.tunnel_min ?? 20;
-      this.tunnel_max = options.tunnel_max ?? 60;
+      this.tunnelMin = options.tunnel_min ?? 20;
+      this.tunnelMax = options.tunnel_max ?? 60;
       this.strongholds = options.strongholds ?? 0;
-      this.stronghold_min = options.stronghold_min ?? 10;
-      this.stronghold_max = options.stronghold_max ?? 25;
+      this.strongholdMin = options.stronghold_min ?? 10;
+      this.strongholdMax = options.stronghold_max ?? 25;
       // stored modifiers may be in the legacy comma-string form; normalize to
       // numeric ids so the select can match them; a malformed stored value is
       // kept raw so the form shows it as invalid instead of crashing
@@ -308,9 +308,9 @@ export class CreateEventPage implements OnInit {
         this.modifiers = options.modifiers as number[];
       }
       const clock = options.modifier_options?.ChessClock;
-      this.chess_clock_starting = clock?.StartingClock ?? 10;
-      this.chess_clock_increment = clock?.ClockIncrement ?? 5;
-      this.chess_clock_dont_limit = clock?.DontLimitMoveSpeed ?? false;
+      this.chessClockStarting = clock?.StartingClock ?? 10;
+      this.chessClockIncrement = clock?.ClockIncrement ?? 5;
+      this.chessClockDontLimit = clock?.DontLimitMoveSpeed ?? false;
     }
 
     // Set formats based on type
@@ -362,10 +362,10 @@ export class CreateEventPage implements OnInit {
   // map generation bounds mirror the lobby's GameQueue validation: integer
   // limits in range, min <= max, densities between 0 and 1
   get mapGenerationValid(): boolean {
-    const tunnelMin = Number(this.tunnel_min);
-    const tunnelMax = Number(this.tunnel_max);
-    const strongholdMin = Number(this.stronghold_min);
-    const strongholdMax = Number(this.stronghold_max);
+    const tunnelMin = Number(this.tunnelMin);
+    const tunnelMax = Number(this.tunnelMax);
+    const strongholdMin = Number(this.strongholdMin);
+    const strongholdMax = Number(this.strongholdMax);
     if (!Number.isInteger(tunnelMin) || !Number.isInteger(tunnelMax) ||
         !Number.isInteger(strongholdMin) || !Number.isInteger(strongholdMax)) {
       return false;
@@ -402,18 +402,18 @@ export class CreateEventPage implements OnInit {
       height: this.height,
       cities: this.cities,
       mountains: this.mountains,
-      city_fairness: this.city_fairness,
-      spawn_fairness: this.spawn_fairness,
+      city_fairness: this.cityFairness,
+      spawn_fairness: this.spawnFairness,
       swamps: this.swamps,
       deserts: this.deserts,
       observatories: this.observatories,
       lookouts: this.lookouts,
       tunnels: Number(this.tunnels),
-      tunnel_min: Number(this.tunnel_min),
-      tunnel_max: Number(this.tunnel_max),
+      tunnel_min: Number(this.tunnelMin),
+      tunnel_max: Number(this.tunnelMax),
       strongholds: Number(this.strongholds),
-      stronghold_min: Number(this.stronghold_min),
-      stronghold_max: Number(this.stronghold_max),
+      stronghold_min: Number(this.strongholdMin),
+      stronghold_max: Number(this.strongholdMax),
       modifiers: this.modifiers,
       speed: this.speed,
       map: this.mapURL?.split('/maps/')[1] ?? '',
@@ -423,11 +423,11 @@ export class CreateEventPage implements OnInit {
         {...(this.event?.options?.modifier_options || {})};
     if (this.chessClockSelected) {
       modifierOptions.ChessClock = {
-        StartingClock: Number(this.chess_clock_starting),
-        ClockIncrement: Number(this.chess_clock_increment),
+          StartingClock: Number(this.chessClockStarting),
+          ClockIncrement: Number(this.chessClockIncrement),
         // pass the actual property so a malformed value fails validation
         // instead of being silently coerced to false
-        DontLimitMoveSpeed: this.chess_clock_dont_limit,
+          DontLimitMoveSpeed: this.chessClockDontLimit,
       };
     } else {
       delete modifierOptions.ChessClock;
@@ -508,15 +508,17 @@ export class CreateEventPage implements OnInit {
     // team arenas validate on every boundary, including 2v2 which has no
     // editable team controls
     if (this.isTeamArena) {
-      const teamSize = this.type === EventType.TWO_VS_TWO ?
-          2 : Number(this.teamSize);
-      const playersPerGame = this.type === EventType.TWO_VS_TWO ?
-          4 : Number(this.playersPerGame);
-      return arenaPairingStrategies.includes(this.pairingStrategy) &&
-          Number.isInteger(teamSize) && teamSize >= 2 && teamSize <= 8 &&
-          Number.isInteger(playersPerGame) &&
-          playersPerGame >= 2 * teamSize && playersPerGame <= 16 &&
-          playersPerGame % teamSize === 0;
+      const arenaTeamSize = this.type === EventType.TWO_VS_TWO
+          ? 2
+          : Number(this.teamSize);
+      const arenaPlayersPerGame = this.type === EventType.TWO_VS_TWO
+          ? 4
+          : Number(this.playersPerGame);
+      return arenaPairingStrategies.includes(this.pairingStrategy)
+          && Number.isInteger(arenaTeamSize) && arenaTeamSize >= 2 && arenaTeamSize <= 8
+          && Number.isInteger(arenaPlayersPerGame)
+          && arenaPlayersPerGame >= 2 * arenaTeamSize && arenaPlayersPerGame <= 16
+          && arenaPlayersPerGame % arenaTeamSize === 0;
     }
 
     if (!this.showTeamSettings) {
@@ -648,7 +650,7 @@ export class CreateEventPage implements OnInit {
 
     this.saving = true;
 
-    const defeat_spectate = this.type === EventType.ONE_VS_ONE;
+    const defeatSpectate = this.type === EventType.ONE_VS_ONE;
 
     const eventData: Partial<IEvent> = {
       name: this.name || this.namePlaceholder,
@@ -661,7 +663,7 @@ export class CreateEventPage implements OnInit {
       // and nested modifier_options) is normalized before persistence
       options: {
         ...normalizeEventGameOptions(this.buildGameOptions()),
-        defeat_spectate,
+        defeat_spectate: defeatSpectate,
       }
     };
 
