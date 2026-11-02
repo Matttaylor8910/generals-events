@@ -630,6 +630,128 @@ async function testEditEventModifiers() {
   console.log('  edit-event modifiers passed');
 }
 
+// the events form fairness defaults track the in-game defaults from the
+// shared constants: a new form and an edit of an event that predates the
+// fields both resolve 0.5, while an explicit stored 0 or a nondefault
+// value survives untouched
+async function testEventFairnessDefaults() {
+  const RootConstants = require('../../shared/Constants');
+  assert.strictEqual(RootConstants.DEFAULT_CITY_FAIRNESS_OPTION, 0.5,
+    'test assumption: in-game city fairness default');
+  assert.strictEqual(RootConstants.DEFAULT_SPAWN_FAIRNESS_OPTION, 0.5,
+    'test assumption: in-game spawn fairness default');
+
+  // a fresh create form starts at the in-game defaults and persists them
+  {
+    const { page, created } = makeCreatePage();
+    assert.strictEqual(page.cityFairness, 0.5, 'city fairness default');
+    assert.strictEqual(page.spawnFairness, 0.5, 'spawn fairness default');
+    await page.create();
+    assert.strictEqual(created.length, 1);
+    assert.strictEqual(created[0].options.city_fairness, 0.5,
+      'default city fairness persisted');
+    assert.strictEqual(created[0].options.spawn_fairness, 0.5,
+      'default spawn fairness persisted');
+  }
+
+  const editFixture = options => {
+    const { page, updated } = makeCreatePage();
+    page.isEditMode = true;
+    page.eventId = 'evt-fairness';
+    page.event = {
+      name: 'edit fairness',
+      type: EventType.FFA,
+      format: EventFormat.ARENA,
+      visibility: Visibility.PUBLIC,
+      startTime: new Date('2030-06-01T12:00:00').getTime(),
+      endTime: new Date('2030-06-01T13:00:00').getTime(),
+      options,
+    };
+    page.loadEventData();
+    return { page, updated };
+  };
+
+  // an event stored before the fields existed resolves the in-game defaults
+  {
+    const { page } = editFixture({ speed: GameSpeed.SPEED_1X });
+    assert.strictEqual(page.cityFairness, 0.5,
+      'missing city_fairness resolves the default');
+    assert.strictEqual(page.spawnFairness, 0.5,
+      'missing spawn_fairness resolves the default');
+  }
+
+  // explicitly null stored fields resolve the defaults too
+  {
+    const { page } = editFixture(
+      { city_fairness: null, spawn_fairness: null });
+    assert.strictEqual(page.cityFairness, 0.5,
+      'null city_fairness resolves the default');
+    assert.strictEqual(page.spawnFairness, 0.5,
+      'null spawn_fairness resolves the default');
+  }
+
+  // explicit zeros and nondefault values survive loading and re-saving
+  {
+    const { page, updated } = editFixture(
+      { city_fairness: 0.0, spawn_fairness: 0.25 });
+    assert.strictEqual(page.cityFairness, 0.0,
+      'explicit city_fairness 0 is preserved, not defaulted');
+    assert.strictEqual(page.spawnFairness, 0.25,
+      'nondefault spawn_fairness preserved');
+    await page.create();
+    assert.strictEqual(updated.length, 1);
+    assert.strictEqual(updated[0].data.options.city_fairness, 0.0,
+      'explicit city_fairness 0 persisted');
+    assert.strictEqual(updated[0].data.options.spawn_fairness, 0.25,
+      'nondefault spawn_fairness persisted');
+  }
+
+  // the resolved values reach the generated lobby URL, where absent
+  // settings would already have resolved the same in-game defaults
+  {
+    const { page, created } = makeCreatePage();
+    await page.create();
+    const opened = [];
+    const priorWindow = global.window;
+    const priorLocation = global.location;
+    const location = {
+      href: 'https://events.generals.io/',
+      hostname: 'events.generals.io',
+      port: '',
+    };
+    global.location = location;
+    global.window = {
+      open: url => opened.push(url), addEventListener() {}, location };
+    try {
+      const util = new UtilService();
+      const generals = new GeneralsService(
+        { httpsCallable: () => ({ toPromise: async () => [] }) },
+        { authState: { subscribe: () => {} } },
+        { navigate: () => {} },
+        util);
+      generals.joinLobby('event_arena',
+        { ...created[0], id: 'evt-fair', server: 'na' }, true);
+      const params = new URLSearchParams(opened[0].split('?')[1]);
+      assert.strictEqual(params.get('city_fairness'), '0.5',
+        `default city fairness serialized: ${opened[0]}`);
+      assert.strictEqual(params.get('spawn_fairness'), '0.5',
+        `default spawn fairness serialized: ${opened[0]}`);
+    } finally {
+      if (priorWindow === undefined) {
+        delete global.window;
+      } else {
+        global.window = priorWindow;
+      }
+      if (priorLocation === undefined) {
+        delete global.location;
+      } else {
+        global.location = priorLocation;
+      }
+    }
+  }
+  console.log('  event fairness defaults passed');
+}
+
 function testLobbyUrlModifiers() {
   const opened = [];
   const priorWindow = global.window;
@@ -1828,6 +1950,7 @@ async function main() {
   testReplayMatchContracts();
   await testCreateEventModifiers();
   await testEditEventModifiers();
+  await testEventFairnessDefaults();
   testLobbyUrlModifiers();
   await testArenaWriter();
   await testBracketWriter();
