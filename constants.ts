@@ -17,20 +17,4 @@ export const SITE_URLS = {
 // the sender name used for system messages in event chat, never a real login
 export const SYSTEM_SENDER = 'Automated Message';
 
-// event organizers, used for UI gating only. The database checks the names in
-// the generals.io/admins document (see firestore.rules), keep the two in sync.
-export const ADMINS = [
-  SYSTEM_SENDER,
-  'only_human',
-  'googleman',
-  'Lazerpent',
-  'DavidC',
-  'matt',
-  'pasghetti',
-  'Wuped',
-  'Fekete',
-  'mashiro',
-  'EklipZ',
-];
-
 export const HIDE_COMPLETED = 'generals-hide-completed';

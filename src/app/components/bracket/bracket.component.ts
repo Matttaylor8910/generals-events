@@ -1,18 +1,16 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import {ModalController} from '@ionic/angular';
 import {flatten} from 'lodash';
 import {UpdateMatchPage} from 'src/app/pages/event/update-match/update-match.page';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDoubleElimEvent, IGeneralsGameOptions, IMatchTeam, MatchStatus} from 'types';
 
-import {ADMINS} from '../../../../constants';
-
 @Component({
   selector: 'app-bracket',
   templateUrl: './bracket.component.html',
   styleUrls: ['./bracket.component.scss'],
 })
-export class BracketComponent {
+export class BracketComponent implements OnChanges {
   @Input() event: IDoubleElimEvent;
   @Input() bracket: IBracketRound[];
   @Input() hideCompletedRounds: boolean;
@@ -73,7 +71,7 @@ export class BracketComponent {
       roundIdx: number,
       matchIdx: number,
   ) {
-    if (ADMINS.includes(this.generals.name) && !this.disabled) {
+    if (this.generals.isAdmin && !this.disabled) {
       const modal = await this.modalController.create({
         component: UpdateMatchPage,
         componentProps: {

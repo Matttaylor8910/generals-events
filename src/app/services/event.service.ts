@@ -2,9 +2,8 @@ import {Injectable} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import * as firebase from 'firebase';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
-import {ADMINS} from '../../../constants';
 import {environment} from 'src/environments/environment';
 import {isTeamArena, loadEventTeam} from '../../../team-arena';
 
@@ -67,36 +66,30 @@ export class EventService {
    */
   getEvents(parentEventId?: string):
       Observable<IEvent[]> {
-    // admins can see private events too
-    const visibilities = [Visibility.PUBLIC];
-    if (ADMINS.includes(this.generals.name)) {
-      visibilities.push(Visibility.PRIVATE);
-    }
-
-    return this.afs
-        .collection<IEvent>(
-            'events',
-            ref => {
-              const query = ref.orderBy('startTime');
-
-              // support looking for children with a given parent eventId, we
-              // don't care about the event visibility here
-              if (parentEventId) {
-                return query.where('parentId', '==', parentEventId);
-              }
-
-              // otherwise, show only those with visibilities you can see
-              else {
-                return query.where('visibility', 'in', visibilities);
-              }
-            })
-        .snapshotChanges()
-        .pipe(map(actions => {
-          return actions
-              .map(action => {
+    // requery live on organizer-state changes so private events appear or
+    // disappear without recreating the subscription
+    return this.generals.isAdmin$.pipe(
+        distinctUntilChanged(),
+        switchMap(admin => {
+          const visibilities = [Visibility.PUBLIC];
+          if (admin) {
+            visibilities.push(Visibility.PRIVATE);
+          }
+          return this.afs
+              .collection<IEvent>(
+                  'events',
+                  ref => {
+                    const query = ref.orderBy('startTime');
+                    // Child stages retain their existing visibility behavior.
+                    return parentEventId
+                        ? query.where('parentId', '==', parentEventId)
+                        : query.where('visibility', 'in', visibilities);
+                  })
+              .snapshotChanges()
+              .pipe(map(actions => actions.map(action => {
                 const {doc} = action.payload;
                 return {...doc.data(), id: doc.id, exists: doc.exists};
-              });
+              })));
         }));
   }
 
@@ -146,7 +139,7 @@ export class EventService {
     // event organizers may purge a registration. This is NOT authorization;
     // real enforcement must live in the Firestore rules.
     const caller = this.generals.name;
-    if (caller !== name && !ADMINS.includes(caller)) {
+    if (caller !== name && !this.generals.isAdmin) {
       throw new Error('You can only remove yourself from an event');
     }
 

@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {MessageService} from 'src/app/services/message.service';
 
-import {ADMINS} from '../../../../constants';
+import {SYSTEM_SENDER} from '../../../../constants';
 import {IChatMessage, IEvent, IMultiStageEvent} from '../../../../types';
 
 const FIVE_MINS = 1000 * 60 * 5;
@@ -69,9 +69,9 @@ export class ChatComponent implements OnInit {
     if (this.disqualified) {
       return 'You have been disqualified';
     } else if (this.disallowNewMessages) {
-      return 'Chat is closed, join discord!'
+      return 'Chat is closed, join discord!';
     } else if (this.generals.name) {
-      return 'Please be nice in chat!'
+      return 'Please be nice in chat!';
     }
     return 'You must login to chat';
   }
@@ -91,7 +91,7 @@ export class ChatComponent implements OnInit {
   }
 
   isAdmin(sender: string): boolean {
-    return ADMINS.includes(sender);
+    return sender === SYSTEM_SENDER || this.generals.isOrganizer(sender);
   }
 
   submit() {

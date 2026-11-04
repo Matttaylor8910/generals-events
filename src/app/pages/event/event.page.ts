@@ -15,7 +15,6 @@ import {
 import * as moment from 'moment-timezone';
 import * as firebase from 'firebase';
 
-import {ADMINS} from '../../../../constants';
 import {isTeamArena} from '../../../../team-arena';
 import {CreateEventPage} from '../home/create-event/create-event.page';
 
@@ -121,7 +120,7 @@ export class EventPage implements OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   get showWide(): boolean {

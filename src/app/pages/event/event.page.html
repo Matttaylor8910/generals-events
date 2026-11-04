@@ -116,7 +116,7 @@
             [event]="event"
             [status]="status"
             [showRank]="isArena"
-            (close)="selectPlayers()"
+            (dismissed)="selectPlayers()"
             *ngIf="selectedPlayers">
           </app-event-player-summary>
           <app-game-list

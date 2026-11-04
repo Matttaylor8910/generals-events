@@ -728,7 +728,8 @@ async function testEventFairnessDefaults() {
         { httpsCallable: () => ({ toPromise: async () => [] }) },
         { authState: { subscribe: () => {} } },
         { navigate: () => {} },
-        util);
+        util,
+        { doc: () => ({ valueChanges: () => ({ subscribe: () => {} }) }) });
       generals.joinLobby('event_arena',
         { ...created[0], id: 'evt-fair', server: 'na' }, true);
       const params = new URLSearchParams(opened[0].split('?')[1]);
@@ -770,7 +771,8 @@ function testLobbyUrlModifiers() {
       { httpsCallable: () => ({ toPromise: async () => [] }) },
       { authState: { subscribe: () => {} } },
       { navigate: () => {} },
-      util);
+      util,
+      { doc: () => ({ valueChanges: () => ({ subscribe: () => {} }) }) });
 
     const event = {
       id: 'evt1',

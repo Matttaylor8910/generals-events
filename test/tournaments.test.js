@@ -138,7 +138,12 @@ function makeService(store, caller) {
     store.docs.set('generals.io/admins', { names: ['Lazerpent'] });
   }
   // the fake satisfies the afs collection/doc interface used by legacy paths
-  return new EventService(store, { name: caller },
+  const orgs = (store.dataAt('generals.io/admins') || {}).names || [];
+  const generals = { name: caller,
+    isAdmin: orgs.includes(caller),
+    isOrganizer: n => orgs.includes(n),
+    isAdmin$: { pipe: () => ({ subscribe: () => {} }) } };
+  return new EventService(store, generals,
     new TeamArenaService(callableStore(store, caller, teamArenaAction)),
     new TeamBracketService(callableStore(store, caller, teamBracketAction)));
 }
@@ -515,9 +520,7 @@ function testBracketCreator() {
 
   // match numbers are unique and sequential
   for (const n of [2, 3, 4, 5, 8]) {
-    const teams = Array.from({ length: n }, (_, i) => {
-      return { name: `t${i}`, players: [`p${i}`] };
-    });
+    const teams = Array.from({ length: n }, (_, i) => ({ name: `t${i}`, players: [`p${i}`] }));
     const b = getShuffledBracket(deEvent(), teams);
     assert.ok(b, `bracket for ${n} teams`);
     const numbers = [];
@@ -622,9 +625,7 @@ function assertBracketTournamentResult(
   // champion rank 1 and runner-up rank 2 writes all landed and were awaited
   const finalsRound = event.bracket.winners[event.bracket.winners.length - 1];
   const lastFinal = finalsRound.matches[finalsRound.matches.length - 1];
-  const runnerUp = lastFinal.teams.find(team => {
-    return JSON.stringify(team.players) !== championKey;
-  });
+  const runnerUp = lastFinal.teams.find(team => JSON.stringify(team.players) !== championKey);
   assert.ok(runnerUp, 'runner-up identified');
   for (const name of champion.players) {
     assert.strictEqual(
@@ -707,9 +708,7 @@ async function runBracketSuite(
 
   // the champion is the only team that could have zero or one loss
   const championPlayers = store.dataAt(`events/${event.id}`).winners;
-  const champion = teams.find(team => {
-    return JSON.stringify(team.players) === JSON.stringify(championPlayers);
-  });
+  const champion = teams.find(team => JSON.stringify(team.players) === JSON.stringify(championPlayers));
   assert.ok(champion, 'champion is one of the input rosters');
 
   return assertBracketTournamentResult(store, event, teams, champion, losses);
@@ -1612,7 +1611,7 @@ async function testChoosePartners() {
 
 // --------------------------------------------- bracket event/status -----
 
-function makeBracketEvent({ event, players, me = 'matt' }) {
+function makeBracketEvent({ event, players, me = 'matt', admin = true }) {
   const toasts = [];
   const updates = [];
   const eventService = {
@@ -1629,7 +1628,7 @@ function makeBracketEvent({ event, players, me = 'matt' }) {
     selectTab$: { pipe: () => ({ subscribe: () => {} }) },
     confirm: async () => true,
   };
-  const comp = new BracketEventComponent({ name: me }, eventService, util);
+  const comp = new BracketEventComponent({ name: me, isAdmin: admin }, eventService, util);
   comp.event = event;
   comp.players = players;
   return { comp, toasts, updates };
@@ -1716,7 +1715,7 @@ async function testBracketEvent() {
   // a non-admin cannot start even with a valid bracket
   {
     const { comp, updates, toasts } = makeBracketEvent({
-      event, players: docs, me: 'amy',
+      event, players: docs, me: 'amy', admin: false,
     });
     comp.createBracket();
     assert.ok(comp.bracket);
@@ -1950,7 +1949,7 @@ function testLobbyUrls() {
     { httpsCallable: () => ({ toPromise: async () => [] }) },
     { authState: { subscribe: () => {} } },
     { navigate: () => {} },
-    util);
+    util, { doc: () => ({ valueChanges: () => ({ subscribe: () => {} }) }) });
 
   const event = {
     id: 'evt1',

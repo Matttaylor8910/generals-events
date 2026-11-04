@@ -1,17 +1,17 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {flatten} from 'lodash';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {IDynamicDYPEvent, IDynamicDYPMatch, IDynamicDYPRound, IGeneralsGameOptions, MatchStatus} from 'types';
-import {ADMINS, HIDE_COMPLETED} from '../../../../constants';
+import {HIDE_COMPLETED} from '../../../../constants';
 
 @Component({
   selector: 'app-dynamic-dyp-rounds',
   templateUrl: './dynamic-dyp-rounds.component.html',
   styleUrls: ['./dynamic-dyp-rounds.component.scss'],
 })
-export class DynamicDYPRoundsComponent {
+export class DynamicDYPRoundsComponent implements OnChanges {
   @Input() event: IDynamicDYPEvent;
   @Input() rounds: IDynamicDYPRound[];
   @Input() finals: boolean;
@@ -100,7 +100,7 @@ export class DynamicDYPRoundsComponent {
   }
 
   async whoWon(match: IDynamicDYPMatch) {
-    if (ADMINS.includes(this.generals.name)) {
+    if (this.generals.isAdmin) {
       const winner = await this.utilService.promptForText(
           'Who won?', 'Type 1 or 2', '', 'Advance', 'Cancel');
 

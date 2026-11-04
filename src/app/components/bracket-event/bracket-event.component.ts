@@ -7,7 +7,6 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
 import {EventStatus, EventType, IDoubleElimEvent, IDoubleEliminationBracket, ILeaderboardPlayer, IMatchTeam} from 'types';
 
-import {ADMINS} from '../../../../constants';
 import {getConfirmedBigTeams, isValidTeamMembers, isValidTeamSize, teamIdentity} from '../../../../teams';
 
 import {getShuffledBracket} from './bracket-creator';
@@ -131,7 +130,7 @@ export class BracketEventComponent implements OnChanges, OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   get showBracketButtons(): boolean {

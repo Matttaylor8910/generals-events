@@ -1602,10 +1602,10 @@ async function testRedirectProjection() {
     getParamString: obj => '?' + Object.entries(obj)
       .map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'),
   };
-  // constructor is (aff, afAuth, router, util): the afAuth stub never
+  // constructor is (aff, afAuth, router, util, afs): the afAuth stub never
   // emits so the cached name below stays the test's chosen user
   const generals = new GeneralsService(
-    {}, { authState: { subscribe: () => {} } }, {}, utilStub);
+    {}, { authState: { subscribe: () => {} } }, {}, utilStub, { doc: () => ({ valueChanges: () => ({ subscribe: () => {} }) }) });
   generals.name = 'a0';
   const eventService = new EventService(
     fakeAfsForRedirects(store), generals, {});
@@ -2326,7 +2326,7 @@ async function testArenaQueueComponent() {
   };
   try {
     const readyCalls = [];
-    let readyError = null;
+    const readyError = null;
     const nameChangedSubs = [];
     const generals = {
       name: 'alice',

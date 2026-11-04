@@ -4,7 +4,6 @@ import {GeneralsService} from 'src/app/services/generals.service';
 import {TeamArenaService} from 'src/app/services/team-arena.service';
 import {UtilService} from 'src/app/services/util.service';
 
-import {ADMINS} from '../../../../constants';
 import {isTeamArena} from '../../../../team-arena';
 import {EventStatus, EventType, IArenaEvent, ILeaderboardPlayer} from '../../../../types';
 
@@ -84,7 +83,7 @@ export class ArenaLeaderboardComponent implements OnChanges {
 
   // team arenas cannot finalize while a dispatched game is still in flight
   get showFinalizeButton(): boolean {
-    return ADMINS.includes(this.generals.name) &&
+    return this.generals.isAdmin &&
         this.status === EventStatus.FINISHED && !this.event?.winners?.length &&
         !(this.isTeamArena && (this.event?.ongoingGameCount || 0) > 0);
   }

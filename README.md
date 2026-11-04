@@ -69,9 +69,10 @@ Cloud Function runs during login, so there is no cold start.
    only let players touch their own player doc, queue/check-in entry, partner
    fields, and chat messages.
 5. Organizers are the names in the `generals.io/admins` document
-   (`{names: [...]}`), which only organizers can edit. Results, brackets, and
-   event settings are organizer or function only. Keep `ADMINS` in
-   `constants.ts` (UI gating) in sync with that document.
+   (`{names: [...]}`), which only organizers can edit. The frontend reads
+   that document live at runtime - there is no compiled list to keep in
+   sync. Results, brackets, and event settings are organizer or function
+   only.
 
 ### Local development
 

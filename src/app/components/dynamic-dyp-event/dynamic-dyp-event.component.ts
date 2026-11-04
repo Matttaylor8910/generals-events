@@ -3,8 +3,6 @@ import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {EventStatus, IDynamicDYPEvent, IDynamicDYPRound, ILeaderboardPlayer} from 'types';
 
-import {ADMINS} from '../../../../constants';
-
 import {getRounds} from './rounds-creator';
 
 @Component({
@@ -107,7 +105,7 @@ export class DynamicDYPEventComponent implements OnChanges {
   }
 
   get isAdmin(): boolean {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   get finished(): boolean {

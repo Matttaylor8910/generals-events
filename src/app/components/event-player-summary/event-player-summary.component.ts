@@ -1,6 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {ADMINS} from 'constants';
 import {default as firebase} from 'firebase';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {UtilService} from 'src/app/services/util.service';
@@ -17,7 +16,7 @@ export class EventPlayerSummaryComponent {
   @Input() status: EventStatus;
   @Input() showRank: boolean;
 
-  @Output() close = new EventEmitter<void>();
+  @Output() dismissed = new EventEmitter<void>();
 
   constructor(
       public readonly generals: GeneralsService,
@@ -38,7 +37,7 @@ export class EventPlayerSummaryComponent {
   }
 
   get isAdmin(): boolean {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   get showDisclaimers(): boolean {
@@ -74,7 +73,7 @@ export class EventPlayerSummaryComponent {
               (week > 10 ? 'because of total seed points.' :
                            `week ${week} of the season.`);
         } else {
-          return 'Does not qualify for this event.'
+          return 'Does not qualify for this event.';
         }
       }
     }
@@ -87,7 +86,7 @@ export class EventPlayerSummaryComponent {
    */
   get showKDR(): boolean {
     // KDR is only shown for arena
-    if (!this.isArena) return false;
+    if (!this.isArena) { return false; }
 
     // arena is only 1v1, so there will be only one selected player
     const [player] = this.players ?? [];
@@ -99,7 +98,7 @@ export class EventPlayerSummaryComponent {
   getDurationString(prevFinished: number, started: number): string {
     if (prevFinished > started) {
       const overlap = this.utilService.getDurationString(started, prevFinished);
-      return `Overlap of ${overlap}!`
+      return `Overlap of ${overlap}!`;
     } else {
       return this.utilService.getDurationString(prevFinished, started);
     }

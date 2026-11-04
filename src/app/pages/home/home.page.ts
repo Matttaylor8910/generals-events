@@ -6,8 +6,6 @@ import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {EventType, IEvent} from 'types';
 
-import {ADMINS} from '../../../../constants';
-
 import {CreateEventPage} from './create-event/create-event.page';
 
 @Component({
@@ -39,7 +37,7 @@ export class HomePage implements OnDestroy {
   }
 
   get canCreateEvent() {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   async createEvent() {

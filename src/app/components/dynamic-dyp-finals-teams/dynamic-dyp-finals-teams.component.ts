@@ -1,16 +1,14 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output} from '@angular/core';
 import {EventService} from 'src/app/services/event.service';
 import {GeneralsService} from 'src/app/services/generals.service';
 import {IBracketMatch, IBracketRound, IDynamicDYPEvent, IDynamicDYPFinals, ILeaderboardPlayer, MatchStatus, MatchTeamStatus} from 'types';
-
-import {ADMINS} from '../../../../constants';
 
 @Component({
   selector: 'app-dynamic-dyp-finals-teams',
   templateUrl: './dynamic-dyp-finals-teams.component.html',
   styleUrls: ['./dynamic-dyp-finals-teams.component.scss'],
 })
-export class DynamicDYPFinalsTeamsComponent {
+export class DynamicDYPFinalsTeamsComponent implements OnChanges {
   @Input() event: IDynamicDYPEvent;
   @Input() players: ILeaderboardPlayer[];
 
@@ -26,7 +24,7 @@ export class DynamicDYPFinalsTeamsComponent {
 
   ngOnChanges() {
     if (this.event?.finals) {
-      this.finals = this.event.finals
+      this.finals = this.event.finals;
 
       if (this.finals.bracket) {
         this.bracket = this.finals.bracket;
@@ -51,7 +49,7 @@ export class DynamicDYPFinalsTeamsComponent {
   }
 
   get isAdmin(): boolean {
-    return ADMINS.includes(this.generals.name);
+    return this.generals.isAdmin;
   }
 
   get showStartPicking(): boolean {

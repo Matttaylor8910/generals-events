@@ -1,7 +1,9 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AngularFireAuth} from '@angular/fire/auth';
+import {AngularFirestore} from '@angular/fire/firestore';
 import {AngularFireFunctions} from '@angular/fire/functions';
 import {Router} from '@angular/router';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {isValidTeamSize} from 'teams';
 import {normalizeEventGameOptions} from 'game-options';
 import {isTeamArena, normalizeEventTeam} from 'team-arena';
@@ -40,16 +42,44 @@ export class GeneralsService {
   name = localStorage.getItem(GENERALS_NAME);
   nameChanged$ = new EventEmitter();
 
+  private authenticatedName: string | null = null;
+  private readonly organizerNames = new Set<string>();
+  private readonly adminSubject = new BehaviorSubject<boolean>(false);
+  private lastEmittedAdmin = false;
+  readonly isAdmin$: Observable<boolean> = this.adminSubject;
+
   constructor(
       private readonly aff: AngularFireFunctions,
       private readonly afAuth: AngularFireAuth,
       private readonly router: Router,
       private readonly utilService: UtilService,
+      private readonly afs: AngularFirestore,
   ) {
+    // live public organizer list - replaces the compiled ADMINS constant so
+    // granting or removing organizer access never needs a deploy
+    this.afs.doc<{ names?: unknown }>('generals.io/admins')
+        .valueChanges().subscribe(
+            doc => {
+              this.organizerNames.clear();
+              if (doc && Array.isArray(doc.names)) {
+                for (const n of doc.names) {
+                  if (typeof n === 'string' && n.length > 0) {
+                    this.organizerNames.add(n);
+                  }
+                }
+              }
+              this.emitAdmin();
+            },
+            () => {
+              this.organizerNames.clear();
+              this.emitAdmin();
+            });
     // keep the cached name in sync with the real auth state, this also logs
     // out anyone with a stale name from before logins went through Firebase
     this.afAuth.authState.subscribe(user => {
-      const name = user?.uid ?? null;
+      this.authenticatedName = user?.uid ?? null;
+      this.emitAdmin();
+      const name = this.authenticatedName;
       if (name !== this.name) {
         if (name) {
           this.setName(name);
@@ -58,6 +88,16 @@ export class GeneralsService {
         }
       }
     });
+  }
+
+  get isAdmin(): boolean {
+    return this.authenticatedName !== null
+        && this.organizerNames.has(this.authenticatedName);
+  }
+
+  // chat crown display only - never gates authority
+  isOrganizer(name: string): boolean {
+    return this.organizerNames.has(name);
   }
 
   // the generals.io origin used for login/lobby/profile/replay links: the
@@ -273,6 +313,8 @@ export class GeneralsService {
   }
 
   async logout() {
+    this.authenticatedName = null;
+    this.emitAdmin();
     this.clearName();
     await this.afAuth.signOut();
   }
@@ -302,5 +344,14 @@ export class GeneralsService {
       return port;
     }
     return null;
+  }
+
+  private emitAdmin() {
+    const next = this.authenticatedName !== null
+        && this.organizerNames.has(this.authenticatedName);
+    if (this.lastEmittedAdmin !== next) {
+      this.lastEmittedAdmin = next;
+      this.adminSubject.next(next);
+    }
   }
 }
