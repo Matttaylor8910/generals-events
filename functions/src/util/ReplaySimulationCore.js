@@ -247,7 +247,7 @@ class ReplaySimulationCore {
     }
 
     while (this.gameReplay.generalTrades.length > this.currentGeneralTradeIndex
-        && this.gameReplay.generalTrades[this.currentGeneralTradeIndex].turn <= this.turn) {
+        && this.gameReplay.generalTrades[this.currentGeneralTradeIndex].turn < this.turn) {
       const trade = this.gameReplay.generalTrades[this.currentGeneralTradeIndex++];
       this.onReplayGeneralTrade(trade);
     }
